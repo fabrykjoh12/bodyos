@@ -9,6 +9,7 @@ import { findLastExerciseSession } from '@/lib/history';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { StrengthChart } from '@/components/progress/StrengthChart';
 import { Chip } from '@/components/ui/Chip';
+import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 
 export function ExerciseDetail() {
   const { id } = useParams();
@@ -32,6 +33,10 @@ export function ExerciseDetail() {
   return (
     <div className="flex flex-col gap-4">
       <ScreenHeader title={ex.name} subtitle={`${ex.primaryMuscle} · ${ex.equipment}`} back />
+
+      <div className="flex justify-center overflow-hidden rounded-2xl border border-line bg-surface py-4">
+        <ExerciseThumb id={ex.id} muscle={ex.primaryMuscle} size={160} rounded="rounded-2xl" />
+      </div>
 
       <div className="flex flex-wrap gap-1.5">
         <Chip tone="accent" className="capitalize">{ex.kind}</Chip>

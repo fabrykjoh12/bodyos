@@ -5,6 +5,7 @@ import type { Equipment, MuscleGroup } from '@/types';
 import { EXERCISES } from '@/data/exercises';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Chip } from '@/components/ui/Chip';
+import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 
 const MUSCLES: (MuscleGroup | 'all')[] = ['all', 'chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'calves', 'core'];
 const EQUIPMENT: (Equipment | 'all')[] = ['all', 'barbell', 'dumbbell', 'machine', 'cable', 'bodyweight'];
@@ -58,6 +59,7 @@ export function ExerciseLibrary() {
             onClick={() => navigate(`/exercises/${ex.id}`)}
             className="card flex items-center gap-3 p-4 text-left hover:border-line-strong"
           >
+            <ExerciseThumb id={ex.id} muscle={ex.primaryMuscle} />
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-content">{ex.name}</p>
               <p className="text-xs capitalize text-content-muted">{ex.primaryMuscle} · {ex.equipment} · {ex.kind}</p>
