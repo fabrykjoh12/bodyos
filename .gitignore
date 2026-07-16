@@ -6,3 +6,8 @@ dist-ssr
 coverage
 .vite
 .claude/settings.local.json
+
+# tsc -b build artifacts (config files are authored as .ts)
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts
