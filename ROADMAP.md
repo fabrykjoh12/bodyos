@@ -34,13 +34,16 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   muscle-balance bars, PR list, recent sessions
 - ✅ Contrast fixes (no white-on-volt); ice-blue "last time" values in Gym Mode
 
-## 🟡 Phase 2 — Real-app feel
+## ✅ Phase 2 — Real-app feel
 
 - ✅ Code-splitting: lazy routes → initial bundle **662 kB → ~250 kB**; Recharts isolated in a
   lazy chunk
 - ✅ PWA manifest + volt app icon → installable, standalone display, theme color
-- ⬜ **Offline service worker** (Workbox / vite-plugin-pwa) — precache the app shell + hashed
-  chunks so it works fully offline in the gym. Do this *after* splitting (already done).
+- ✅ **Offline service worker** (`vite-plugin-pwa` / Workbox, `generateSW` + `autoUpdate`) —
+  precaches the app shell, all hashed chunks, fonts, and exercise photos (49 entries, ~1 MB);
+  `navigateFallback` → `/bodyos/index.html` so SPA deep links resolve offline. SW disabled in
+  dev (`devOptions.enabled: false`); the hand-authored `public/manifest.webmanifest` is kept
+  (`manifest: false`).
 
 ## 🟡 Exercises & photos
 
@@ -88,8 +91,9 @@ before it can be used from here.
 
 ## Suggested next session
 
-1. Finish exercise photos (remaining ~40) — quick, high visual impact.
-2. Offline service worker (Phase 2 finish) — makes it a true gym PWA.
-3. Authorize Supabase, then build `SupabaseRepository` (Phase 4) — the real product milestone.
+1. Finish exercise photos (remaining ~40) — quick, high visual impact. (Higgsfield now
+   reachable from here — ~936 credits available.)
+2. Build `SupabaseRepository` (Phase 4) — the real product milestone. **Now unblocked:** the
+   Supabase connector is authorized and an `ACTIVE_HEALTHY` project already exists (eu-west-3).
 
 See `CLAUDE.md` for architecture, conventions, the design system, and gotchas.
