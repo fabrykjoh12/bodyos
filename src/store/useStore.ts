@@ -20,6 +20,11 @@ import { recommendFromExerciseSession } from '@/lib/progression';
 import { buildActiveSession, countPriorStalls } from '@/lib/history';
 import { detectPersonalRecords } from '@/lib/prstats';
 import { loadOrSeed, repository } from './repository';
+import {
+  initCloudSync,
+  notifyLocalWrite,
+  registerSync,
+} from './cloudSync';
 
 interface UndoState {
   exerciseIndex: number;
@@ -68,6 +73,10 @@ interface StoreState extends AppData {
   updateSettings: (patch: Partial<UserSettings>) => void;
   resetAll: () => void;
 
+  // --- sync
+  /** Replace the whole AppData slice (used when cloud sync pulls remote). */
+  replaceAll: (data: AppData) => void;
+
   // --- progress
   addPhoto: (photo: ProgressPhoto) => void;
   deletePhoto: (id: string) => void;
@@ -76,9 +85,9 @@ interface StoreState extends AppData {
 
 const initial = loadOrSeed();
 
-/** Persist the AppData slice after every mutation. */
-function persist(state: StoreState): void {
-  const data: AppData = {
+/** Snapshot the persisted AppData slice out of the (larger) store state. */
+function extractAppData(state: StoreState): AppData {
+  return {
     version: state.version,
     user: state.user,
     templates: state.templates,
@@ -92,7 +101,14 @@ function persist(state: StoreState): void {
     nextPhotoDue: state.nextPhotoDue,
     restTimer: state.restTimer,
   };
+}
+
+/** Persist the AppData slice after every mutation (local + optional cloud). */
+function persist(state: StoreState): void {
+  const data: AppData = extractAppData(state);
   repository.save(data);
+  // Fire-and-forget cloud sync; a no-op unless the user is signed in.
+  notifyLocalWrite(data);
 }
 
 /** Locate the active exercise and its active (first incomplete) set. */
@@ -499,7 +515,18 @@ export const useStore = create<StoreState>((set, get) => ({
     repository.clear();
     const seeded = loadOrSeed();
     set((s) => ({ ...s, ...seeded, activeSession: null, undo: null, lastCompletedSessionId: null }));
+    // A reset is intentional and should propagate to the cloud when signed in.
+    notifyLocalWrite(seeded);
   },
+
+  replaceAll: (data) =>
+    set((s) => {
+      const next: StoreState = { ...s, ...data, undo: null };
+      // Cache the pulled remote locally; notifyLocalWrite is suppressed while
+      // cloud sync is applying remote, so this won't echo back to the server.
+      persist(next);
+      return next;
+    }),
 
   addPhoto: (photo) =>
     set((s) => {
@@ -522,6 +549,14 @@ export const useStore = create<StoreState>((set, get) => ({
       return next;
     }),
 }));
+
+// Wire cloud sync to the store: it reads the current AppData and applies pulled
+// remote state, without either module importing the other's internals.
+registerSync({
+  getLocalData: () => extractAppData(useStore.getState()),
+  applyRemote: (data) => useStore.getState().replaceAll(data),
+});
+initCloudSync();
 
 /** Shared helper for the active-set adjust actions. */
 function applyActive(

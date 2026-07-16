@@ -67,16 +67,25 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
 - ⬜ Haptics coverage; safe-area audit on a real device
 - ⬜ Component/E2E tests for Gym Mode (Testing Library is installed but unused)
 
-## 🔒 Phase 4 — Accounts & sync (Supabase)
+## 🟡 Phase 4 — Accounts & cloud sync (Supabase)
 
-Blocked: the Supabase MCP connector needs OAuth authorization in claude.ai connector settings
-before it can be used from here.
+Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud sync.
 
-- ⬜ Supabase project (free tier): auth (email/OAuth)
-- ⬜ Postgres tables mirroring the TS domain model; RLS
-- ⬜ Storage bucket for progress photos (private)
-- ⬜ `SupabaseRepository implements Repository` — drop-in behind the existing interface;
-  localStorage demotes to an offline cache with background sync
+- ✅ **Auth** — Supabase email/password, fully optional (the app stays offline-first; no forced
+  login). "Account & Sync" section in Settings (`src/store/cloudSync.ts`, `src/lib/supabase.ts`).
+- ✅ **Cloud sync** — the whole `AppData` is mirrored to `public.bodyos_app_state` (one `jsonb`
+  row per user, owner-only RLS). Pushed on save (debounced 1.5 s), pulled + reconciled on
+  sign-in. Conflicts: whole-blob **last-write-wins** by server `updated_at`. localStorage stays
+  the synchronous source of truth; cloud is a background layer — so the synchronous `Repository`
+  interface is untouched. Reconciliation core is unit-tested (`cloudSync.test.ts`); the Supabase
+  client is lazy-loaded to keep it out of the initial bundle.
+- ✅ **Cost-free isolation** — lives in the existing shared Supabase project (Pro org, no new
+  ~$10/mo project) in its own `bodyos_app_state` table; never touches the co-hosted app's tables.
+- ⬜ **Progress-photo sync** — photos are device-local by design (privacy + `jsonb` size), so they
+  are excluded from the synced blob. Needs a private Storage bucket + upload flow to sync.
+- ⬜ **OAuth (Google)** sign-in — needs provider + redirect-URL config in the Supabase dashboard.
+- ⬜ **Relational schema** (per-table sessions/PRs) — only if server-side queries/analytics are
+  ever needed; the blob model already covers multi-device sync.
 
 ## ⬜ Phase 5 — Deeper training features
 

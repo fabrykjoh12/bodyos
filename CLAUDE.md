@@ -53,6 +53,9 @@ src/
   store/
     repository.ts         Repository interface + LocalStorage/Memory impls + loadOrSeed. SWAP THIS for a backend.
     useStore.ts           Zustand store: all session/template/settings/progress actions. Persists via repository.
+    cloudSync.ts          Optional Supabase cloud sync: auth + whole-AppData-blob push/pull with
+                          last-write-wins reconciliation (localStorage stays the sync source of truth).
+  lib/supabase.ts         Lazily-loaded Supabase client (public URL + publishable key; RLS protects data).
   components/
     ui/                   Design system: Button, NumericStepper, Stat, MetricCard, EmptyState,
                           Sheet, Chip, SegmentedControl, ProgressRing, IconButton, BackButton
@@ -98,6 +101,14 @@ Tokens live in `tailwind.config.js`; class names are stable, values are the mock
 - **Active session + rest timer survive refresh** (persisted). Undo is available after logging.
 - Store persists the whole `AppData` slice to `localStorage` after every mutation, through the
   `Repository` abstraction — so a `SupabaseRepository` can replace it with zero UI changes.
+- **Optional cloud sync** (`store/cloudSync.ts`): when signed in (Supabase email/password, set up
+  in Settings → Account & Sync), `persist()` also mirrors the blob to `public.bodyos_app_state`
+  (one `jsonb` row per user, owner-only RLS) — debounced push on write, pull + last-write-wins
+  reconcile on sign-in. localStorage remains the synchronous source of truth; sync is a background
+  layer, so the sync `Repository` interface is untouched. `photos` + `restTimer` are **not** synced
+  (privacy + ephemeral). Supabase project `bvqvturqupbggxaeihvi` is **shared** with another app —
+  only the `bodyos_*` tables are ours; never touch the rest. The publishable key is committed
+  (public by design; RLS enforces access).
 
 ## Gotchas (things that have bitten us — don't repeat)
 
