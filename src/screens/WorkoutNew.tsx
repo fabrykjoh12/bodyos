@@ -1,0 +1,239 @@
+import { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowDown, ArrowUp, Check, Plus, Trash2 } from 'lucide-react';
+import type { MuscleGroup, WorkoutExercise, WorkoutTemplate } from '@/types';
+import { EXERCISES, requireExercise } from '@/data/exercises';
+import { useStore } from '@/store/useStore';
+import { uid } from '@/lib/id';
+import { now } from '@/lib/date';
+import { formatRepRange } from '@/lib/format';
+import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { Button } from '@/components/ui/Button';
+import { Sheet } from '@/components/ui/Sheet';
+import { Chip } from '@/components/ui/Chip';
+
+const MUSCLES: MuscleGroup[] = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes', 'calves', 'core'];
+
+function blankExercise(exerciseId: string, order: number): WorkoutExercise {
+  const ex = requireExercise(exerciseId);
+  return {
+    id: uid('we'),
+    exerciseId,
+    order,
+    repRange: ex.defaultRepRange,
+    restSec: ex.kind === 'compound' ? 150 : 90,
+    startWeightKg: undefined,
+    sets: Array.from({ length: 3 }, () => ({ type: 'working' as const, targetReps: ex.defaultRepRange[1] })),
+  };
+}
+
+export function WorkoutNew() {
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const editId = params.get('id');
+  const existing = useStore((s) => s.templates.find((t) => t.id === editId));
+  const saveTemplate = useStore((s) => s.saveTemplate);
+
+  const [name, setName] = useState(existing?.name ?? '');
+  const [focus, setFocus] = useState(existing?.focus ?? '');
+  const [exercises, setExercises] = useState<WorkoutExercise[]>(
+    existing ? [...existing.exercises].sort((a, b) => a.order - b.order) : [],
+  );
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [muscleFilter, setMuscleFilter] = useState<MuscleGroup | 'all'>('all');
+
+  const filtered = useMemo(
+    () => EXERCISES.filter((e) => muscleFilter === 'all' || e.primaryMuscle === muscleFilter),
+    [muscleFilter],
+  );
+
+  const patch = (id: string, fn: (we: WorkoutExercise) => WorkoutExercise) =>
+    setExercises((list) => list.map((we) => (we.id === id ? fn(we) : we)));
+
+  const move = (index: number, dir: -1 | 1) => {
+    setExercises((list) => {
+      const next = [...list];
+      const target = index + dir;
+      if (target < 0 || target >= next.length) return list;
+      [next[index], next[target]] = [next[target]!, next[index]!];
+      return next.map((we, i) => ({ ...we, order: i }));
+    });
+  };
+
+  const canSave = name.trim().length > 0 && exercises.length > 0;
+
+  const save = () => {
+    if (!canSave) return;
+    const template: WorkoutTemplate = {
+      id: existing?.id ?? uid('tpl'),
+      name: name.trim(),
+      focus: focus.trim() || 'Custom session',
+      split: existing?.split ?? 'custom',
+      estimatedMinutes: Math.max(20, exercises.length * 11),
+      exercises: exercises.map((we, i) => ({ ...we, order: i })),
+      createdAt: existing?.createdAt ?? now(),
+      updatedAt: now(),
+    };
+    saveTemplate(template);
+    navigate(`/workouts/${template.id}`, { replace: true });
+  };
+
+  return (
+    <div className="flex flex-col gap-4 pb-28">
+      <ScreenHeader title={existing ? 'Edit workout' : 'New workout'} back />
+
+      <div className="card flex flex-col gap-3 p-4">
+        <label className="flex flex-col gap-1">
+          <span className="label-tiny">Name</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Push A"
+            className="h-11 rounded-xl border border-line bg-surface-2 px-3 text-content outline-none focus:border-accent"
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="label-tiny">Focus</span>
+          <input
+            value={focus}
+            onChange={(e) => setFocus(e.target.value)}
+            placeholder="e.g. Chest · Shoulders · Triceps"
+            className="h-11 rounded-xl border border-line bg-surface-2 px-3 text-content outline-none focus:border-accent"
+          />
+        </label>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        {exercises.map((we, i) => {
+          const ex = requireExercise(we.exerciseId);
+          return (
+            <div key={we.id} className="card p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-content">{ex.name}</p>
+                  <p className="text-xs text-content-muted">{ex.primaryMuscle}</p>
+                </div>
+                <div className="flex shrink-0 items-center">
+                  <button aria-label="Move up" onClick={() => move(i, -1)} className="flex h-9 w-9 items-center justify-center rounded-lg text-content-faint hover:text-content disabled:opacity-30" disabled={i === 0}>
+                    <ArrowUp size={16} />
+                  </button>
+                  <button aria-label="Move down" onClick={() => move(i, 1)} className="flex h-9 w-9 items-center justify-center rounded-lg text-content-faint hover:text-content disabled:opacity-30" disabled={i === exercises.length - 1}>
+                    <ArrowDown size={16} />
+                  </button>
+                  <button aria-label="Remove" onClick={() => setExercises((l) => l.filter((x) => x.id !== we.id))} className="flex h-9 w-9 items-center justify-center rounded-lg text-danger/70 hover:text-danger">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <Field label="Sets">
+                  <Stepper value={we.sets.length} min={1} max={8} onChange={(n) =>
+                    patch(we.id, (w) => ({
+                      ...w,
+                      sets: Array.from({ length: n }, (_, k) => w.sets[k] ?? { type: 'working', targetReps: w.repRange[1] }),
+                    }))
+                  } />
+                </Field>
+                <Field label="Rep low">
+                  <Stepper value={we.repRange[0]} min={1} max={we.repRange[1]} onChange={(n) => patch(we.id, (w) => ({ ...w, repRange: [n, Math.max(n, w.repRange[1])] }))} />
+                </Field>
+                <Field label="Rep high">
+                  <Stepper value={we.repRange[1]} min={we.repRange[0]} max={30} onChange={(n) => patch(we.id, (w) => ({ ...w, repRange: [Math.min(w.repRange[0], n), n] }))} />
+                </Field>
+              </div>
+              <div className="mt-2 flex items-center justify-between text-xs text-content-faint">
+                <span>Rest</span>
+                <Stepper value={we.restSec} min={30} max={300} step={15} suffix="s" onChange={(n) => patch(we.id, (w) => ({ ...w, restSec: n }))} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <Button variant="secondary" fullWidth onClick={() => setPickerOpen(true)}>
+        <Plus size={18} /> Add exercise
+      </Button>
+
+      <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md border-t border-line/60 bg-base/90 px-4 py-3 backdrop-blur-md safe-bottom">
+        <Button size="lg" fullWidth disabled={!canSave} onClick={save}>
+          <Check size={18} /> {existing ? 'Save changes' : 'Create workout'}
+        </Button>
+      </div>
+
+      <Sheet open={pickerOpen} onClose={() => setPickerOpen(false)} title="Add exercise">
+        <div className="no-scrollbar -mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1">
+          <FilterChip active={muscleFilter === 'all'} onClick={() => setMuscleFilter('all')}>All</FilterChip>
+          {MUSCLES.map((m) => (
+            <FilterChip key={m} active={muscleFilter === m} onClick={() => setMuscleFilter(m)}>{m}</FilterChip>
+          ))}
+        </div>
+        <div className="max-h-[50vh] overflow-y-auto">
+          <ul className="flex flex-col gap-1.5">
+            {filtered.map((ex) => (
+              <li key={ex.id}>
+                <button
+                  onClick={() => {
+                    setExercises((list) => [...list, blankExercise(ex.id, list.length)]);
+                    setPickerOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-xl border border-line bg-surface-2 px-3 py-2.5 text-left hover:border-line-strong"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-content">{ex.name}</p>
+                    <p className="text-xs text-content-faint">{ex.primaryMuscle} · {ex.equipment}</p>
+                  </div>
+                  <Chip tone="muted">{formatRepRange(ex.defaultRepRange)}</Chip>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Sheet>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center gap-1 rounded-xl bg-surface-2 py-2">
+      <span className="label-tiny">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function Stepper({
+  value,
+  onChange,
+  min = 0,
+  max = 99,
+  step = 1,
+  suffix,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  suffix?: string;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <button aria-label="decrease" onClick={() => onChange(Math.max(min, value - step))} className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-3 text-content-muted hover:text-content">−</button>
+      <span className="tnum w-12 text-center text-sm font-semibold text-content">{value}{suffix}</span>
+      <button aria-label="increase" onClick={() => onChange(Math.min(max, value + step))} className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-3 text-content-muted hover:text-content">+</button>
+    </div>
+  );
+}
+
+function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium capitalize ${active ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface text-content-muted'}`}
+    >
+      {children}
+    </button>
+  );
+}
