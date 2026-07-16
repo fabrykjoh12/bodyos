@@ -35,7 +35,7 @@ export function WorkoutComplete() {
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-4 pb-8 safe-top">
       <div className="flex flex-col items-center py-8 text-center animate-pop-in">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-white shadow-accent-glow">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-ink shadow-accent-glow">
           <Sparkles size={30} />
         </span>
         <h1 className="mt-4 text-2xl font-bold text-content">Workout complete</h1>

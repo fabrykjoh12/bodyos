@@ -1,4 +1,5 @@
-import type { WorkoutSession } from '@/types';
+import type { MuscleGroup, WorkoutSession } from '@/types';
+import { getExercise } from '@/data/exercises';
 import { bestE1RM, round1, setVolume } from './volume';
 import { shortDate } from './date';
 
@@ -40,6 +41,7 @@ export interface ExerciseTrend {
   latest: number;
   first: number;
   deltaKg: number;
+  deltaPct: number;
   points: number;
 }
 
@@ -53,7 +55,14 @@ export function strengthTrends(sessions: WorkoutSession[]): ExerciseTrend[] {
     if (series.length < 2) continue;
     const first = series[0]!.value;
     const latest = series[series.length - 1]!.value;
-    trends.push({ exerciseId: id, latest, first, deltaKg: round1(latest - first), points: series.length });
+    trends.push({
+      exerciseId: id,
+      latest,
+      first,
+      deltaKg: round1(latest - first),
+      deltaPct: first > 0 ? Math.round(((latest - first) / first) * 100) : 0,
+      points: series.length,
+    });
   }
   return trends.sort((a, b) => b.deltaKg - a.deltaKg);
 }
@@ -72,17 +81,78 @@ export function weeklyVolume(sessions: WorkoutSession[], weeks = 6): VolumePoint
     const ageDays = (nowMs - new Date(s.startedAt).getTime()) / 86_400_000;
     const week = Math.floor(ageDays / 7);
     if (week >= weeks) continue;
-    const vol = s.exercises.reduce(
-      (t, e) => t + e.sets.filter((x) => x.completed && !x.isWarmup).reduce((v, x) => v + setVolume(x.weightKg, x.reps), 0),
-      0,
-    );
-    buckets.set(week, (buckets.get(week) ?? 0) + vol);
+    buckets.set(week, (buckets.get(week) ?? 0) + volumeOf(s));
   }
   const out: VolumePoint[] = [];
   for (let w = weeks - 1; w >= 0; w -= 1) {
     out.push({ label: w === 0 ? 'This wk' : `-${w}w`, volume: Math.round(buckets.get(w) ?? 0) });
   }
   return out;
+}
+
+export interface DayVolume {
+  day: string;
+  volume: number;
+}
+
+/** Volume for each of the last 7 calendar days (oldest→newest). */
+export function last7DaysVolume(sessions: WorkoutSession[]): DayVolume[] {
+  const letters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const byDay = new Map<number, number>();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (const s of sessions) {
+    if (s.status !== 'completed') continue;
+    const d = new Date(s.startedAt);
+    d.setHours(0, 0, 0, 0);
+    const ageDays = Math.round((today.getTime() - d.getTime()) / 86_400_000);
+    if (ageDays < 0 || ageDays > 6) continue;
+    byDay.set(ageDays, (byDay.get(ageDays) ?? 0) + volumeOf(s));
+  }
+  const out: DayVolume[] = [];
+  for (let i = 6; i >= 0; i -= 1) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    out.push({ day: letters[date.getDay()]!, volume: Math.round(byDay.get(i) ?? 0) });
+  }
+  return out;
+}
+
+export interface MuscleShare {
+  muscle: MuscleGroup;
+  sets: number;
+  pct: number; // share of max group (0..100), for bar widths
+}
+
+/** Working-set count per primary muscle group over the last `days` days. */
+export function muscleBalance(sessions: WorkoutSession[], days = 7): MuscleShare[] {
+  const counts = new Map<MuscleGroup, number>();
+  const nowMs = Date.now();
+  for (const s of sessions) {
+    if (s.status !== 'completed') continue;
+    const ageDays = (nowMs - new Date(s.startedAt).getTime()) / 86_400_000;
+    if (ageDays > days) continue;
+    for (const ex of s.exercises) {
+      const muscle = getExercise(ex.exerciseId)?.primaryMuscle;
+      if (!muscle) continue;
+      const sets = ex.sets.filter((x) => x.completed && !x.isWarmup).length;
+      if (sets > 0) counts.set(muscle, (counts.get(muscle) ?? 0) + sets);
+    }
+  }
+  const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  const max = entries[0]?.[1] ?? 1;
+  return entries.slice(0, 6).map(([muscle, sets]) => ({
+    muscle,
+    sets,
+    pct: Math.round((sets / max) * 100),
+  }));
+}
+
+function volumeOf(s: WorkoutSession): number {
+  return s.exercises.reduce(
+    (t, e) => t + e.sets.filter((x) => x.completed && !x.isWarmup).reduce((v, x) => v + setVolume(x.weightKg, x.reps), 0),
+    0,
+  );
 }
 
 function completedOldestFirst(sessions: WorkoutSession[]): WorkoutSession[] {

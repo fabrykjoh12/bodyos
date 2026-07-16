@@ -31,7 +31,7 @@ export function SetGrid({ exercise, unit, activeSetIndex }: SetGridProps) {
             <span
               className={[
                 'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold',
-                set.completed ? 'bg-success text-base' : isActive ? 'bg-accent text-white' : 'bg-surface-3 text-content-faint',
+                set.completed ? 'bg-success text-ink' : isActive ? 'bg-accent text-ink' : 'bg-surface-3 text-content-faint',
               ].join(' ')}
             >
               {set.completed ? <Check size={13} strokeWidth={3} /> : set.setNumber}

@@ -30,7 +30,7 @@ export function ExerciseHistory({ exercise, unit }: { exercise: ExerciseSession;
         <History size={16} className="text-content-faint" />
         <div className="min-w-0 flex-1">
           <p className="label-tiny">Last time · {relativeDay(prev.date)}</p>
-          <p className="tnum truncate text-sm font-semibold text-content">
+          <p className="tnum truncate text-sm font-semibold text-ice">
             {formatWeight(prev.topWeightKg, unit)} × {summary}
           </p>
         </div>

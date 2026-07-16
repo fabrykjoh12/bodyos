@@ -1,0 +1,14 @@
+{
+  "name": "BodyOS — training tracker",
+  "short_name": "BodyOS",
+  "description": "The fastest way to track your sets and know what to beat next.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1013",
+  "theme_color": "#0E1013",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

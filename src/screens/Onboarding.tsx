@@ -47,7 +47,7 @@ export function Onboarding() {
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-5 pb-8 safe-top">
       <div className="flex items-center gap-2 py-6">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-white">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-ink">
           <Dumbbell size={18} />
         </span>
         <span className="text-lg font-bold text-content">BodyOS</span>
@@ -165,7 +165,7 @@ function Option({ active, onClick, title, desc }: { active: boolean; onClick: ()
         <p className={`font-semibold ${active ? 'text-accent' : 'text-content'}`}>{title}</p>
         {desc && <p className="text-xs text-content-muted">{desc}</p>}
       </div>
-      <span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${active ? 'border-accent bg-accent text-white' : 'border-line'}`}>
+      <span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${active ? 'border-accent bg-accent text-ink' : 'border-line'}`}>
         {active && <Check size={14} strokeWidth={3} />}
       </span>
     </button>

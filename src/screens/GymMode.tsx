@@ -131,7 +131,7 @@ export function GymMode() {
           />
         ) : (
           <section className="card-2 flex flex-col items-center gap-2 p-6 text-center animate-pop-in">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-base">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-ink">
               <Check size={26} strokeWidth={3} />
             </span>
             <h2 className="text-lg font-bold text-content">{meta.name} complete</h2>

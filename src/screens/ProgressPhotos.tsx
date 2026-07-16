@@ -147,7 +147,7 @@ export function ProgressPhotos() {
                     <img src={photo.dataUrl} alt={`${photo.pose} ${photo.weekLabel}`} className="h-full w-full object-cover" />
                   </button>
                   {compareMode && selIndex >= 0 && (
-                    <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+                    <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-ink">
                       {selIndex + 1}
                     </span>
                   )}

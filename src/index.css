@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import '@fontsource-variable/archivo';
+@import '@fontsource-variable/geist-mono';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -20,12 +21,12 @@
 
   body {
     @apply bg-base text-content font-sans antialiased;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
     overscroll-behavior-y: none;
   }
 
-  /* Numeric values should align cleanly */
+  /* Every numeral in the app is monospace — the core "training tool" signal. */
   .tnum {
+    font-family: 'Geist Mono Variable', ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
@@ -41,14 +42,14 @@
   }
 
   .card-2 {
-    @apply rounded-2xl border border-line bg-surface-2;
+    @apply rounded-2xl border border-line bg-surface;
   }
 
+  /* Uppercase tracked eyebrow label — used on every card. */
   .label-tiny {
-    @apply text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-content-faint;
+    @apply text-[0.69rem] font-bold uppercase tracking-[0.08em] text-content-faint;
   }
 
-  /* Hide scrollbar but keep scrolling */
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -57,7 +58,6 @@
     display: none;
   }
 
-  /* Respect device safe areas (notch / home indicator) */
   .safe-top {
     padding-top: max(env(safe-area-inset-top), 0.5rem);
   }
