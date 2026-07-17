@@ -10,6 +10,7 @@ import { diffInDays } from '@/lib/date';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Stat } from '@/components/ui/Stat';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { ConsistencyGrid } from '@/components/progress/ConsistencyGrid';
 
 export function Progress() {
   const navigate = useNavigate();
@@ -50,6 +51,11 @@ export function Progress() {
         <Stat label="4-week volume" value={formatVolume(last4wVolume, unit)} sub="tonnage" />
         <Stat label="Consistency" value={`${doneLast4w}/${plannedLast4w}`} sub="last 4 weeks" />
       </div>
+
+      <section className="card p-4">
+        <h3 className="label-tiny mb-3">Training consistency</h3>
+        <ConsistencyGrid sessions={sessions} />
+      </section>
 
       {/* Plain-language summary */}
       {trends[0] && trends[0].deltaKg > 0 && (

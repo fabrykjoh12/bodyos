@@ -64,6 +64,8 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
 
 - ✅ Screen transitions (subtle per-route `page-in` enter) + tap-scale press feedback on cards
 - ✅ Refined empty states (inviting accent-tinted icon, fade-in) + onboarding steps animate in
+- ✅ Training-consistency calendar on Progress (`ConsistencyGrid`): contribution-style grid of
+  workout days over the last 16 weeks, cells shaded by set count
 - ⬜ Haptics coverage; safe-area audit on a real device
 - 🟡 Store-level flow tests exist (`gymFlow.test.ts`); component/E2E for Gym Mode still todo
 
