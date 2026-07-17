@@ -31,6 +31,7 @@ export function GymMode() {
   const nextExercise = useStore((s) => s.nextExercise);
   const goToExercise = useStore((s) => s.goToExercise);
   const swapExercise = useStore((s) => s.swapExercise);
+  const exerciseNotes = useStore((s) => s.exerciseNotes);
   const setDifficulty = useStore((s) => s.setExerciseDifficulty);
   const abandonSession = useStore((s) => s.abandonSession);
   const completeSession = useStore((s) => s.completeSession);
@@ -176,6 +177,12 @@ export function GymMode() {
         {exercise.notes && (
           <p className="rounded-xl border border-line bg-surface px-3.5 py-2 text-sm text-content-muted">
             {exercise.notes}
+          </p>
+        )}
+
+        {exerciseNotes[exercise.exerciseId] && (
+          <p className="rounded-xl border border-accent/20 bg-accent-soft/40 px-3.5 py-2 text-sm text-content-muted">
+            <span className="font-semibold text-accent">Note</span> · {exerciseNotes[exercise.exerciseId]}
           </p>
         )}
 

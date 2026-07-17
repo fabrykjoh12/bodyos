@@ -315,6 +315,10 @@ export function createSeedData(): AppData {
       { id: uid('meas'), takenAt: daysAgoISO(42), bodyWeightKg: 78.5, waistCm: 82, chestCm: 104, armCm: 38.5 },
     ],
     weeklyPlan,
+    exerciseNotes: {
+      squat: 'Brace before unracking. Belt on for top sets.',
+      'bench-press': 'Pinky on the ring. Leg drive.',
+    },
     streakDates,
     nextPhotoDue: daysAgoISO(-7), // due in a week
     restTimer: { endsAt: null, durationSec: 120, exerciseId: null },

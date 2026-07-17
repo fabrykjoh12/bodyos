@@ -74,6 +74,8 @@ interface StoreState extends AppData {
   deleteTemplate: (id: string) => void;
   duplicateTemplate: (id: string) => string;
   setPlanForDay: (weekday: number, templateId: string | null) => void;
+  /** Set (or clear, with an empty string) the durable note for an exercise. */
+  setExerciseNote: (exerciseId: string, note: string) => void;
 
   // --- user & settings
   completeOnboarding: (partial: Partial<User>) => void;
@@ -106,6 +108,7 @@ function extractAppData(state: StoreState): AppData {
     photos: state.photos,
     measurements: state.measurements,
     weeklyPlan: state.weeklyPlan,
+    exerciseNotes: state.exerciseNotes,
     streakDates: state.streakDates,
     nextPhotoDue: state.nextPhotoDue,
     restTimer: state.restTimer,
@@ -572,6 +575,17 @@ export const useStore = create<StoreState>((set, get) => ({
   setPlanForDay: (weekday, templateId) =>
     set((s) => {
       const next = { ...s, weeklyPlan: { ...s.weeklyPlan, [weekday]: templateId } };
+      persist(next);
+      return next;
+    }),
+
+  setExerciseNote: (exerciseId, note) =>
+    set((s) => {
+      const trimmed = note.trim();
+      const exerciseNotes = { ...s.exerciseNotes };
+      if (trimmed) exerciseNotes[exerciseId] = trimmed;
+      else delete exerciseNotes[exerciseId];
+      const next = { ...s, exerciseNotes };
       persist(next);
       return next;
     }),

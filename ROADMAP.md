@@ -93,6 +93,8 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 - ✅ **Swap exercise mid-workout** — in Gym Mode, tap the swap icon on an unstarted exercise to
   replace it with a substitution (or a same-muscle alternative); sets are re-prefilled from the new
   exercise's history via `prefillFor` (`swapExercise` action). Hidden once a set is logged.
+- ✅ **Per-exercise notes** — a durable note-to-self on each exercise, editable on the detail
+  screen and shown on the active-set card in Gym Mode (`exerciseNotes` in AppData, syncs).
 - ⬜ Supersets / circuits
 - ✅ **Optional RPE/RIR entry** — when "Show RIR / RPE" is on (Settings), each working set gets a
   0–4+ reps-in-reserve picker in Gym Mode (with RPE equivalent); RIR is shown in the set ledger and

@@ -290,6 +290,8 @@ export interface AppData {
   measurements: BodyMeasurement[];
   /** Schedule: which template id is planned for a given weekday (0=Sun). */
   weeklyPlan: Record<number, ID | null>;
+  /** Durable per-exercise note-to-self, keyed by exercise id. */
+  exerciseNotes: Record<ID, string>;
   streakDates: ISODate[]; // dates workouts were completed
   nextPhotoDue?: ISODate;
   restTimer: RestTimerState;
