@@ -61,7 +61,7 @@ export function Onboarding() {
         ))}
       </div>
 
-      <div className="flex-1">
+      <div key={step} className="flex-1">
         {step === 0 && (
           <Section title="What's your main goal?" subtitle="We tune progression and defaults around it.">
             {GOALS.map((g) => (
