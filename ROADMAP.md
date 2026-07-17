@@ -107,6 +107,10 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
   client is lazy-loaded to keep it out of the initial bundle.
 - ✅ **Cost-free isolation** — lives in the existing shared Supabase project (Pro org, no new
   ~$10/mo project) in its own `bodyos_app_state` table; never touches the co-hosted app's tables.
+- ✅ **Discoverable sign-in** — the Profile screen now shows an account card: an inviting "Back up &
+  sync your training" prompt when signed out, or the account email + live sync status when signed in
+  (both open Settings → Account & Sync). Hidden when cloud sync isn't compiled in. Sign-in is no
+  longer buried in Settings. (`Profile.test.tsx` covers all three states.)
 - ⬜ **Progress-photo sync** — photos are device-local by design (privacy + `jsonb` size), so they
   are excluded from the synced blob. Needs a private Storage bucket + upload flow to sync.
 - ⬜ **OAuth (Google)** sign-in — needs provider + redirect-URL config in the Supabase dashboard.
