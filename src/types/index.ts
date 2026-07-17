@@ -258,6 +258,8 @@ export interface UserSettings {
   showRir: boolean;
   hapticFeedback: boolean;
   reducedMotion: boolean;
+  /** Play a chime when the rest timer completes. Undefined => on. */
+  restAlertSound?: boolean;
 }
 
 export interface User {

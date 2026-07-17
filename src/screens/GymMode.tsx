@@ -6,6 +6,7 @@ import { EXERCISES, requireExercise } from '@/data/exercises';
 import { formatRepRange, formatWeight, lbToKg } from '@/lib/format';
 import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { haptics } from '@/lib/haptics';
+import { unlockAudio } from '@/lib/sound';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Sheet } from '@/components/ui/Sheet';
@@ -22,6 +23,7 @@ export function GymMode() {
   const session = useStore((s) => s.activeSession);
   const unit = useStore((s) => s.user.settings.unit);
   const showRir = useStore((s) => s.user.settings.showRir);
+  const hapticFeedback = useStore((s) => s.user.settings.hapticFeedback);
   const setWeight = useStore((s) => s.setWeight);
   const setReps = useStore((s) => s.setReps);
   const setRir = useStore((s) => s.setRir);
@@ -92,7 +94,9 @@ export function GymMode() {
     : 'All sets logged';
 
   const handleLog = () => {
-    haptics.success();
+    // Prime audio from this user gesture so the later rest-end chime can play.
+    unlockAudio();
+    if (hapticFeedback) haptics.success();
     logActiveSet();
   };
 

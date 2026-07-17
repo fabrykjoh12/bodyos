@@ -283,6 +283,7 @@ export function createSeedData(): AppData {
       showRir: false,
       hapticFeedback: true,
       reducedMotion: false,
+      restAlertSound: true,
     },
   };
 

@@ -89,6 +89,8 @@ interface StoreState extends AppData {
   // --- sync
   /** Replace the whole AppData slice (used when cloud sync pulls remote). */
   replaceAll: (data: AppData) => void;
+  /** Snapshot the persisted AppData slice (for a JSON backup/export). */
+  exportData: () => AppData;
 
   // --- progress
   addPhoto: (photo: ProgressPhoto) => void;
@@ -708,6 +710,8 @@ export const useStore = create<StoreState>((set, get) => ({
       persist(next);
       return next;
     }),
+
+  exportData: () => extractAppData(get()),
 
   addPhoto: (photo) =>
     set((s) => {
