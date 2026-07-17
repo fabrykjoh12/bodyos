@@ -19,7 +19,7 @@ import { round1 } from '@/lib/volume';
 import { lbToKg } from '@/lib/format';
 import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { recommendFromExerciseSession, rirToDifficulty } from '@/lib/progression';
-import { buildActiveSession, countPriorStalls } from '@/lib/history';
+import { buildActiveSession, countPriorStalls, prefillFor } from '@/lib/history';
 import { detectPersonalRecords } from '@/lib/prstats';
 import { loadOrSeed, repository } from './repository';
 import {
@@ -61,6 +61,8 @@ interface StoreState extends AppData {
   setExerciseDifficulty: (exerciseIndex: number, difficulty: Difficulty) => void;
   goToExercise: (index: number) => void;
   nextExercise: () => void;
+  /** Swap a not-yet-started exercise for another, re-prefilled from its history. */
+  swapExercise: (exerciseIndex: number, newExerciseId: string) => void;
 
   // --- rest timer
   startRest: (durationSec: number, exerciseId: string) => void;
@@ -454,6 +456,43 @@ export const useStore = create<StoreState>((set, get) => ({
         activeSession: { ...s.activeSession, exercises, currentExerciseIndex: nextIdx },
         restTimer: { endsAt: null, durationSec: s.restTimer.durationSec, exerciseId: null },
       };
+      persist(next);
+      return next;
+    }),
+
+  swapExercise: (exerciseIndex, newExerciseId) =>
+    set((s) => {
+      if (!s.activeSession) return s;
+      const exercises = s.activeSession.exercises.map((ex, i) => {
+        if (i !== exerciseIndex) return ex;
+        // Only swap an exercise that hasn't been started (nothing logged yet).
+        if (ex.sets.some((st) => st.completed)) return ex;
+        if (ex.exerciseId === newExerciseId) return ex;
+        const newEx = requireExercise(newExerciseId);
+        const { weightKg, targetReps, previous } = prefillFor(
+          newExerciseId,
+          ex.repRange,
+          newEx.defaultIncrementKg,
+          undefined,
+          s.sessions,
+        );
+        const warmupReps = Math.max(Math.round((ex.repRange[0] + ex.repRange[1]) / 2), 8);
+        const sets: SetEntry[] = ex.sets.map((st) => ({
+          ...st,
+          exerciseId: newExerciseId,
+          weightKg: st.isWarmup ? round1(weightKg * 0.5) : weightKg,
+          reps: st.isWarmup ? warmupReps : targetReps,
+        }));
+        return {
+          ...ex,
+          exerciseId: newExerciseId,
+          incrementKg: newEx.defaultIncrementKg,
+          sets,
+          previous,
+          recommendation: undefined,
+        };
+      });
+      const next = { ...s, activeSession: { ...s.activeSession, exercises } };
       persist(next);
       return next;
     }),

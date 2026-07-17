@@ -1,3 +1,4 @@
+import { Repeat2 } from 'lucide-react';
 import type { Equipment, Unit } from '@/types';
 import { NumericStepper } from '@/components/ui/NumericStepper';
 import { Chip } from '@/components/ui/Chip';
@@ -18,6 +19,8 @@ interface ActiveSetCardProps {
   objective: string;
   showRir: boolean;
   rir?: number;
+  /** When provided, shows a swap button (only while the exercise is unstarted). */
+  onSwap?: () => void;
   onWeightChange: (v: number) => void;
   onRepsChange: (v: number) => void;
   onRirChange: (rir: number | undefined) => void;
@@ -41,6 +44,7 @@ export function ActiveSetCard({
   objective,
   showRir,
   rir,
+  onSwap,
   onWeightChange,
   onRepsChange,
   onRirChange,
@@ -50,7 +54,18 @@ export function ActiveSetCard({
     <section className="card-2 relative overflow-hidden p-5" aria-label="Active set">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="truncate text-xl font-bold text-content">{exerciseName}</h2>
+          <div className="flex items-center gap-1.5">
+            <h2 className="truncate text-xl font-bold text-content">{exerciseName}</h2>
+            {onSwap && (
+              <button
+                onClick={onSwap}
+                aria-label="Swap exercise"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-content-faint hover:bg-surface-2 hover:text-content"
+              >
+                <Repeat2 size={16} />
+              </button>
+            )}
+          </div>
           <p className="mt-0.5 text-sm text-content-muted">
             Set <span className="font-semibold text-content">{setNumber}</span> of {totalSets}
           </p>

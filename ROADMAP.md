@@ -45,20 +45,16 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   dev (`devOptions.enabled: false`); the hand-authored `public/manifest.webmanifest` is kept
   (`manifest: false`).
 
-## 🟡 Exercises & photos
+## ✅ Exercises & visuals
 
-- ✅ Library expanded to **~55 exercises** across all muscle groups (instructions, equipment,
-  patterns, substitutions)
-- ✅ `ExerciseThumb` with muscle-tinted fallback; thumbnails in library + hero image on detail
-- ✅ Higgsfield 3D-illustration photos for the **15 template exercises** (see CLAUDE.md pipeline)
-- ⬜ **Generate photos for the remaining ~40 exercises** (~80 credits, ~5–10 min). Same style
-  prompt + pipeline. Remaining ids:
-  `db-bench-press, machine-chest-press, db-shoulder-press, pull-up, goblet-squat, leg-extension,
-  overhead-extension, plank, hanging-leg-raise, dips, cable-fly, pec-deck, push-up, deadlift,
-  chin-up, t-bar-row, face-pull, straight-arm-pulldown, arnold-press, rear-delt-fly, upright-row,
-  front-raise, front-squat, hack-squat, bulgarian-split-squat, walking-lunge, hip-thrust,
-  good-morning, seated-calf-raise, hammer-curl, preacher-curl, skullcrusher, close-grip-bench,
-  reverse-curl, cable-crunch, russian-twist, ab-wheel`
+- ✅ Library expanded to **66 exercises** across all muscle groups (instructions, coaching cues,
+  equipment, patterns, substitutions)
+- ✅ **Crafted glyph tiles** (`ExerciseGlyph` + `ExerciseThumb`): muscle-tinted gradient tiles with
+  per-equipment line glyphs, consistent across the whole library — replaced the blobby AI photos.
+- ✅ Library search + muscle/equipment filters + live result count; detail screen has 1RM chart,
+  last-performed, how-to, **form cues**, and substitutions.
+- ⬜ **Optional curated photos** — can be layered back in via `ExerciseThumb`'s `PHOTO_IDS` set;
+  regenerate a better set locally per `docs/exercise-photos.md` (cloud sandbox blocks the CDN).
 
 ## ⬜ Phase 3 — Polish
 
@@ -94,6 +90,9 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
   Pure logic in `lib/plates.ts` (`computePlates`), 7 tests.
 - ✅ **Warm-up set generator** — one tap inserts a ramping warm-up (empty bar → ~50/70/85 %) before
   the working sets on a barbell exercise (`generateWarmups` + `addWarmupSets` store action), 4 tests.
+- ✅ **Swap exercise mid-workout** — in Gym Mode, tap the swap icon on an unstarted exercise to
+  replace it with a substitution (or a same-muscle alternative); sets are re-prefilled from the new
+  exercise's history via `prefillFor` (`swapExercise` action). Hidden once a set is logged.
 - ⬜ Supersets / circuits
 - ✅ **Optional RPE/RIR entry** — when "Show RIR / RPE" is on (Settings), each working set gets a
   0–4+ reps-in-reserve picker in Gym Mode (with RPE equivalent); RIR is shown in the set ledger and
@@ -101,7 +100,10 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 - ✅ **Body-measurement tracking UI** — `/progress/measurements`: log body weight + waist/chest/arm,
   latest-snapshot tiles with deltas, dated history with delete, unit-aware (kg/cm or lb/in). Seeded
   with a demo lean-bulk trend; `deleteMeasurement` action added.
-- ⬜ Week planning / deload scheduling
+- 🟡 Week planning / deload scheduling
+  - ✅ **Week planning** — the Workouts weekly strip is now editable: tap any day to assign a
+    template or set a rest day (wires up the existing `setPlanForDay` + `weeklyPlan`).
+  - ⬜ Deload scheduling — needs a deload-week data model.
 - ⬜ Landing/marketing page
 
 ---

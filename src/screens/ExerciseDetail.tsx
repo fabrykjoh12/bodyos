@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Lightbulb } from 'lucide-react';
 import { getExercise, exerciseName } from '@/data/exercises';
 import { useStore } from '@/store/useStore';
 import { e1rmSeries } from '@/lib/analytics';
@@ -82,6 +83,20 @@ export function ExerciseDetail() {
           ))}
         </ol>
       </div>
+
+      {ex.tips && ex.tips.length > 0 && (
+        <div className="card border-accent/20 p-4">
+          <p className="label-tiny mb-2">Form cues</p>
+          <ul className="space-y-2">
+            {ex.tips.map((tip, i) => (
+              <li key={i} className="flex gap-2.5 text-sm text-content-muted">
+                <Lightbulb size={15} className="mt-0.5 shrink-0 text-accent" />
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {ex.substitutions.length > 0 && (
         <div className="card p-4">

@@ -135,7 +135,18 @@ Tokens live in `tailwind.config.js`; class names are stable, values are the mock
   immediate retry of a denied write passes). Writes to `.claude/settings*.json` bypass it.
 - End commit messages with `Co-Authored-By: Claude <noreply@anthropic.com>`.
 
-## Exercise photos (Higgsfield)
+## Exercise visuals
+
+The library uses **crafted glyph tiles** by default: `components/exercise/ExerciseGlyph.tsx`
+(minimal per-equipment line glyphs) inside `ExerciseThumb.tsx` (muscle-tinted dark gradient tile).
+Consistent across all 66 exercises, no image files required. The earlier generated 3D-mannequin
+photos were blobby/inconsistent and were removed.
+
+**Optional curated photos** can be layered back in — `ExerciseThumb` prefers a photo for any id in
+its `PHOTO_IDS` set (empty by default). See `docs/exercise-photos.md` to regenerate a better set
+locally (the cloud sandbox blocks the Higgsfield CDN, so the download step must run on your machine).
+
+### Legacy photo pipeline (Higgsfield)
 
 Exercise images are neutral 3D-figure illustrations generated via the **Higgsfield MCP**
 (`generate_image`, model `nano_banana_pro`, ~2 credits each). Style prompt template:
