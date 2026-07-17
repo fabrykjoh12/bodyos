@@ -1,19 +1,30 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Plus } from 'lucide-react';
+import { Check, Dumbbell, Moon, Plus } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { weekdayName, todayWeekday } from '@/lib/date';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Sheet } from '@/components/ui/Sheet';
 
 export function Workouts() {
   const navigate = useNavigate();
   const allTemplates = useStore((s) => s.templates);
   const templates = useMemo(() => allTemplates.filter((t) => !t.archived), [allTemplates]);
   const weeklyPlan = useStore((s) => s.weeklyPlan);
+  const setPlanForDay = useStore((s) => s.setPlanForDay);
   const today = todayWeekday();
+
+  // Which weekday the schedule picker is open for (null = closed).
+  const [editDay, setEditDay] = useState<number | null>(null);
+  const editPlanId = editDay !== null ? (weeklyPlan[editDay] ?? null) : null;
+
+  function assign(templateId: string | null) {
+    if (editDay !== null) setPlanForDay(editDay, templateId);
+    setEditDay(null);
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -27,30 +38,38 @@ export function Workouts() {
         }
       />
 
-      {/* Weekly plan strip */}
+      {/* Weekly plan strip — tap a day to schedule */}
       <section className="card p-4">
-        <h3 className="label-tiny mb-3">This week</h3>
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="label-tiny">This week</h3>
+          <span className="text-[0.65rem] text-content-faint">Tap a day to plan</span>
+        </div>
         <div className="grid grid-cols-7 gap-1">
           {Array.from({ length: 7 }, (_, day) => {
             const tplId = weeklyPlan[day];
             const tpl = tplId ? templates.find((t) => t.id === tplId) : null;
             const isToday = day === today;
             return (
-              <div key={day} className="flex flex-col items-center gap-1">
+              <button
+                key={day}
+                onClick={() => setEditDay(day)}
+                className="flex flex-col items-center gap-1"
+                aria-label={`Plan ${weekdayName(day)} — ${tpl?.name ?? 'Rest'}`}
+              >
                 <span className={`text-[0.6rem] font-medium ${isToday ? 'text-accent' : 'text-content-faint'}`}>
                   {weekdayName(day).slice(0, 1)}
                 </span>
                 <div
                   className={[
-                    'flex h-10 w-full items-center justify-center rounded-lg text-[0.6rem] font-bold',
-                    tpl ? 'bg-accent-soft text-accent' : 'bg-surface-2 text-content-faint',
+                    'flex h-10 w-full items-center justify-center rounded-lg px-0.5 text-center text-[0.6rem] font-bold transition-colors',
+                    tpl ? 'bg-accent-soft text-accent' : 'bg-surface-2 text-content-faint hover:bg-surface-3',
                     isToday ? 'ring-1 ring-accent' : '',
                   ].join(' ')}
                   title={tpl?.name ?? 'Rest'}
                 >
                   {tpl ? tpl.name.slice(0, 4) : '·'}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -83,6 +102,50 @@ export function Workouts() {
           ))}
         </div>
       )}
+
+      <Sheet
+        open={editDay !== null}
+        onClose={() => setEditDay(null)}
+        title={editDay !== null ? `Plan ${weekdayName(editDay)}` : ''}
+      >
+        <div className="flex flex-col gap-1.5">
+          {templates.map((tpl) => {
+            const selected = tpl.id === editPlanId;
+            return (
+              <button
+                key={tpl.id}
+                onClick={() => assign(tpl.id)}
+                className={[
+                  'flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors',
+                  selected ? 'border-accent bg-accent-soft' : 'border-line hover:bg-surface-2',
+                ].join(' ')}
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2 text-accent">
+                  <Dumbbell size={16} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-content">{tpl.name}</p>
+                  <p className="truncate text-xs text-content-muted">{tpl.focus}</p>
+                </div>
+                {selected && <Check size={18} className="text-accent" />}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => assign(null)}
+            className={[
+              'flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors',
+              editPlanId === null ? 'border-accent bg-accent-soft' : 'border-line hover:bg-surface-2',
+            ].join(' ')}
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2 text-content-muted">
+              <Moon size={16} />
+            </span>
+            <span className="flex-1 text-sm font-semibold text-content">Rest day</span>
+            {editPlanId === null && <Check size={18} className="text-accent" />}
+          </button>
+        </div>
+      </Sheet>
     </div>
   );
 }

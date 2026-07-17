@@ -101,7 +101,10 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 - ✅ **Body-measurement tracking UI** — `/progress/measurements`: log body weight + waist/chest/arm,
   latest-snapshot tiles with deltas, dated history with delete, unit-aware (kg/cm or lb/in). Seeded
   with a demo lean-bulk trend; `deleteMeasurement` action added.
-- ⬜ Week planning / deload scheduling
+- 🟡 Week planning / deload scheduling
+  - ✅ **Week planning** — the Workouts weekly strip is now editable: tap any day to assign a
+    template or set a rest day (wires up the existing `setPlanForDay` + `weeklyPlan`).
+  - ⬜ Deload scheduling — needs a deload-week data model.
 - ⬜ Landing/marketing page
 
 ---
