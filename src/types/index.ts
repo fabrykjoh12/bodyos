@@ -112,6 +112,8 @@ export interface WorkoutExercise {
   restSec: number;
   /** Working weight to start from, kg. Undefined => derive from history. */
   startWeightKg?: number;
+  /** Exercises sharing a group id are performed as a superset (alternating). */
+  supersetGroup?: string;
   notes?: string;
 }
 
@@ -154,6 +156,8 @@ export interface ExerciseSession {
   repRange: [number, number];
   restSec: number;
   incrementKg: number;
+  /** Superset group id copied from the template (alternating flow in Gym Mode). */
+  supersetGroup?: string;
   notes?: string;
   status: ExerciseSessionStatus;
   sets: SetEntry[];

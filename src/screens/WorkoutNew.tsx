@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowDown, ArrowUp, Check, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check, Link2, Plus, Trash2 } from 'lucide-react';
 import type { MuscleGroup, WorkoutExercise, WorkoutTemplate } from '@/types';
 import { EXERCISES, requireExercise } from '@/data/exercises';
 import { useStore } from '@/store/useStore';
@@ -49,6 +49,31 @@ export function WorkoutNew() {
 
   const patch = (id: string, fn: (we: WorkoutExercise) => WorkoutExercise) =>
     setExercises((list) => list.map((we) => (we.id === id ? fn(we) : we)));
+
+  const toggleSuperset = (index: number) => {
+    setExercises((list) => {
+      if (index <= 0) return list;
+      const next = [...list];
+      const cur = next[index]!;
+      const prev = next[index - 1]!;
+      const linked = !!cur.supersetGroup && cur.supersetGroup === prev.supersetGroup;
+      if (linked) {
+        const grp = cur.supersetGroup;
+        next[index] = { ...cur, supersetGroup: undefined };
+        // A group of one isn't a superset — dissolve it.
+        const members = next.filter((w) => w.supersetGroup === grp);
+        if (members.length === 1) {
+          const idx = next.findIndex((w) => w.supersetGroup === grp);
+          if (idx >= 0) next[idx] = { ...next[idx]!, supersetGroup: undefined };
+        }
+      } else {
+        const grp = prev.supersetGroup ?? uid('ss');
+        next[index - 1] = { ...prev, supersetGroup: grp };
+        next[index] = { ...cur, supersetGroup: grp };
+      }
+      return next;
+    });
+  };
 
   const move = (index: number, dir: -1 | 1) => {
     setExercises((list) => {
@@ -106,8 +131,17 @@ export function WorkoutNew() {
       <div className="flex flex-col gap-2">
         {exercises.map((we, i) => {
           const ex = requireExercise(we.exerciseId);
+          const linkedAbove = i > 0 && !!we.supersetGroup && we.supersetGroup === exercises[i - 1]!.supersetGroup;
           return (
-            <div key={we.id} className="card p-4">
+            <div key={we.id} className={`card p-4 ${linkedAbove ? 'border-accent/30' : ''}`}>
+              {i > 0 && (
+                <button
+                  onClick={() => toggleSuperset(i)}
+                  className={`mb-2 flex items-center gap-1.5 text-xs font-medium ${linkedAbove ? 'text-accent' : 'text-content-faint hover:text-content'}`}
+                >
+                  <Link2 size={13} /> {linkedAbove ? 'Supersetted with above' : 'Superset with above'}
+                </button>
+              )}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="font-semibold text-content">{ex.name}</p>

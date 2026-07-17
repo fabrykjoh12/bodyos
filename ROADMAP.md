@@ -95,7 +95,10 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
   exercise's history via `prefillFor` (`swapExercise` action). Hidden once a set is logged.
 - ✅ **Per-exercise notes** — a durable note-to-self on each exercise, editable on the detail
   screen and shown on the active-set card in Gym Mode (`exerciseNotes` in AppData, syncs).
-- ⬜ Supersets / circuits
+- ✅ **Supersets** — mark consecutive exercises as a superset in the editor ("Superset with
+  above"); Gym Mode then alternates set-by-set between them, resting only after each round.
+  Opt-in — ungrouped exercises behave exactly as before. (`supersetGroup` on the template +
+  session; the alternating logic lives in `logActiveSet`.)
 - ✅ **Optional RPE/RIR entry** — when "Show RIR / RPE" is on (Settings), each working set gets a
   0–4+ reps-in-reserve picker in Gym Mode (with RPE equivalent); RIR is shown in the set ledger and
   **feeds progression** by mapping to per-set difficulty (`rirToDifficulty`, in the tested engine).

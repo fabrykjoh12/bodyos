@@ -27,6 +27,8 @@ interface ExSpec {
   /** kg added per successful week, for seeded history. */
   weeklyGain: number;
   notes?: string;
+  /** Superset group id — exercises sharing one are alternated in Gym Mode. */
+  superset?: string;
 }
 
 function makeWorkoutExercise(spec: ExSpec, order: number): WorkoutExercise {
@@ -37,6 +39,7 @@ function makeWorkoutExercise(spec: ExSpec, order: number): WorkoutExercise {
     repRange: spec.repRange,
     restSec: spec.restSec,
     startWeightKg: spec.startWeightKg,
+    supersetGroup: spec.superset,
     notes: spec.notes,
     sets: Array.from({ length: spec.sets }, () => ({
       type: 'working' as const,
@@ -49,8 +52,8 @@ const PUSH: ExSpec[] = [
   { exerciseId: 'bench-press', sets: 3, repRange: [6, 10], restSec: 150, startWeightKg: 60, weeklyGain: 2.5 },
   { exerciseId: 'incline-db-press', sets: 3, repRange: [8, 12], restSec: 120, startWeightKg: 24, weeklyGain: 2, notes: 'Controlled stretch at the bottom.' },
   { exerciseId: 'overhead-press', sets: 3, repRange: [5, 8], restSec: 150, startWeightKg: 40, weeklyGain: 2.5 },
-  { exerciseId: 'lateral-raise', sets: 3, repRange: [12, 20], restSec: 75, startWeightKg: 9, weeklyGain: 0.5 },
-  { exerciseId: 'triceps-pushdown', sets: 3, repRange: [10, 15], restSec: 75, startWeightKg: 25, weeklyGain: 2.5 },
+  { exerciseId: 'lateral-raise', sets: 3, repRange: [12, 20], restSec: 75, startWeightKg: 9, weeklyGain: 0.5, superset: 'push-arms' },
+  { exerciseId: 'triceps-pushdown', sets: 3, repRange: [10, 15], restSec: 75, startWeightKg: 25, weeklyGain: 2.5, superset: 'push-arms' },
 ];
 
 const PULL: ExSpec[] = [

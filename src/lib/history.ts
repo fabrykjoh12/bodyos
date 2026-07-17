@@ -139,6 +139,7 @@ export function buildActiveSession(
         repRange: we.repRange,
         restSec: we.restSec,
         incrementKg: ex.defaultIncrementKg,
+        supersetGroup: we.supersetGroup,
         notes: we.notes,
         status: index === 0 ? 'active' : 'pending',
         sets,
