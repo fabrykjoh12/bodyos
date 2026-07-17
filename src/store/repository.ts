@@ -70,17 +70,11 @@ function safeStorage(): Storage | null {
   }
 }
 
-/** Forward-compatible migration hook. Currently only guards the version. */
-function migrate(data: AppData): AppData {
-  if (!data || typeof data !== 'object') return createSeedData();
-  if (data.version !== APP_DATA_VERSION) {
-    // Future migrations slot in here. For now, unknown versions fall back to
-    // a fresh dataset rather than crashing.
-    if (typeof data.version !== 'number') return createSeedData();
-  }
+/** Fill in defensive defaults so older/partial payloads don't break newer
+ *  code paths. Shared by the storage migration and backup import. */
+function normalizeAppData(data: AppData): AppData {
   return {
     ...data,
-    // Defensive defaults so older payloads don't break newer code paths.
     photos: data.photos ?? [],
     measurements: data.measurements ?? [],
     personalRecords: data.personalRecords ?? [],
@@ -89,6 +83,50 @@ function migrate(data: AppData): AppData {
     exerciseNotes: data.exerciseNotes ?? {},
     restTimer: data.restTimer ?? { endsAt: null, durationSec: 120, exerciseId: null },
   };
+}
+
+/** Forward-compatible migration hook. Currently only guards the version. */
+function migrate(data: AppData): AppData {
+  if (!data || typeof data !== 'object') return createSeedData();
+  if (data.version !== APP_DATA_VERSION) {
+    // Future migrations slot in here. For now, unknown versions fall back to
+    // a fresh dataset rather than crashing.
+    if (typeof data.version !== 'number') return createSeedData();
+  }
+  return normalizeAppData(data);
+}
+
+export type ParseBackupResult =
+  | { ok: true; data: AppData }
+  | { ok: false; error: string };
+
+/**
+ * Validate + normalize a JSON string as an exported BodyOS backup. Pure — the
+ * caller decides whether to apply it. Rejects anything that isn't recognisably
+ * an AppData blob so an unrelated JSON file can't wipe someone's training log.
+ */
+export function parseBackup(text: string): ParseBackupResult {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return { ok: false, error: "That file isn't valid JSON." };
+  }
+  if (!raw || typeof raw !== 'object') {
+    return { ok: false, error: "That file doesn't look like a BodyOS backup." };
+  }
+  const d = raw as Partial<AppData>;
+  const looksLikeBackup =
+    typeof d.version === 'number' &&
+    !!d.user &&
+    typeof d.user === 'object' &&
+    !!(d.user as { settings?: unknown }).settings &&
+    Array.isArray(d.templates) &&
+    Array.isArray(d.sessions);
+  if (!looksLikeBackup) {
+    return { ok: false, error: "That file doesn't look like a BodyOS backup." };
+  }
+  return { ok: true, data: normalizeAppData(d as AppData) };
 }
 
 export const repository: Repository = new LocalStorageRepository();

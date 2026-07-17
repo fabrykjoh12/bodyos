@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Download } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
+import type { AppData } from '@/types';
 import { useStore } from '@/store/useStore';
+import { parseBackup } from '@/store/repository';
 import {
   useSyncStore,
   signIn,
@@ -22,7 +24,11 @@ export function Settings() {
   const updateSettings = useStore((s) => s.updateSettings);
   const resetAll = useStore((s) => s.resetAll);
   const exportData = useStore((s) => s.exportData);
+  const replaceAll = useStore((s) => s.replaceAll);
   const [confirmReset, setConfirmReset] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [pendingImport, setPendingImport] = useState<AppData | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   function exportBackup() {
     const data = exportData();
@@ -36,6 +42,27 @@ export function Settings() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  }
+
+  async function onFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-picking the same file later
+    if (!file) return;
+    setImportError(null);
+    try {
+      const result = parseBackup(await file.text());
+      if (result.ok) setPendingImport(result.data);
+      else setImportError(result.error);
+    } catch {
+      setImportError("Couldn't read that file.");
+    }
+  }
+
+  function confirmImport() {
+    if (!pendingImport) return;
+    replaceAll(pendingImport);
+    setPendingImport(null);
+    navigate('/', { replace: true });
   }
 
   return (
@@ -93,6 +120,20 @@ export function Settings() {
           </div>
           <Download size={18} className="shrink-0 text-content-faint" />
         </button>
+        <button onClick={() => fileInput.current?.click()} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left">
+          <div className="min-w-0">
+            <p className="text-sm text-content">Import data</p>
+            <p className="text-xs text-content-faint">Restore from a previously exported JSON backup</p>
+          </div>
+          <Upload size={18} className="shrink-0 text-content-faint" />
+        </button>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={onFilePicked}
+        />
       </Group>
 
       <button onClick={() => setConfirmReset(true)} className="mt-2 text-sm font-medium text-danger/80 hover:text-danger">
@@ -108,6 +149,30 @@ export function Settings() {
             Reset everything
           </Button>
           <Button variant="ghost" fullWidth onClick={() => setConfirmReset(false)}>Cancel</Button>
+        </div>
+      </Sheet>
+
+      <Sheet open={pendingImport !== null} onClose={() => setPendingImport(null)} title="Restore this backup?">
+        {pendingImport && (
+          <>
+            <p className="text-sm text-content-muted">
+              This replaces everything currently on this device with the backup&apos;s{' '}
+              <span className="tnum font-semibold text-content">{pendingImport.templates.length}</span> templates and{' '}
+              <span className="tnum font-semibold text-content">{pendingImport.sessions.length}</span> logged sessions. Your
+              current data is overwritten and can&apos;t be recovered — export it first if you want to keep it.
+            </p>
+            <div className="mt-5 flex flex-col gap-2">
+              <Button variant="danger" fullWidth onClick={confirmImport}>Restore backup</Button>
+              <Button variant="ghost" fullWidth onClick={() => setPendingImport(null)}>Cancel</Button>
+            </div>
+          </>
+        )}
+      </Sheet>
+
+      <Sheet open={importError !== null} onClose={() => setImportError(null)} title="Couldn't import">
+        <p className="text-sm text-content-muted">{importError}</p>
+        <div className="mt-5">
+          <Button variant="secondary" fullWidth onClick={() => setImportError(null)}>OK</Button>
         </div>
       </Sheet>
     </div>

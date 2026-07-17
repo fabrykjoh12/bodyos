@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { LocalStorageRepository, MemoryRepository, loadOrSeed } from './repository';
+import { LocalStorageRepository, MemoryRepository, loadOrSeed, parseBackup } from './repository';
 import { createSeedData } from '@/data/seed';
 import { useStore } from './useStore';
 
@@ -28,6 +28,29 @@ describe('repository', () => {
     const loaded = repo.load();
     expect(Array.isArray(loaded?.photos)).toBe(true);
     repo.clear();
+  });
+});
+
+describe('parseBackup', () => {
+  it('accepts a real exported backup and normalizes missing collections', () => {
+    const { photos, ...withoutPhotos } = createSeedData();
+    void photos;
+    const result = parseBackup(JSON.stringify(withoutPhotos));
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.templates.length).toBeGreaterThan(0);
+      expect(Array.isArray(result.data.photos)).toBe(true); // backfilled
+    }
+  });
+
+  it('rejects invalid JSON', () => {
+    const result = parseBackup('{ not json');
+    expect(result.ok).toBe(false);
+  });
+
+  it('rejects unrelated JSON that lacks the AppData shape', () => {
+    const result = parseBackup(JSON.stringify({ hello: 'world', version: 1 }));
+    expect(result.ok).toBe(false);
   });
 });
 
