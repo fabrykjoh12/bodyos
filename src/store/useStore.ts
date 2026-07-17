@@ -40,7 +40,7 @@ interface StoreState extends AppData {
   lastCompletedSessionId: string | null;
 
   // --- session lifecycle
-  startSession: (templateId: string) => void;
+  startSession: (templateId: string, deload?: boolean) => void;
   abandonSession: () => void;
   completeSession: () => string | null;
 
@@ -159,10 +159,10 @@ export const useStore = create<StoreState>((set, get) => ({
   undo: null,
   lastCompletedSessionId: null,
 
-  startSession: (templateId) => {
+  startSession: (templateId, deload = false) => {
     const template = get().templates.find((t) => t.id === templateId);
     if (!template) return;
-    const session = buildActiveSession(template, { sessions: get().sessions });
+    const session = buildActiveSession(template, { sessions: get().sessions }, { deload });
     set((s) => {
       const next = { ...s, activeSession: session, undo: null };
       persist(next);
@@ -212,7 +212,10 @@ export const useStore = create<StoreState>((set, get) => ({
       completedAt: now(),
     };
 
-    const newPRs: PersonalRecord[] = detectPersonalRecords(completed, state.personalRecords);
+    // A deload is intentionally light — don't count it toward PRs.
+    const newPRs: PersonalRecord[] = completed.isDeload
+      ? []
+      : detectPersonalRecords(completed, state.personalRecords);
 
     set((s) => {
       const next: StoreState = {

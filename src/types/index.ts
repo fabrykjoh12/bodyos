@@ -184,6 +184,9 @@ export interface WorkoutSession {
   name: string;
   focus: string;
   status: SessionStatus;
+  /** A lighter recovery session: reduced load + fewer sets, excluded from
+   *  progression baselines (prefill, stall counting, PR detection). */
+  isDeload?: boolean;
   startedAt: ISODate;
   completedAt?: ISODate;
   exercises: ExerciseSession[];

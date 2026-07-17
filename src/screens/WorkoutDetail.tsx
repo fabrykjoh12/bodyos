@@ -28,8 +28,8 @@ export function WorkoutDetail() {
     );
   }
 
-  const start = () => {
-    startSession(template.id);
+  const start = (deload = false) => {
+    startSession(template.id, deload);
     const created = useStore.getState().activeSession;
     if (created) navigate(`/session/${created.id}`);
   };
@@ -104,9 +104,18 @@ export function WorkoutDetail() {
       </button>
 
       {/* Sticky start */}
-      <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md border-t border-line/60 bg-base/90 px-4 py-3 backdrop-blur-md safe-bottom">
-        <Button size="xl" fullWidth onClick={start}>
+      <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-md items-center gap-2 border-t border-line/60 bg-base/90 px-4 py-3 backdrop-blur-md safe-bottom">
+        <Button size="xl" fullWidth onClick={() => start()}>
           <Play size={20} /> Start Workout
+        </Button>
+        <Button
+          size="xl"
+          variant="secondary"
+          onClick={() => start(true)}
+          title="Lighter recovery session (~90% load, fewer sets)"
+          className="shrink-0 px-4"
+        >
+          Deload
         </Button>
       </div>
 

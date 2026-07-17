@@ -78,6 +78,13 @@ export function Dashboard() {
 
   const initial = (user.name || 'A').slice(0, 1).toUpperCase();
 
+  const startToday = (deload: boolean) => {
+    if (!todayTemplate) return;
+    store.startSession(todayTemplate.id, deload);
+    const created = useStore.getState().activeSession;
+    if (created) navigate(`/session/${created.id}`);
+  };
+
   return (
     <div className="flex flex-col gap-3 pt-3">
       {/* Header */}
@@ -119,18 +126,20 @@ export function Dashboard() {
               <Play size={18} /> Resume session
             </Button>
           ) : (
-            <Button
-              size="xl"
-              fullWidth
-              className="mt-4"
-              onClick={() => {
-                store.startSession(todayTemplate.id);
-                const created = useStore.getState().activeSession;
-                if (created) navigate(`/session/${created.id}`);
-              }}
-            >
-              <Play size={18} /> Start session
-            </Button>
+            <div className="mt-4 flex items-center gap-2">
+              <Button size="xl" fullWidth onClick={() => startToday(false)}>
+                <Play size={18} /> Start session
+              </Button>
+              <Button
+                size="xl"
+                variant="secondary"
+                className="shrink-0 px-4"
+                onClick={() => startToday(true)}
+                title="Lighter recovery session (~90% load, fewer sets)"
+              >
+                Deload
+              </Button>
+            </div>
           )}
         </section>
       ) : (
@@ -266,11 +275,15 @@ export function Dashboard() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[14.5px] font-bold text-content">{s.name}</span>
-                      {prCount > 0 && (
+                      {s.isDeload ? (
+                        <span className="rounded-full bg-surface-3 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-content-muted">
+                          Deload
+                        </span>
+                      ) : prCount > 0 ? (
                         <span className="rounded-full bg-accent-soft px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-accent">
                           {prCount} PR
                         </span>
-                      )}
+                      ) : null}
                     </div>
                     <p className="text-xs text-content-faint">{relativeDay(s.completedAt ?? s.startedAt)}</p>
                   </div>

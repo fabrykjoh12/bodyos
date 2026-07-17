@@ -113,7 +113,14 @@ export function GymMode() {
           <p className="label-tiny">
             Exercise {exIndex + 1} / {session.exercises.length}
           </p>
-          <p className="truncate text-sm font-semibold text-content">{session.name}</p>
+          <p className="truncate text-sm font-semibold text-content">
+            {session.name}
+            {session.isDeload && (
+              <span className="ml-1.5 align-middle rounded bg-surface-3 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-content-muted">
+                Deload
+              </span>
+            )}
+          </p>
         </div>
         <span className="tnum w-11 text-right text-sm font-semibold text-content-muted">
           {completedWorking}/{totalWorking}
