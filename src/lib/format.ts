@@ -15,6 +15,31 @@ export function toDisplayWeight(kg: number, unit: Unit): number {
   return unit === 'kg' ? kg : kgToLb(kg);
 }
 
+const CM_PER_IN = 2.54;
+
+export function cmToIn(cm: number): number {
+  return cm / CM_PER_IN;
+}
+
+export function inToCm(inches: number): number {
+  return inches * CM_PER_IN;
+}
+
+/** Body measurements are stored in cm; imperial (lb) users see inches. */
+export function lengthUnit(unit: Unit): 'cm' | 'in' {
+  return unit === 'kg' ? 'cm' : 'in';
+}
+
+/** Convert a stored-cm length into the user's display length unit. */
+export function toDisplayLength(cm: number, unit: Unit): number {
+  return unit === 'kg' ? cm : cmToIn(cm);
+}
+
+/** Convert a display-length value (cm or in) back to stored cm. */
+export function fromDisplayLength(value: number, unit: Unit): number {
+  return unit === 'kg' ? value : inToCm(value);
+}
+
 /** Round to a sensible gym increment for display (0.5 kg / 1 lb). */
 export function roundDisplayWeight(value: number, unit: Unit): number {
   const step = unit === 'kg' ? 0.5 : 1;

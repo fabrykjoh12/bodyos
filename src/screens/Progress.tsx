@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, ChevronRight, LineChart, TrendingUp } from 'lucide-react';
+import { Camera, ChevronRight, LineChart, Ruler, TrendingUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { exerciseName } from '@/data/exercises';
 import { strengthTrends } from '@/lib/analytics';
@@ -93,6 +93,17 @@ export function Progress() {
         <div className="flex-1">
           <p className="text-sm font-semibold text-content">Progress photos</p>
           <p className="text-xs text-content-muted">Private timeline & before/after compare</p>
+        </div>
+        <ChevronRight size={18} className="text-content-faint" />
+      </button>
+
+      <button onClick={() => navigate('/progress/measurements')} className="card flex items-center gap-3 p-4 text-left">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-accent">
+          <Ruler size={18} />
+        </span>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-content">Body measurements</p>
+          <p className="text-xs text-content-muted">Body weight, waist, chest & arm over time</p>
         </div>
         <ChevronRight size={18} className="text-content-faint" />
       </button>

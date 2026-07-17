@@ -87,6 +87,7 @@ interface StoreState extends AppData {
   addPhoto: (photo: ProgressPhoto) => void;
   deletePhoto: (id: string) => void;
   addMeasurement: (m: BodyMeasurement) => void;
+  deleteMeasurement: (id: string) => void;
 }
 
 const initial = loadOrSeed();
@@ -592,6 +593,13 @@ export const useStore = create<StoreState>((set, get) => ({
   addMeasurement: (m) =>
     set((s) => {
       const next = { ...s, measurements: [m, ...s.measurements] };
+      persist(next);
+      return next;
+    }),
+
+  deleteMeasurement: (id) =>
+    set((s) => {
+      const next = { ...s, measurements: s.measurements.filter((m) => m.id !== id) };
       persist(next);
       return next;
     }),

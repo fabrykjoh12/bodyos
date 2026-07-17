@@ -75,7 +75,7 @@ docs/superpowers/specs/   Design spec (2026-07-16-ui-redesign-roadmap-design.md)
 
 ### Routing (5-tab nav + profile in header avatar)
 `/` Home · `/workouts` (+`/new`, `/:id`) · `/exercises` (+`/:id`) · `/stats` · `/progress`
-(+`/photos`) · `/profile` · `/settings` · `/session/:id` (Gym Mode) ·
+(+`/photos`, `/measurements`) · `/profile` · `/settings` · `/session/:id` (Gym Mode) ·
 `/session/:id/complete` · `/onboarding`. `/progress/strength` → redirects to `/stats`.
 Screens are `React.lazy`-loaded in `App.tsx` (except Dashboard + GymMode).
 

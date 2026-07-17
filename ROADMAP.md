@@ -98,7 +98,9 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 - ✅ **Optional RPE/RIR entry** — when "Show RIR / RPE" is on (Settings), each working set gets a
   0–4+ reps-in-reserve picker in Gym Mode (with RPE equivalent); RIR is shown in the set ledger and
   **feeds progression** by mapping to per-set difficulty (`rirToDifficulty`, in the tested engine).
-- ⬜ Body-measurement tracking UI
+- ✅ **Body-measurement tracking UI** — `/progress/measurements`: log body weight + waist/chest/arm,
+  latest-snapshot tiles with deltas, dated history with delete, unit-aware (kg/cm or lb/in). Seeded
+  with a demo lean-bulk trend; `deleteMeasurement` action added.
 - ⬜ Week planning / deload scheduling
 - ⬜ Landing/marketing page
 
