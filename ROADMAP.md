@@ -70,8 +70,11 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   when the rest timer finishes, alongside the vibration. Both are opt-out: the buzz honours the
   existing "Haptic feedback" toggle, the chime a new "Rest timer sound" toggle (Settings). Audio is
   primed from the "Log Set" tap (`unlockAudio`) so mobile browsers allow it.
-- ✅ **Data export** — Settings → Data → "Export data" downloads the full `AppData` as a timestamped
-  JSON backup (`bodyos-backup-YYYY-MM-DD.json`) via a Blob download; new `exportData` store action.
+- ✅ **Data export / import** — Settings → Data → "Export data" downloads the full `AppData` as a
+  timestamped JSON backup (`bodyos-backup-YYYY-MM-DD.json`); "Import data" restores from one via a
+  file picker. Import is validated + normalized by a pure, tested `parseBackup` (rejects non-BodyOS
+  JSON so a stray file can't wipe your log) and gated behind a confirm sheet that shows the backup's
+  template/session counts before it overwrites. `exportData` store action + `replaceAll` for apply.
 - 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
 - 🟡 Store-level flow tests exist (`gymFlow.test.ts`); component/E2E for Gym Mode still todo
 
