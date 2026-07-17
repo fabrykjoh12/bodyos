@@ -31,6 +31,7 @@ export function Onboarding() {
   const applyRoutine = useStore((s) => s.applyRoutine);
   const [step, setStep] = useState(0);
 
+  const [name, setName] = useState(() => useStore.getState().user.name);
   const [goal, setGoal] = useState<TrainingGoal>('hypertrophy');
   const [experience, setExperience] = useState<ExperienceLevel>('intermediate');
   const [days, setDays] = useState(3);
@@ -50,7 +51,9 @@ export function Onboarding() {
   };
 
   const finish = () => {
+    const trimmed = name.trim();
     completeOnboarding({
+      ...(trimmed ? { name: trimmed } : {}),
       goal,
       experience,
       daysPerWeek: days,
@@ -99,11 +102,12 @@ export function Onboarding() {
         )}
         {step === 2 && (
           <Section title="How many days per week?" subtitle="Pick a realistic number you can keep.">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {[2, 3, 4, 5, 6].map((d) => (
                 <button
                   key={d}
                   onClick={() => setDays(d)}
+                  aria-pressed={days === d}
                   className={`rounded-2xl border py-4 text-lg font-bold ${days === d ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface text-content-muted'}`}
                 >
                   {d}
@@ -121,6 +125,7 @@ export function Onboarding() {
                 <button
                   key={r.id}
                   onClick={() => setRoutineId(r.id)}
+                  aria-pressed={active}
                   className={`flex flex-col rounded-2xl border p-4 text-left transition-colors ${active ? 'border-accent bg-accent-soft' : 'border-line bg-surface'}`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -137,6 +142,7 @@ export function Onboarding() {
             })}
             <button
               onClick={() => setRoutineId(null)}
+              aria-pressed={routineId === null}
               className={`rounded-2xl border p-4 text-left text-sm font-medium transition-colors ${routineId === null ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface text-content-muted'}`}
             >
               I&rsquo;ll build my own
@@ -144,14 +150,28 @@ export function Onboarding() {
           </Section>
         )}
         {step === 4 && (
-          <Section title="Final setup" subtitle="Equipment and units. You can change these later.">
+          <Section title="Final setup" subtitle="Your name, equipment and units. You can change these later.">
             <div>
+              <label htmlFor="ob-name" className="label-tiny">Your name</label>
+              <input
+                id="ob-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="given-name"
+                maxLength={40}
+                placeholder="What should we call you?"
+                className="mt-2 w-full rounded-xl border border-line bg-surface px-3.5 py-3 text-sm text-content placeholder:text-content-faint focus:border-accent focus:outline-none"
+              />
+            </div>
+            <div className="mt-5">
               <span className="label-tiny">Available equipment</span>
               <div className="mt-2 flex flex-wrap gap-2">
                 {EQUIPMENT.map((e) => (
                   <button
                     key={e}
                     onClick={() => toggleEquip(e)}
+                    aria-pressed={equipment.includes(e)}
                     className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium capitalize ${equipment.includes(e) ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface text-content-muted'}`}
                   >
                     {equipment.includes(e) && <Check size={14} />} {e}
@@ -166,6 +186,7 @@ export function Onboarding() {
                   <button
                     key={u}
                     onClick={() => setUnit(u)}
+                    aria-pressed={unit === u}
                     className={`rounded-xl border py-3 font-semibold ${unit === u ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface text-content-muted'}`}
                   >
                     {u === 'kg' ? 'Kilograms' : 'Pounds'}
@@ -211,6 +232,7 @@ function Option({ active, onClick, title, desc }: { active: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
+      aria-pressed={active}
       className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors ${active ? 'border-accent bg-accent-soft' : 'border-line bg-surface'}`}
     >
       <div className="flex-1">

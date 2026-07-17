@@ -64,6 +64,10 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
 
 - ✅ Screen transitions (subtle per-route `page-in` enter) + tap-scale press feedback on cards
 - ✅ Refined empty states (inviting accent-tinted icon, fade-in) + onboarding steps animate in
+- ✅ Onboarding audit: captures the user's **name** (final step) so the home greeting is personal
+  instead of the seeded "Athlete"; fixed the days-per-week grid (5 options no longer wrap 4+1); and
+  added `aria-pressed` to every choice control (goal, experience, days, routine, equipment, units)
+  so they announce as toggles.
 - ✅ Training-consistency calendar on Progress (`ConsistencyGrid`): contribution-style grid of
   workout days over the last 16 weeks, cells shaded by set count
 - ✅ **Rest-timer completion alert** — a two-tone Web Audio chime (`lib/sound.ts`, no assets) plays
