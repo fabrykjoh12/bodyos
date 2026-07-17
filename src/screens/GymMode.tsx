@@ -256,7 +256,7 @@ export function GymMode() {
               </button>
             </div>
           </div>
-          <SetGrid exercise={exercise} unit={unit} activeSetIndex={activeSetIndex} />
+          <SetGrid exercise={exercise} unit={unit} activeSetIndex={activeSetIndex} highlightBeats={!session.isDeload} />
         </div>
 
         <ExerciseHistory exercise={exercise} unit={unit} />
