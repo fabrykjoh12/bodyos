@@ -86,6 +86,7 @@ function migrate(data: AppData): AppData {
     personalRecords: data.personalRecords ?? [],
     streakDates: data.streakDates ?? [],
     weeklyPlan: data.weeklyPlan ?? {},
+    exerciseNotes: data.exerciseNotes ?? {},
     restTimer: data.restTimer ?? { endsAt: null, durationSec: 120, exerciseId: null },
   };
 }

@@ -34,7 +34,7 @@ export function toPreviousPerformance(
   exercise: ExerciseSession,
 ): PreviousPerformance {
   const working = exercise.sets.filter((s) => s.completed && !s.isWarmup);
-  const sets = working.map((s) => ({ weightKg: s.weightKg, reps: s.reps }));
+  const sets = working.map((s) => ({ weightKg: s.weightKg, reps: s.reps, rir: s.rir }));
   return {
     date: session.completedAt ?? session.startedAt,
     sets,
@@ -139,6 +139,7 @@ export function buildActiveSession(
         repRange: we.repRange,
         restSec: we.restSec,
         incrementKg: ex.defaultIncrementKg,
+        supersetGroup: we.supersetGroup,
         notes: we.notes,
         status: index === 0 ? 'active' : 'pending',
         sets,

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check, ChevronRight, Flame, Plus, X } from 'lucide-react';
+import { Check, ChevronRight, Flame, Plus, Repeat2, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { EXERCISES, requireExercise } from '@/data/exercises';
 import { formatRepRange, formatWeight, lbToKg } from '@/lib/format';
@@ -31,6 +31,7 @@ export function GymMode() {
   const nextExercise = useStore((s) => s.nextExercise);
   const goToExercise = useStore((s) => s.goToExercise);
   const swapExercise = useStore((s) => s.swapExercise);
+  const exerciseNotes = useStore((s) => s.exerciseNotes);
   const setDifficulty = useStore((s) => s.setExerciseDifficulty);
   const abandonSession = useStore((s) => s.abandonSession);
   const completeSession = useStore((s) => s.completeSession);
@@ -72,6 +73,10 @@ export function GymMode() {
     generateWarmups(firstWorking.weightKg, { barKg }).length > 0;
 
   // Swap is offered until the exercise is started (nothing logged yet).
+  const supersetMembers = exercise.supersetGroup
+    ? session.exercises.filter((e) => e.supersetGroup === exercise.supersetGroup)
+    : [];
+
   const canSwap = !exercise.sets.some((s) => s.completed);
   const swapOptions = useMemo(() => {
     const ids = meta.substitutions.length
@@ -141,6 +146,15 @@ export function GymMode() {
       </div>
 
       <div className="mt-3 flex flex-1 flex-col gap-3">
+        {supersetMembers.length > 1 && (
+          <div className="flex items-center gap-2 rounded-xl border border-accent/25 bg-accent-soft/40 px-3 py-1.5">
+            <Repeat2 size={14} className="shrink-0 text-accent" />
+            <span className="text-xs font-semibold text-accent">Superset</span>
+            <span className="truncate text-xs text-content-muted">
+              {supersetMembers.map((m) => requireExercise(m.exerciseId).name).join(' + ')}
+            </span>
+          </div>
+        )}
         {activeSet ? (
           <ActiveSetCard
             exerciseName={meta.name}
@@ -176,6 +190,12 @@ export function GymMode() {
         {exercise.notes && (
           <p className="rounded-xl border border-line bg-surface px-3.5 py-2 text-sm text-content-muted">
             {exercise.notes}
+          </p>
+        )}
+
+        {exerciseNotes[exercise.exerciseId] && (
+          <p className="rounded-xl border border-accent/20 bg-accent-soft/40 px-3.5 py-2 text-sm text-content-muted">
+            <span className="font-semibold text-accent">Note</span> · {exerciseNotes[exercise.exerciseId]}
           </p>
         )}
 

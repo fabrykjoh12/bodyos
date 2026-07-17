@@ -112,6 +112,8 @@ export interface WorkoutExercise {
   restSec: number;
   /** Working weight to start from, kg. Undefined => derive from history. */
   startWeightKg?: number;
+  /** Exercises sharing a group id are performed as a superset (alternating). */
+  supersetGroup?: string;
   notes?: string;
 }
 
@@ -154,6 +156,8 @@ export interface ExerciseSession {
   repRange: [number, number];
   restSec: number;
   incrementKg: number;
+  /** Superset group id copied from the template (alternating flow in Gym Mode). */
+  supersetGroup?: string;
   notes?: string;
   status: ExerciseSessionStatus;
   sets: SetEntry[];
@@ -166,8 +170,8 @@ export interface ExerciseSession {
 
 export interface PreviousPerformance {
   date: ISODate;
-  /** One entry per working set: weight + reps. */
-  sets: { weightKg: number; reps: number }[];
+  /** One entry per working set: weight + reps (+ reps-in-reserve if logged). */
+  sets: { weightKg: number; reps: number; rir?: number }[];
   topWeightKg: number;
   estimated1RM?: number;
 }
@@ -290,6 +294,8 @@ export interface AppData {
   measurements: BodyMeasurement[];
   /** Schedule: which template id is planned for a given weekday (0=Sun). */
   weeklyPlan: Record<number, ID | null>;
+  /** Durable per-exercise note-to-self, keyed by exercise id. */
+  exerciseNotes: Record<ID, string>;
   streakDates: ISODate[]; // dates workouts were completed
   nextPhotoDue?: ISODate;
   restTimer: RestTimerState;

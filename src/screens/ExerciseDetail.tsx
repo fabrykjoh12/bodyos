@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Lightbulb } from 'lucide-react';
 import { getExercise, exerciseName } from '@/data/exercises';
@@ -18,6 +18,11 @@ export function ExerciseDetail() {
   const ex = id ? getExercise(id) : undefined;
   const sessions = useStore((s) => s.sessions);
   const unit = useStore((s) => s.user.settings.unit);
+  const savedNote = useStore((s) => (id ? s.exerciseNotes[id] ?? '' : ''));
+  const setExerciseNote = useStore((s) => s.setExerciseNote);
+  const [note, setNote] = useState(savedNote);
+  // Reset the draft when navigating between exercises (same component instance).
+  useEffect(() => setNote(savedNote), [id, savedNote]);
 
   const series = useMemo(() => (id ? e1rmSeries(id, sessions) : []), [id, sessions]);
   const last = id ? findLastExerciseSession(id, sessions) : undefined;
@@ -46,6 +51,18 @@ export function ExerciseDetail() {
         {ex.secondaryMuscles.map((m) => (
           <Chip key={m} tone="muted" className="capitalize">{m}</Chip>
         ))}
+      </div>
+
+      <div className="card p-4">
+        <p className="label-tiny mb-2">My notes</p>
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          onBlur={() => ex && setExerciseNote(ex.id, note)}
+          placeholder="Add a personal cue or setup reminder…"
+          rows={2}
+          className="w-full resize-none rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-content placeholder:text-content-faint focus:border-accent focus:outline-none"
+        />
       </div>
 
       {series.length >= 2 && (

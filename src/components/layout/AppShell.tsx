@@ -6,15 +6,20 @@ import { useStore } from '@/store/useStore';
 // Routes that show the bottom tab bar.
 const NAV_ROUTES = ['/', '/workouts', '/exercises', '/stats', '/progress', '/profile', '/settings'];
 
+// Focused sub-screens with their own fixed bottom action bar — the tab bar is
+// hidden so it doesn't overlap the primary CTA (Start Workout / Save).
+const HIDE_NAV_PREFIXES = ['/workouts/'];
+
 /** Mobile-first frame: a centered column with a bottom tab bar on main tabs. */
 export function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
   const activeSession = useStore((s) => s.activeSession);
 
-  const showNav = NAV_ROUTES.some((t) =>
-    t === '/' ? location.pathname === '/' : location.pathname.startsWith(t),
-  );
+  const showNav =
+    NAV_ROUTES.some((t) =>
+      t === '/' ? location.pathname === '/' : location.pathname.startsWith(t),
+    ) && !HIDE_NAV_PREFIXES.some((p) => location.pathname.startsWith(p));
   const showResume = activeSession && !location.pathname.startsWith('/session');
 
   return (

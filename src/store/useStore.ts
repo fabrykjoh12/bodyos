@@ -74,6 +74,8 @@ interface StoreState extends AppData {
   deleteTemplate: (id: string) => void;
   duplicateTemplate: (id: string) => string;
   setPlanForDay: (weekday: number, templateId: string | null) => void;
+  /** Set (or clear, with an empty string) the durable note for an exercise. */
+  setExerciseNote: (exerciseId: string, note: string) => void;
 
   // --- user & settings
   completeOnboarding: (partial: Partial<User>) => void;
@@ -106,6 +108,7 @@ function extractAppData(state: StoreState): AppData {
     photos: state.photos,
     measurements: state.measurements,
     weeklyPlan: state.weeklyPlan,
+    exerciseNotes: state.exerciseNotes,
     streakDates: state.streakDates,
     nextPhotoDue: state.nextPhotoDue,
     restTimer: state.restTimer,
@@ -278,19 +281,48 @@ export const useStore = create<StoreState>((set, get) => ({
     });
 
     const exercise = exercises[loc.exIndex]!;
-    const shouldRest =
-      state.user.settings.restTimerAutoStart && exercise.sets.some((s) => !s.completed);
+    const hasIncomplete = (ex: ExerciseSession) => ex.sets.some((s) => !s.completed);
+    const autoRest = state.user.settings.restTimerAutoStart;
+
+    // Superset flow: after a set, move to the next group member with work left.
+    // Rest only when a full round is done (wrapping back to an earlier member)
+    // or the exercise is on its own. Ungrouped exercises behave exactly as before.
+    let nextIndex = loc.exIndex;
+    let shouldRest: boolean;
+    const group = exercise.supersetGroup;
+    if (group) {
+      const members = exercises
+        .map((ex, i) => ({ ex, i }))
+        .filter((m) => m.ex.supersetGroup === group);
+      const pos = members.findIndex((m) => m.i === loc.exIndex);
+      const forward = members.slice(pos + 1).find((m) => hasIncomplete(m.ex));
+      const backward = members.slice(0, pos).find((m) => hasIncomplete(m.ex));
+      if (forward) {
+        nextIndex = forward.i; // continue this round — no rest
+        shouldRest = false;
+      } else if (backward) {
+        nextIndex = backward.i; // new round — rest first
+        shouldRest = autoRest;
+      } else {
+        nextIndex = members[members.length - 1]!.i; // group done — park on last member
+        shouldRest = false;
+      }
+    } else {
+      shouldRest = autoRest && hasIncomplete(exercise);
+    }
+
+    const restSource = exercises[nextIndex] ?? exercise;
 
     set((s) => {
       const next: StoreState = {
         ...s,
-        activeSession: { ...active, exercises },
+        activeSession: { ...active, exercises, currentExerciseIndex: nextIndex },
         undo: { exerciseIndex: loc.exIndex, setId: prevSet.id, prevSet },
         restTimer: shouldRest
           ? {
-              endsAt: Date.now() + exercise.restSec * 1000,
-              durationSec: exercise.restSec,
-              exerciseId: exercise.exerciseId,
+              endsAt: Date.now() + restSource.restSec * 1000,
+              durationSec: restSource.restSec,
+              exerciseId: restSource.exerciseId,
             }
           : s.restTimer,
       };
@@ -315,7 +347,7 @@ export const useStore = create<StoreState>((set, get) => ({
     set((s) => {
       const next: StoreState = {
         ...s,
-        activeSession: { ...active, exercises },
+        activeSession: { ...active, exercises, currentExerciseIndex: undo.exerciseIndex },
         undo: null,
         restTimer: { endsAt: null, durationSec: s.restTimer.durationSec, exerciseId: null },
       };
@@ -572,6 +604,17 @@ export const useStore = create<StoreState>((set, get) => ({
   setPlanForDay: (weekday, templateId) =>
     set((s) => {
       const next = { ...s, weeklyPlan: { ...s.weeklyPlan, [weekday]: templateId } };
+      persist(next);
+      return next;
+    }),
+
+  setExerciseNote: (exerciseId, note) =>
+    set((s) => {
+      const trimmed = note.trim();
+      const exerciseNotes = { ...s.exerciseNotes };
+      if (trimmed) exerciseNotes[exerciseId] = trimmed;
+      else delete exerciseNotes[exerciseId];
+      const next = { ...s, exerciseNotes };
       persist(next);
       return next;
     }),
