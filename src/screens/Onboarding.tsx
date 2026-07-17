@@ -3,7 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, Dumbbell } from 'lucide-react';
 import type { Equipment, ExperienceLevel, TrainingGoal, Unit } from '@/types';
 import { useStore } from '@/store/useStore';
+import { ROUTINES } from '@/data/routines';
 import { Button } from '@/components/ui/Button';
+
+/** Suggest a starter split from how many days a week they can train. */
+function suggestedRoutine(days: number): string {
+  if (days <= 3) return 'full-body-3';
+  if (days <= 5) return 'upper-lower-4';
+  return 'ppl-6';
+}
 
 const GOALS: { value: TrainingGoal; label: string; desc: string }[] = [
   { value: 'hypertrophy', label: 'Build muscle', desc: 'Grow size with progressive overload' },
@@ -20,15 +28,26 @@ const EQUIPMENT: Equipment[] = ['barbell', 'dumbbell', 'machine', 'cable', 'body
 export function Onboarding() {
   const navigate = useNavigate();
   const completeOnboarding = useStore((s) => s.completeOnboarding);
+  const applyRoutine = useStore((s) => s.applyRoutine);
   const [step, setStep] = useState(0);
 
   const [goal, setGoal] = useState<TrainingGoal>('hypertrophy');
   const [experience, setExperience] = useState<ExperienceLevel>('intermediate');
   const [days, setDays] = useState(3);
+  const [routineId, setRoutineId] = useState<string | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>(['barbell', 'dumbbell', 'machine', 'cable']);
   const [unit, setUnit] = useState<Unit>('kg');
 
-  const steps = ['Goal', 'Experience', 'Schedule', 'Setup'];
+  const steps = ['Goal', 'Experience', 'Schedule', 'Routine', 'Setup'];
+
+  // Pre-select the days-matched routine when arriving at the routine step.
+  const next = () => {
+    setStep((s) => {
+      const to = s + 1;
+      if (to === 3 && routineId === null) setRoutineId(suggestedRoutine(days));
+      return to;
+    });
+  };
 
   const finish = () => {
     completeOnboarding({
@@ -38,6 +57,8 @@ export function Onboarding() {
       equipment,
       settings: { ...useStore.getState().user.settings, unit },
     });
+    const chosen = routineId ? ROUTINES.find((r) => r.id === routineId) : null;
+    if (chosen) applyRoutine(chosen);
     navigate('/', { replace: true });
   };
 
@@ -92,6 +113,37 @@ export function Onboarding() {
           </Section>
         )}
         {step === 3 && (
+          <Section title="Pick a starter split" subtitle="We'll build the workouts and schedule your week. You can change everything later.">
+            {ROUTINES.map((r) => {
+              const active = routineId === r.id;
+              const recommended = r.id === suggestedRoutine(days);
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => setRoutineId(r.id)}
+                  className={`flex flex-col rounded-2xl border p-4 text-left transition-colors ${active ? 'border-accent bg-accent-soft' : 'border-line bg-surface'}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`font-semibold ${active ? 'text-accent' : 'text-content'}`}>{r.name}</span>
+                    {recommended && (
+                      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent">
+                        Recommended
+                      </span>
+                    )}
+                  </div>
+                  <span className="mt-1 text-xs text-content-muted">{r.days.map((d) => d.name).join(' · ')}</span>
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setRoutineId(null)}
+              className={`rounded-2xl border p-4 text-left text-sm font-medium transition-colors ${routineId === null ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface text-content-muted'}`}
+            >
+              I&rsquo;ll build my own
+            </button>
+          </Section>
+        )}
+        {step === 4 && (
           <Section title="Final setup" subtitle="Equipment and units. You can change these later.">
             <div>
               <span className="label-tiny">Available equipment</span>
@@ -127,7 +179,7 @@ export function Onboarding() {
 
       <div className="mt-6">
         {step < steps.length - 1 ? (
-          <Button size="lg" fullWidth onClick={() => setStep((s) => s + 1)}>
+          <Button size="lg" fullWidth onClick={next}>
             Continue <ArrowRight size={18} />
           </Button>
         ) : (
