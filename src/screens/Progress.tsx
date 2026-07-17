@@ -46,8 +46,8 @@ export function Progress() {
 
       <div className="grid grid-cols-2 gap-2">
         <Stat label="Workouts" value={completed.length} sub="completed" />
-        <Stat label="Records" value={personalRecords.filter((p) => p.type === 'weight').length} sub="personal bests" accent="caution" />
-        <Stat label="4-week volume" value={formatVolume(last4wVolume, unit)} accent="accent" />
+        <Stat label="Records" value={personalRecords.filter((p) => p.type === 'weight').length} sub="personal bests" />
+        <Stat label="4-week volume" value={formatVolume(last4wVolume, unit)} sub="tonnage" />
         <Stat label="Consistency" value={`${doneLast4w}/${plannedLast4w}`} sub="last 4 weeks" />
       </div>
 
@@ -75,7 +75,7 @@ export function Progress() {
               onClick={() => navigate(`/exercises/${t.exerciseId}`)}
               className="flex w-full items-center gap-3 px-4 py-3 text-left"
             >
-              <LineChart size={16} className="text-accent" />
+              <LineChart size={16} className="text-content-faint" />
               <span className="flex-1 text-sm text-content">{exerciseName(t.exerciseId)}</span>
               <span className="tnum text-sm font-semibold text-content">{formatWeight(t.latest, unit)}</span>
               <span className={`tnum text-xs font-semibold ${t.deltaKg >= 0 ? 'text-success' : 'text-danger'}`}>

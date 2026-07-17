@@ -90,7 +90,7 @@ export function Workouts() {
               onClick={() => navigate(`/workouts/${tpl.id}`)}
               className="card flex items-center gap-3 p-4 text-left transition-colors hover:border-line-strong"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-2 text-accent">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-2 text-content-muted">
                 <Dumbbell size={20} />
               </span>
               <div className="min-w-0 flex-1">
