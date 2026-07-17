@@ -108,7 +108,9 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 - 🟡 Week planning / deload scheduling
   - ✅ **Week planning** — the Workouts weekly strip is now editable: tap any day to assign a
     template or set a rest day (wires up the existing `setPlanForDay` + `weeklyPlan`).
-  - ⬜ Deload scheduling — needs a deload-week data model.
+  - ✅ **Deload** — start any workout as a deload (Dashboard hero / workout detail): ~90% load,
+    sets capped at 2, badged in Gym Mode + history. Deloads are excluded from progression
+    baselines (prefill, stall counting, PRs) so they don't corrupt your numbers.
 - ⬜ Landing/marketing page
 
 ---

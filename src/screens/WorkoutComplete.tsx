@@ -40,7 +40,9 @@ export function WorkoutComplete() {
           <Sparkles size={30} />
         </span>
         <h1 className="mt-4 text-2xl font-bold text-content">Workout complete</h1>
-        <p className="mt-1 text-sm text-content-muted">{session.name} · nicely done</p>
+        <p className="mt-1 text-sm text-content-muted">
+          {session.name} · {session.isDeload ? 'deload done — recover well' : 'nicely done'}
+        </p>
       </div>
 
       <WorkoutSummary session={session} prs={prs} unit={unit} />

@@ -10,7 +10,12 @@ import { requireExercise } from '@/data/exercises';
 import { uid } from './id';
 import { now } from './date';
 import { bestE1RM, round1 } from './volume';
-import { recommendProgression } from './progression';
+import { recommendProgression, roundToIncrement } from './progression';
+
+/** How much a deload reduces the prefilled working weight. */
+const DELOAD_FACTOR = 0.9;
+/** Working sets kept on a deload session. */
+const DELOAD_SET_CAP = 2;
 
 /** Most recent completed ExerciseSession for an exercise, newest first. */
 export function findLastExerciseSession(
@@ -18,7 +23,7 @@ export function findLastExerciseSession(
   sessions: WorkoutSession[],
 ): { session: WorkoutSession; exercise: ExerciseSession } | undefined {
   const ordered = [...sessions]
-    .filter((s) => s.status === 'completed')
+    .filter((s) => s.status === 'completed' && !s.isDeload)
     .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
   for (const session of ordered) {
     const exercise = session.exercises.find(
@@ -55,7 +60,7 @@ export function countPriorStalls(
   sessions: WorkoutSession[],
 ): number {
   const ordered = [...sessions]
-    .filter((s) => s.status === 'completed')
+    .filter((s) => s.status === 'completed' && !s.isDeload)
     .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
   let stalls = 0;
   for (const s of ordered) {
@@ -110,7 +115,9 @@ export function prefillFor(
 export function buildActiveSession(
   template: WorkoutTemplate,
   data: Pick<AppData, 'sessions'>,
+  opts: { deload?: boolean } = {},
 ): WorkoutSession {
+  const deload = opts.deload === true;
   const exercises: ExerciseSession[] = [...template.exercises]
     .sort((a, b) => a.order - b.order)
     .map((we, index) => {
@@ -122,12 +129,19 @@ export function buildActiveSession(
         we.startWeightKg,
         data.sessions,
       );
-      const sets: SetEntry[] = we.sets.map((ts, i) => ({
+      // A deload runs lighter (≈90%) with fewer sets to shed fatigue.
+      const workingKg = deload
+        ? roundToIncrement(weightKg * DELOAD_FACTOR, ex.defaultIncrementKg)
+        : weightKg;
+      const templateSets = deload
+        ? we.sets.filter((ts) => ts.type !== 'warmup').slice(0, DELOAD_SET_CAP)
+        : we.sets;
+      const sets: SetEntry[] = templateSets.map((ts, i) => ({
         id: uid('set'),
         exerciseId: we.exerciseId,
         setNumber: i + 1,
         type: ts.type,
-        weightKg: ts.type === 'warmup' ? round1(weightKg * 0.5) : weightKg,
+        weightKg: ts.type === 'warmup' ? round1(workingKg * 0.5) : workingKg,
         reps: ts.type === 'warmup' ? Math.max(repTopHalf(we.repRange), 8) : targetReps,
         completed: false,
         isWarmup: ts.type === 'warmup',
@@ -153,6 +167,7 @@ export function buildActiveSession(
     name: template.name,
     focus: template.focus,
     status: 'active',
+    ...(deload ? { isDeload: true } : {}),
     startedAt: now(),
     exercises,
     currentExerciseIndex: 0,

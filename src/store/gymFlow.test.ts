@@ -102,6 +102,45 @@ describe('gym flow — warm-ups, swap, RIR', () => {
   });
 });
 
+describe('deload sessions', () => {
+  beforeEach(() => S().resetAll());
+
+  it('starts lighter, with fewer sets, and is flagged', () => {
+    const tplId = S().templates[0]!.id;
+    S().startSession(tplId, false);
+    const normal = S().activeSession!.exercises[0]!;
+    const normalWeight = normal.sets.find((s) => !s.isWarmup)!.weightKg;
+    const normalSets = normal.sets.filter((s) => !s.isWarmup).length;
+    S().abandonSession();
+
+    S().startSession(tplId, true);
+    const active = S().activeSession!;
+    expect(active.isDeload).toBe(true);
+    const dl = active.exercises[0]!;
+    const dlWeight = dl.sets.find((s) => !s.isWarmup)!.weightKg;
+    const dlSets = dl.sets.filter((s) => !s.isWarmup).length;
+    expect(dlWeight).toBeLessThan(normalWeight);
+    expect(dlSets).toBeLessThanOrEqual(2);
+    expect(dlSets).toBeLessThanOrEqual(normalSets);
+  });
+
+  it('does not record personal records for a deload', () => {
+    const before = S().personalRecords.length;
+    S().startSession(S().templates[0]!.id, true);
+    let guard = 0;
+    while (S().activeSession && guard < 80) {
+      const a = S().activeSession!;
+      const ex = a.exercises[a.currentExerciseIndex]!;
+      if (ex.sets.some((s) => !s.completed)) S().logActiveSet();
+      else if (a.currentExerciseIndex < a.exercises.length - 1) S().nextExercise();
+      else break;
+      guard += 1;
+    }
+    S().completeSession();
+    expect(S().personalRecords.length).toBe(before);
+  });
+});
+
 describe('exercise notes', () => {
   beforeEach(() => S().resetAll());
 
