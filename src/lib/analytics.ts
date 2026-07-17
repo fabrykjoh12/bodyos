@@ -125,7 +125,7 @@ export interface MuscleShare {
 }
 
 /** Working-set count per primary muscle group over the last `days` days. */
-export function muscleBalance(sessions: WorkoutSession[], days = 7): MuscleShare[] {
+function muscleSetCounts(sessions: WorkoutSession[], days: number): Map<MuscleGroup, number> {
   const counts = new Map<MuscleGroup, number>();
   const nowMs = Date.now();
   for (const s of sessions) {
@@ -139,13 +139,31 @@ export function muscleBalance(sessions: WorkoutSession[], days = 7): MuscleShare
       if (sets > 0) counts.set(muscle, (counts.get(muscle) ?? 0) + sets);
     }
   }
-  const entries = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  return counts;
+}
+
+export function muscleBalance(sessions: WorkoutSession[], days = 7): MuscleShare[] {
+  const entries = [...muscleSetCounts(sessions, days).entries()].sort((a, b) => b[1] - a[1]);
   const max = entries[0]?.[1] ?? 1;
   return entries.slice(0, 6).map(([muscle, sets]) => ({
     muscle,
     sets,
     pct: Math.round((sets / max) * 100),
   }));
+}
+
+/** Per-muscle training intensity (0..1, relative to the most-trained) for a body heatmap. */
+export function muscleTrainingMap(
+  sessions: WorkoutSession[],
+  days = 7,
+): Partial<Record<MuscleGroup, number>> {
+  const counts = muscleSetCounts(sessions, days);
+  const max = Math.max(1, ...counts.values());
+  const out: Partial<Record<MuscleGroup, number>> = {};
+  counts.forEach((sets, muscle) => {
+    out[muscle] = sets / max;
+  });
+  return out;
 }
 
 function volumeOf(s: WorkoutSession): number {

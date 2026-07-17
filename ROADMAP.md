@@ -51,8 +51,10 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   equipment, patterns, substitutions)
 - ✅ **Crafted glyph tiles** (`ExerciseGlyph` + `ExerciseThumb`): muscle-tinted gradient tiles with
   per-equipment line glyphs, consistent across the whole library — replaced the blobby AI photos.
-- ✅ **Muscle map** (`MuscleMap`): front/back body on the exercise detail highlighting the worked
-  muscles (primary bright, secondary faint) — shows what each movement trains, pure SVG.
+- ✅ **Muscle map** (`MuscleMap`): front/back body highlighting muscles by intensity. On the
+  exercise detail it shows what a movement trains (primary bright, secondary faint); on the
+  Dashboard the same component is a **weekly training heatmap** (shaded by sets per muscle) so you
+  can see what you're neglecting when planning. Pure SVG.
 - ✅ Library search + muscle/equipment filters + live result count; detail screen has 1RM chart,
   last-performed, how-to, **form cues**, and substitutions.
 - ⬜ **Optional curated photos** — can be layered back in via `ExerciseThumb`'s `PHOTO_IDS` set;
