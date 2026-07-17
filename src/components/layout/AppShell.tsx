@@ -25,7 +25,10 @@ export function AppShell() {
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-4">
       <main className="flex flex-1 flex-col pb-4">
-        <Outlet />
+        {/* Keyed by route so each screen gets a subtle enter transition. */}
+        <div key={location.pathname} className="flex flex-1 flex-col animate-page-in">
+          <Outlet />
+        </div>
       </main>
 
       {showResume && (

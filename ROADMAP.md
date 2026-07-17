@@ -56,12 +56,12 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
 - ⬜ **Optional curated photos** — can be layered back in via `ExerciseThumb`'s `PHOTO_IDS` set;
   regenerate a better set locally per `docs/exercise-photos.md` (cloud sandbox blocks the CDN).
 
-## ⬜ Phase 3 — Polish
+## 🟡 Phase 3 — Polish
 
-- ⬜ Screen transitions + list/press micro-interactions
+- ✅ Screen transitions (subtle per-route `page-in` enter) + tap-scale press feedback on cards
 - ⬜ Refined empty states + onboarding polish
 - ⬜ Haptics coverage; safe-area audit on a real device
-- ⬜ Component/E2E tests for Gym Mode (Testing Library is installed but unused)
+- 🟡 Store-level flow tests exist (`gymFlow.test.ts`); component/E2E for Gym Mode still todo
 
 ## 🟡 Phase 4 — Accounts & cloud sync (Supabase)
 

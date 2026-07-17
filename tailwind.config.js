@@ -78,6 +78,10 @@ export default {
         },
         'fade-in': { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
         'grow-bar': { from: { transform: 'scaleY(0)' }, to: { transform: 'scaleY(1)' } },
+        'page-in': {
+          '0%': { transform: 'translateY(6px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
       },
       animation: {
         'pop-in': 'pop-in 0.28s cubic-bezier(0.22,1,0.36,1)',
@@ -86,6 +90,7 @@ export default {
         'flash-success': 'flash-success 0.6s ease-out',
         'fade-in': 'fade-in 0.2s ease-out',
         'grow-bar': 'grow-bar 0.32s cubic-bezier(0.22,1,0.36,1)',
+        'page-in': 'page-in 0.24s cubic-bezier(0.22,1,0.36,1)',
       },
     },
   },

@@ -45,6 +45,16 @@
     @apply rounded-2xl border border-line bg-surface;
   }
 
+  /* Tactile press feedback on tappable cards (buttons only, not static ones). */
+  button.card,
+  a.card {
+    @apply transition-transform duration-100 ease-out;
+  }
+  button.card:active,
+  a.card:active {
+    transform: scale(0.985);
+  }
+
   /* Uppercase tracked eyebrow label — used on every card. */
   .label-tiny {
     @apply text-[0.69rem] font-bold uppercase tracking-[0.08em] text-content-faint;
