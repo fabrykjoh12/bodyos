@@ -18,7 +18,7 @@ import { now } from '@/lib/date';
 import { round1 } from '@/lib/volume';
 import { lbToKg } from '@/lib/format';
 import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
-import { recommendFromExerciseSession } from '@/lib/progression';
+import { recommendFromExerciseSession, rirToDifficulty } from '@/lib/progression';
 import { buildActiveSession, countPriorStalls } from '@/lib/history';
 import { detectPersonalRecords } from '@/lib/prstats';
 import { loadOrSeed, repository } from './repository';
@@ -49,6 +49,8 @@ interface StoreState extends AppData {
   adjustReps: (delta: number) => void;
   setWeight: (weightKg: number) => void;
   setReps: (reps: number) => void;
+  /** Set the active set's reps-in-reserve (undefined clears it). */
+  setRir: (rir: number | undefined) => void;
   logActiveSet: () => void;
   undoLastSet: () => void;
   editSet: (exerciseIndex: number, setId: string, patch: Partial<Pick<SetEntry, 'weightKg' | 'reps'>>) => void;
@@ -234,6 +236,16 @@ export const useStore = create<StoreState>((set, get) => ({
 
   setReps: (reps) =>
     set((s) => applyActive(s, (set2) => ({ ...set2, reps: Math.max(0, Math.round(reps)) }))),
+
+  setRir: (rir) =>
+    set((s) =>
+      applyActive(s, (set2) => ({
+        ...set2,
+        rir,
+        // Derive the per-set difficulty so RIR feeds the progression engine.
+        difficulty: rir === undefined ? undefined : rirToDifficulty(rir),
+      })),
+    ),
 
   logActiveSet: () => {
     const state = get();

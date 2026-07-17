@@ -41,6 +41,11 @@ export function SetGrid({ exercise, unit, activeSetIndex }: SetGridProps) {
                 Warmup
               </span>
             )}
+            {set.rir !== undefined && (
+              <span className="tnum rounded bg-surface-3 px-1.5 py-0.5 text-[0.6rem] font-semibold text-content-muted">
+                {set.rir >= 4 ? '4+' : set.rir} RIR
+              </span>
+            )}
             <span className="tnum ml-auto font-semibold text-content">
               {formatWeight(set.weightKg, unit, false)}
               <span className="ml-1 text-xs font-normal text-content-faint">{unit}</span>

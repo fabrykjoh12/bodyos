@@ -16,8 +16,11 @@ interface ActiveSetCardProps {
   equipment: Equipment;
   isWarmup: boolean;
   objective: string;
+  showRir: boolean;
+  rir?: number;
   onWeightChange: (v: number) => void;
   onRepsChange: (v: number) => void;
+  onRirChange: (rir: number | undefined) => void;
 }
 
 /**
@@ -36,8 +39,11 @@ export function ActiveSetCard({
   equipment,
   isWarmup,
   objective,
+  showRir,
+  rir,
   onWeightChange,
   onRepsChange,
+  onRirChange,
 }: ActiveSetCardProps) {
   const weightStep = unit === 'kg' ? incrementKg || 2.5 : 2.5;
   return (
@@ -74,6 +80,39 @@ export function ActiveSetCard({
       </div>
 
       {equipment === 'barbell' && <PlateBar weightKg={weightKg} unit={unit} />}
+
+      {showRir && !isWarmup && (
+        <div className="mt-2 rounded-xl bg-surface px-3.5 py-2.5">
+          <div className="flex items-center justify-between">
+            <p className="label-tiny">Reps in reserve</p>
+            {rir !== undefined && (
+              <span className="tnum text-[11px] font-medium text-content-faint">
+                RPE {rir >= 4 ? '6−' : 10 - rir}
+              </span>
+            )}
+          </div>
+          <div className="mt-1.5 flex gap-1.5" role="group" aria-label="Reps in reserve">
+            {[0, 1, 2, 3, 4].map((v) => {
+              const selected = rir === v;
+              return (
+                <button
+                  key={v}
+                  aria-pressed={selected}
+                  onClick={() => onRirChange(selected ? undefined : v)}
+                  className={[
+                    'tnum h-9 flex-1 rounded-lg text-sm font-semibold transition-colors',
+                    selected
+                      ? 'bg-accent text-ink'
+                      : 'bg-surface-2 text-content-muted hover:text-content',
+                  ].join(' ')}
+                >
+                  {v === 4 ? '4+' : v}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

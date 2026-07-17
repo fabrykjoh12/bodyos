@@ -21,8 +21,10 @@ export function GymMode() {
   const { id } = useParams();
   const session = useStore((s) => s.activeSession);
   const unit = useStore((s) => s.user.settings.unit);
+  const showRir = useStore((s) => s.user.settings.showRir);
   const setWeight = useStore((s) => s.setWeight);
   const setReps = useStore((s) => s.setReps);
+  const setRir = useStore((s) => s.setRir);
   const logActiveSet = useStore((s) => s.logActiveSet);
   const addSet = useStore((s) => s.addSet);
   const addWarmupSets = useStore((s) => s.addWarmupSets);
@@ -139,8 +141,11 @@ export function GymMode() {
             equipment={meta.equipment}
             isWarmup={activeSet.isWarmup}
             objective={objective}
+            showRir={showRir}
+            rir={activeSet.rir}
             onWeightChange={setWeight}
             onRepsChange={setReps}
+            onRirChange={setRir}
           />
         ) : (
           <section className="card-2 flex flex-col items-center gap-2 p-6 text-center animate-pop-in">

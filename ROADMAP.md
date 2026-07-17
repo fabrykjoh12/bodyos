@@ -95,7 +95,9 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 - ✅ **Warm-up set generator** — one tap inserts a ramping warm-up (empty bar → ~50/70/85 %) before
   the working sets on a barbell exercise (`generateWarmups` + `addWarmupSets` store action), 4 tests.
 - ⬜ Supersets / circuits
-- ⬜ Optional RPE/RIR entry (types already support `rir`)
+- ✅ **Optional RPE/RIR entry** — when "Show RIR / RPE" is on (Settings), each working set gets a
+  0–4+ reps-in-reserve picker in Gym Mode (with RPE equivalent); RIR is shown in the set ledger and
+  **feeds progression** by mapping to per-set difficulty (`rirToDifficulty`, in the tested engine).
 - ⬜ Body-measurement tracking UI
 - ⬜ Week planning / deload scheduling
 - ⬜ Landing/marketing page
