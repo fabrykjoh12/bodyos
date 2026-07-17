@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { WorkoutTemplate } from '@/types';
 import { useStore } from './useStore';
 import { now } from '@/lib/date';
+import { ROUTINES } from '@/data/routines';
 
 const S = () => useStore.getState();
 
@@ -138,6 +139,24 @@ describe('deload sessions', () => {
     }
     S().completeSession();
     expect(S().personalRecords.length).toBe(before);
+  });
+});
+
+describe('starter routines', () => {
+  beforeEach(() => S().resetAll());
+
+  it('adds a routine\'s templates and schedules them on the weekly plan', () => {
+    const ppl = ROUTINES.find((r) => r.id === 'ppl-6')!;
+    const before = S().templates.length;
+    S().applyRoutine(ppl);
+    expect(S().templates.length).toBe(before + ppl.days.length);
+    for (const sc of ppl.schedule) {
+      const id = S().weeklyPlan[sc.weekday];
+      expect(id).toBeTruthy();
+      expect(S().templates.some((t) => t.id === id)).toBe(true);
+    }
+    expect(S().user.daysPerWeek).toBe(ppl.daysPerWeek);
+    expect(S().user.split).toBe(ppl.split);
   });
 });
 

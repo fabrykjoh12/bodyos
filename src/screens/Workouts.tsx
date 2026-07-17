@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Dumbbell, Moon, Plus } from 'lucide-react';
+import { Check, ChevronRight, Dumbbell, Moon, Plus, Sparkles } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { weekdayName, todayWeekday } from '@/lib/date';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
@@ -75,11 +75,26 @@ export function Workouts() {
         </div>
       </section>
 
+      {/* Starter routines */}
+      <button
+        onClick={() => navigate('/workouts/routines')}
+        className="card flex items-center gap-3 p-4 text-left"
+      >
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+          <Sparkles size={18} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-content">Browse starter routines</p>
+          <p className="text-xs text-content-muted">Proven splits, built &amp; scheduled in a tap</p>
+        </div>
+        <ChevronRight size={18} className="text-content-faint" />
+      </button>
+
       {templates.length === 0 ? (
         <EmptyState
           icon={<Dumbbell size={24} />}
           title="No workouts yet"
-          description="Create your first workout template to start training with progression."
+          description="Pick a starter routine above, or build your own from scratch."
           action={<Button onClick={() => navigate('/workouts/new')}>Create a workout</Button>}
         />
       ) : (

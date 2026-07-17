@@ -13,6 +13,7 @@ import type {
   WorkoutTemplate,
 } from '@/types';
 import { requireExercise } from '@/data/exercises';
+import type { Routine } from '@/data/routines';
 import { uid } from '@/lib/id';
 import { now } from '@/lib/date';
 import { round1 } from '@/lib/volume';
@@ -71,6 +72,8 @@ interface StoreState extends AppData {
 
   // --- templates
   saveTemplate: (template: WorkoutTemplate) => void;
+  /** Create a starter routine's templates and drop them onto the weekly plan. */
+  applyRoutine: (routine: Routine) => void;
   deleteTemplate: (id: string) => void;
   duplicateTemplate: (id: string) => string;
   setPlanForDay: (weekday: number, templateId: string | null) => void;
@@ -569,6 +572,51 @@ export const useStore = create<StoreState>((set, get) => ({
         ? s.templates.map((t) => (t.id === template.id ? stamped : t))
         : [...s.templates, { ...stamped, createdAt: now() }];
       const next = { ...s, templates };
+      persist(next);
+      return next;
+    }),
+
+  applyRoutine: (routine) =>
+    set((s) => {
+      const dayTemplateIds: string[] = [];
+      const newTemplates: WorkoutTemplate[] = routine.days.map((d) => {
+        const templateId = uid('tpl');
+        dayTemplateIds.push(templateId);
+        const exercises = d.exercises.map((exId, i) => {
+          const ex = requireExercise(exId);
+          return {
+            id: uid('we'),
+            exerciseId: exId,
+            order: i,
+            repRange: ex.defaultRepRange,
+            restSec: ex.kind === 'compound' ? 150 : 90,
+            sets: Array.from({ length: 3 }, () => ({
+              type: 'working' as const,
+              targetReps: ex.defaultRepRange[1],
+            })),
+          };
+        });
+        return {
+          id: templateId,
+          name: d.name,
+          focus: d.focus,
+          split: routine.split,
+          estimatedMinutes: Math.max(30, exercises.length * 10),
+          exercises,
+          createdAt: now(),
+          updatedAt: now(),
+        };
+      });
+      const weeklyPlan = { ...s.weeklyPlan };
+      for (const { weekday, day } of routine.schedule) {
+        weeklyPlan[weekday] = dayTemplateIds[day] ?? null;
+      }
+      const next = {
+        ...s,
+        templates: [...s.templates, ...newTemplates],
+        weeklyPlan,
+        user: { ...s.user, split: routine.split, daysPerWeek: routine.daysPerWeek },
+      };
       persist(next);
       return next;
     }),
