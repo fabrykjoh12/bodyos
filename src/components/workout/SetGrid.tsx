@@ -1,5 +1,5 @@
-import { Check } from 'lucide-react';
-import type { ExerciseSession, Unit } from '@/types';
+import { Check, TrendingUp } from 'lucide-react';
+import type { ExerciseSession, SetEntry, Unit } from '@/types';
 import { formatWeight } from '@/lib/format';
 
 interface SetGridProps {
@@ -7,15 +7,29 @@ interface SetGridProps {
   unit: Unit;
   /** Index of the current active set (first incomplete). */
   activeSetIndex: number;
+  /** Flag completed working sets that beat last time's same set. */
+  highlightBeats?: boolean;
+}
+
+/** True when a logged working set beats last time's same working set —
+ *  heavier, or the same load for more reps. */
+function beatsPrevious(set: SetEntry, prev?: { weightKg: number; reps: number }): boolean {
+  if (!prev) return false;
+  const EPS = 1e-6;
+  return set.weightKg > prev.weightKg + EPS || (Math.abs(set.weightKg - prev.weightKg) < EPS && set.reps > prev.reps);
 }
 
 /** Compact ledger of every set: completed, active, and upcoming. */
-export function SetGrid({ exercise, unit, activeSetIndex }: SetGridProps) {
+export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false }: SetGridProps) {
+  let workingIdx = -1;
   return (
     <ol className="flex flex-col gap-1.5" aria-label="Sets">
       {exercise.sets.map((set, i) => {
         const isActive = i === activeSetIndex;
         const state = set.completed ? 'done' : isActive ? 'active' : 'upcoming';
+        const thisWorkingIdx = set.isWarmup ? -1 : (workingIdx += 1);
+        const prev = thisWorkingIdx >= 0 ? exercise.previous?.sets[thisWorkingIdx] : undefined;
+        const beat = highlightBeats && set.completed && !set.isWarmup && beatsPrevious(set, prev);
         return (
           <li
             key={set.id}
@@ -44,6 +58,14 @@ export function SetGrid({ exercise, unit, activeSetIndex }: SetGridProps) {
             {set.rir !== undefined && (
               <span className="tnum rounded bg-surface-3 px-1.5 py-0.5 text-[0.6rem] font-semibold text-content-muted">
                 {set.rir >= 4 ? '4+' : set.rir} RIR
+              </span>
+            )}
+            {beat && (
+              <span
+                className="flex items-center gap-0.5 rounded bg-accent/15 px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-accent"
+                aria-label="Beat last time"
+              >
+                <TrendingUp size={11} strokeWidth={2.5} /> Beat
               </span>
             )}
             <span className="tnum ml-auto font-semibold text-content">
