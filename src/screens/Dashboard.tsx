@@ -10,12 +10,14 @@ import {
   e1rmSeries,
   last7DaysVolume,
   muscleBalance,
+  muscleTrainingMap,
   strengthTrends,
   weeklyVolume,
   type DayVolume,
 } from '@/lib/analytics';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { MuscleMap } from '@/components/exercise/MuscleMap';
 
 const MUSCLE_LABELS: Record<string, string> = {
   chest: 'Chest', back: 'Back', shoulders: 'Shoulders', quads: 'Legs', hamstrings: 'Hamstrings',
@@ -63,6 +65,11 @@ export function Dashboard() {
     [topTrend, sessions],
   );
   const balance = useMemo(() => muscleBalance(sessions), [sessions]);
+  const muscleHeat = useMemo(() => {
+    const map = muscleTrainingMap(sessions);
+    // Floor trained muscles so even light work reads clearly on the map.
+    return Object.fromEntries(Object.entries(map).map(([m, v]) => [m, 0.3 + 0.7 * v]));
+  }, [sessions]);
   const bars: DayVolume[] = useMemo(
     () =>
       range === 'Week'
@@ -216,26 +223,19 @@ export function Dashboard() {
         </button>
       )}
 
-      {/* Muscle balance */}
+      {/* Muscle balance — weekly training heatmap */}
       {balance.length > 0 && (
         <section className="card p-[18px]">
-          <p className="label-tiny mb-4">Muscle balance · this week</p>
-          <div className="flex flex-col gap-3">
-            {balance.map((m) => (
-              <div key={m.muscle}>
-                <div className="mb-1.5 flex justify-between">
-                  <span className="text-[13px] font-semibold text-content-muted">{MUSCLE_LABELS[m.muscle] ?? m.muscle}</span>
-                  <span className="tnum text-xs text-content-faint">{m.sets} sets</span>
-                </div>
-                <div className="h-[7px] overflow-hidden rounded bg-surface-2">
-                  <div
-                    className="h-full rounded"
-                    style={{ width: `${m.pct}%`, background: m.pct >= 80 ? '#CDFB45' : '#363D45' }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="label-tiny mb-3">Muscle balance · this week</p>
+          <MuscleMap intensity={muscleHeat} legend="volume" />
+          {balance[0] && (
+            <p className="mt-3 text-center text-xs text-content-muted">
+              Most trained:{' '}
+              <span className="font-semibold text-content">{MUSCLE_LABELS[balance[0].muscle] ?? balance[0].muscle}</span>
+              {' · '}
+              <span className="tnum">{balance[0].sets} sets</span>
+            </p>
+          )}
         </section>
       )}
 

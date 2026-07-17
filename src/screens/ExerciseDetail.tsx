@@ -42,7 +42,13 @@ export function ExerciseDetail() {
 
       <div className="card py-5">
         <p className="label-tiny mb-3 text-center">Muscles worked</p>
-        <MuscleMap primary={ex.primaryMuscle} secondary={ex.secondaryMuscles} />
+        <MuscleMap
+          intensity={{
+            ...Object.fromEntries(ex.secondaryMuscles.map((m) => [m, 0.32])),
+            [ex.primaryMuscle]: 0.95,
+          }}
+          legend="exercise"
+        />
       </div>
 
       <div className="flex flex-wrap gap-1.5">
