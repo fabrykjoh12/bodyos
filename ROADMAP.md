@@ -51,6 +51,8 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   equipment, patterns, substitutions)
 - ✅ **Crafted glyph tiles** (`ExerciseGlyph` + `ExerciseThumb`): muscle-tinted gradient tiles with
   per-equipment line glyphs, consistent across the whole library — replaced the blobby AI photos.
+- ✅ **Muscle map** (`MuscleMap`): front/back body on the exercise detail highlighting the worked
+  muscles (primary bright, secondary faint) — shows what each movement trains, pure SVG.
 - ✅ Library search + muscle/equipment filters + live result count; detail screen has 1RM chart,
   last-performed, how-to, **form cues**, and substitutions.
 - ⬜ **Optional curated photos** — can be layered back in via `ExerciseThumb`'s `PHOTO_IDS` set;
@@ -106,6 +108,8 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
   latest-snapshot tiles with deltas, dated history with delete, unit-aware (kg/cm or lb/in). Seeded
   with a demo lean-bulk trend; `deleteMeasurement` action added.
 - 🟡 Week planning / deload scheduling
+  - ✅ **Starter routines** (`/workouts/routines`): pick a split (Full Body 3×, Upper/Lower 4×,
+    PPL 6×) and it builds the workout templates and drops them onto the weekly plan in one tap.
   - ✅ **Week planning** — the Workouts weekly strip is now editable: tap any day to assign a
     template or set a rest day (wires up the existing `setPlanForDay` + `weeklyPlan`).
   - ✅ **Deload** — start any workout as a deload (Dashboard hero / workout detail): ~90% load,
