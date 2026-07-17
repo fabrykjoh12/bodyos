@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ChevronRight, Dumbbell, Moon, Plus, Sparkles } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { weekdayName, todayWeekday } from '@/lib/date';
+import { resolveTodayPlan, weekdayLabel } from '@/lib/plan';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
@@ -20,6 +21,23 @@ export function Workouts() {
   // Which weekday the schedule picker is open for (null = closed).
   const [editDay, setEditDay] = useState<number | null>(null);
   const editPlanId = editDay !== null ? (weeklyPlan[editDay] ?? null) : null;
+
+  // Honest "today" line, sharing the home hero's plan resolver.
+  const plan = useMemo(() => resolveTodayPlan(weeklyPlan, templates, today), [weeklyPlan, templates, today]);
+  const todayLine =
+    plan.kind === 'today' ? (
+      <>Today · <span className="font-semibold text-accent">{plan.template.name}</span></>
+    ) : plan.kind === 'rest' ? (
+      <>
+        Today · <span className="font-semibold text-content">Rest day</span>
+        {plan.next && <> · next {plan.next.template.name}</>}
+      </>
+    ) : plan.kind === 'next' ? (
+      <>
+        Nothing today · Next up {weekdayLabel(plan.weekday, today)} ·{' '}
+        <span className="font-semibold text-accent">{plan.template.name}</span>
+      </>
+    ) : null;
 
   function assign(templateId: string | null) {
     if (editDay !== null) setPlanForDay(editDay, templateId);
@@ -73,6 +91,9 @@ export function Workouts() {
             );
           })}
         </div>
+        {todayLine && (
+          <p className="mt-3 border-t border-line/60 pt-3 text-xs text-content-muted">{todayLine}</p>
+        )}
       </section>
 
       {/* Starter routines */}

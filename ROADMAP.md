@@ -149,7 +149,8 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
     A pure `resolveTodayPlan` reads the weekly plan and the hero adapts: *Today's session* when one
     is planned, a calm **Rest day** card (with a "Train anyway · {next}" option) on scheduled rest
     days, *Next up · {Tomorrow/weekday}* when today is unplanned, or *Suggested* with no plan at all.
-    Tested (`plan.test.ts`, 9 cases).
+    Tested (`plan.test.ts`, 9 cases). The **Workouts** weekly strip shows a matching "Today · …"
+    summary line (same resolver), so both screens describe the schedule identically.
   - ✅ **Deload** — start any workout as a deload (Dashboard hero / workout detail): ~90% load,
     sets capped at 2, badged in Gym Mode + history. Deloads are excluded from progression
     baselines (prefill, stall counting, PRs) so they don't corrupt your numbers.
