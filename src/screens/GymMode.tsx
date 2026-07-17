@@ -93,6 +93,18 @@ export function GymMode() {
     ? `Complete ${formatRepRange(exercise.repRange)} reps at ${formatWeight(activeSet.weightKg, unit)}`
     : 'All sets logged';
 
+  // The number to beat: last time's performance on this same working set.
+  // Suppressed on deloads (going lighter on purpose) and warm-ups.
+  const activeWorkingIndex =
+    activeSet && !activeSet.isWarmup
+      ? exercise.sets.filter((s) => !s.isWarmup).findIndex((s) => s.id === activeSet.id)
+      : -1;
+  const prevForSet =
+    !session.isDeload && activeWorkingIndex >= 0
+      ? exercise.previous?.sets[activeWorkingIndex]
+      : undefined;
+  const beat = prevForSet ? { weightKg: prevForSet.weightKg, reps: prevForSet.reps } : undefined;
+
   const handleLog = () => {
     // Prime audio from this user gesture so the later rest-end chime can play.
     unlockAudio();
@@ -179,6 +191,7 @@ export function GymMode() {
             equipment={meta.equipment}
             isWarmup={activeSet.isWarmup}
             objective={objective}
+            beat={beat}
             showRir={showRir}
             rir={activeSet.rir}
             onSwap={canSwap ? () => setSwapOpen(true) : undefined}
