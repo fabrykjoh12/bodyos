@@ -1,6 +1,12 @@
+import { useState } from 'react';
 import type { MuscleGroup } from '@/types';
 import { getExercise } from '@/data/exercises';
 import { ExerciseGlyph } from './ExerciseGlyph';
+
+// Ids that have a curated photo at public/exercises/<id>.webp. Add ids here
+// after pulling real photos (see docs/exercise-photos.md) and they take over
+// the crafted tile. Empty by default so we never fire 404s for absent photos.
+const PHOTO_IDS = new Set<string>([]);
 
 // Per-muscle accent so each exercise reads at a glance and tiles feel designed.
 const MUSCLE_TINT: Record<MuscleGroup, string> = {
@@ -32,6 +38,21 @@ interface ExerciseThumbProps {
 export function ExerciseThumb({ id, muscle, size = 44, rounded = 'rounded-xl' }: ExerciseThumbProps) {
   const tint = MUSCLE_TINT[muscle] ?? '#CDFB45';
   const equipment = getExercise(id)?.equipment ?? 'dumbbell';
+  const [photoFailed, setPhotoFailed] = useState(false);
+
+  // Prefer a curated photo when one is known to exist; fall back to the tile.
+  if (PHOTO_IDS.has(id) && !photoFailed) {
+    return (
+      <img
+        src={`${import.meta.env.BASE_URL}exercises/${id}.webp`}
+        alt=""
+        loading="lazy"
+        onError={() => setPhotoFailed(true)}
+        className={`shrink-0 object-cover ${rounded}`}
+        style={{ width: size, height: size, background: `${tint}18` }}
+      />
+    );
+  }
 
   return (
     <div

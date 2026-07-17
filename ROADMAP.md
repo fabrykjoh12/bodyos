@@ -45,20 +45,16 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   dev (`devOptions.enabled: false`); the hand-authored `public/manifest.webmanifest` is kept
   (`manifest: false`).
 
-## 🟡 Exercises & photos
+## ✅ Exercises & visuals
 
-- ✅ Library expanded to **~55 exercises** across all muscle groups (instructions, equipment,
-  patterns, substitutions)
-- ✅ `ExerciseThumb` with muscle-tinted fallback; thumbnails in library + hero image on detail
-- ✅ Higgsfield 3D-illustration photos for the **15 template exercises** (see CLAUDE.md pipeline)
-- ⬜ **Generate photos for the remaining ~40 exercises** (~80 credits, ~5–10 min). Same style
-  prompt + pipeline. Remaining ids:
-  `db-bench-press, machine-chest-press, db-shoulder-press, pull-up, goblet-squat, leg-extension,
-  overhead-extension, plank, hanging-leg-raise, dips, cable-fly, pec-deck, push-up, deadlift,
-  chin-up, t-bar-row, face-pull, straight-arm-pulldown, arnold-press, rear-delt-fly, upright-row,
-  front-raise, front-squat, hack-squat, bulgarian-split-squat, walking-lunge, hip-thrust,
-  good-morning, seated-calf-raise, hammer-curl, preacher-curl, skullcrusher, close-grip-bench,
-  reverse-curl, cable-crunch, russian-twist, ab-wheel`
+- ✅ Library expanded to **66 exercises** across all muscle groups (instructions, coaching cues,
+  equipment, patterns, substitutions)
+- ✅ **Crafted glyph tiles** (`ExerciseGlyph` + `ExerciseThumb`): muscle-tinted gradient tiles with
+  per-equipment line glyphs, consistent across the whole library — replaced the blobby AI photos.
+- ✅ Library search + muscle/equipment filters + live result count; detail screen has 1RM chart,
+  last-performed, how-to, **form cues**, and substitutions.
+- ⬜ **Optional curated photos** — can be layered back in via `ExerciseThumb`'s `PHOTO_IDS` set;
+  regenerate a better set locally per `docs/exercise-photos.md` (cloud sandbox blocks the CDN).
 
 ## ⬜ Phase 3 — Polish
 
