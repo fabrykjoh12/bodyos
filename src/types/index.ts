@@ -166,8 +166,8 @@ export interface ExerciseSession {
 
 export interface PreviousPerformance {
   date: ISODate;
-  /** One entry per working set: weight + reps. */
-  sets: { weightKg: number; reps: number }[];
+  /** One entry per working set: weight + reps (+ reps-in-reserve if logged). */
+  sets: { weightKg: number; reps: number; rir?: number }[];
   topWeightKg: number;
   estimated1RM?: number;
 }

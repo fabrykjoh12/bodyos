@@ -5,6 +5,7 @@ import { useStore } from '@/store/useStore';
 import { exerciseName } from '@/data/exercises';
 import { Button } from '@/components/ui/Button';
 import { WorkoutSummary } from '@/components/workout/WorkoutSummary';
+import { SessionRecap } from '@/components/workout/SessionRecap';
 import { ProgressionRecommendation } from '@/components/workout/ProgressionRecommendation';
 
 export function WorkoutComplete() {
@@ -43,6 +44,8 @@ export function WorkoutComplete() {
       </div>
 
       <WorkoutSummary session={session} prs={prs} unit={unit} />
+
+      <SessionRecap session={session} unit={unit} />
 
       <div className="mt-5">
         <h2 className="mb-2 text-sm font-semibold text-content">Next session plan</h2>

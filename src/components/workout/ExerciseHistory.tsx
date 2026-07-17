@@ -48,6 +48,9 @@ export function ExerciseHistory({ exercise, unit }: { exercise: ExerciseSession;
                 {prev.sets.map((s, i) => (
                   <li key={i} className="tnum text-content-muted">
                     {formatWeight(s.weightKg, unit, false)} {unit} × {s.reps}
+                    {s.rir !== undefined && (
+                      <span className="text-content-faint"> · {s.rir >= 4 ? '4+' : s.rir} RIR</span>
+                    )}
                   </li>
                 ))}
               </ul>
