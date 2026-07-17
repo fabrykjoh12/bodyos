@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUp, Camera, ChevronRight, Dumbbell, Flame, Play, Plus, Trophy } from 'lucide-react';
+import { ArrowUp, Camera, ChevronRight, Dumbbell, Play, Plus, Trophy } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { exerciseName } from '@/data/exercises';
 import { computeStreak, diffInDays, relativeDay } from '@/lib/date';
@@ -52,9 +52,6 @@ export function Dashboard() {
   const completed = sessions.filter((s) => s.status === 'completed');
   const streak = computeStreak(store.streakDates);
   const monthSessions = completed.filter((s) => diffInDays(new Date().toISOString(), s.startedAt) < 30).length;
-  const weekVolume = completed
-    .filter((s) => diffInDays(new Date().toISOString(), s.startedAt) < 7)
-    .reduce((t, s) => t + sessionTotalVolume(s), 0);
   const newPRs = personalRecords.filter(
     (p) => p.type === 'weight' && diffInDays(new Date().toISOString(), p.achievedAt) < 7,
   ).length;
@@ -77,7 +74,7 @@ export function Dashboard() {
   const barMax = Math.max(1, ...bars.map((b) => b.volume));
 
   const recentPRs = personalRecords.filter((p) => p.type === 'weight').slice(-3).reverse();
-  const recentSessions = completed.slice(0, 4);
+  const recentSessions = completed.slice(0, 3);
 
   const initial = (user.name || 'A').slice(0, 1).toUpperCase();
 
@@ -91,21 +88,13 @@ export function Dashboard() {
             {user.name}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
-          {streak > 0 && (
-            <span className="flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1.5">
-              <Flame size={15} className="text-accent" />
-              <span className="tnum text-[13px] font-bold text-accent">{streak}d</span>
-            </span>
-          )}
-          <button
-            aria-label="Profile"
-            onClick={() => navigate('/profile')}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-sm font-bold text-content"
-          >
-            {initial}
-          </button>
-        </div>
+        <button
+          aria-label="Profile"
+          onClick={() => navigate('/profile')}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-sm font-bold text-content"
+        >
+          {initial}
+        </button>
       </header>
 
       {/* Today's session hero */}
@@ -153,12 +142,11 @@ export function Dashboard() {
         />
       )}
 
-      {/* KPI grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <Kpi label="Week volume" value={formatVolume(weekVolume, unit)} delta={newPRs > 0 ? '+' + newPRs : undefined} note="PRs" />
-        <Kpi label="Sessions" value={String(monthSessions)} note="this month" />
-        <Kpi label={topTrend ? `Est. 1RM ${exerciseName(topTrend.exerciseId).split(' ').slice(-1)[0]}` : 'Est. 1RM'} value={topTrend ? formatWeight(topTrend.latest, unit, false) : '—'} unit={unit} delta={topTrend && topTrend.deltaKg > 0 ? `+${topTrend.deltaKg}` : undefined} note="kg" />
-        <Kpi label="New PRs" value={String(newPRs)} note="this week" />
+      {/* At a glance — counts that aren't already shown in the charts below */}
+      <div className="card flex divide-x divide-line p-0">
+        <StripCell label="Streak" value={String(streak)} suffix="d" />
+        <StripCell label="Sessions" value={String(monthSessions)} />
+        <StripCell label="New PRs" value={String(newPRs)} />
       </div>
 
       {/* Weekly volume */}
@@ -318,23 +306,14 @@ export function Dashboard() {
   );
 }
 
-function Kpi({ label, value, unit, delta, note, accent }: { label: string; value: string; unit?: string; delta?: string; note?: string; accent?: boolean }) {
+function StripCell({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className="card p-[15px]">
-      <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-content-faint">{label}</p>
-      <p className={`tnum text-[24px] font-semibold leading-none tracking-[-0.02em] ${accent ? 'text-accent' : 'text-content'}`}>
+    <div className="flex-1 px-3 py-3.5 text-center">
+      <p className="tnum text-[22px] font-semibold leading-none tracking-[-0.02em] text-content">
         {value}
-        {unit && <span className="text-[13px] font-medium text-content-faint"> {unit}</span>}
+        {suffix && <span className="text-[13px] font-medium text-content-faint">{suffix}</span>}
       </p>
-      <div className="mt-[7px] flex items-center gap-1">
-        {delta ? (
-          <>
-            <ArrowUp size={12} strokeWidth={2.6} className="text-success" />
-            <span className="tnum text-xs font-semibold text-success">{delta}</span>
-          </>
-        ) : null}
-        {note && <span className="text-[11px] text-content-faint">{note}</span>}
-      </div>
+      <p className="mt-2 text-[10.5px] font-bold uppercase tracking-[0.06em] text-content-faint">{label}</p>
     </div>
   );
 }
