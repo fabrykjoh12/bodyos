@@ -88,6 +88,8 @@ export interface Exercise {
   /** Smallest sensible load change for this exercise, in kg. */
   defaultIncrementKg: number;
   instructions: string[];
+  /** Short coaching cues — the details that make the movement safer/stronger. */
+  tips?: string[];
   /** Ids of exercises that train a similar pattern. */
   substitutions: ID[];
 }

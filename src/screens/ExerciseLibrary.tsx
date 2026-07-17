@@ -7,8 +7,8 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Chip } from '@/components/ui/Chip';
 import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 
-const MUSCLES: (MuscleGroup | 'all')[] = ['all', 'chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'calves', 'core'];
-const EQUIPMENT: (Equipment | 'all')[] = ['all', 'barbell', 'dumbbell', 'machine', 'cable', 'bodyweight'];
+const MUSCLES: (MuscleGroup | 'all')[] = ['all', 'chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes', 'calves', 'core', 'forearms'];
+const EQUIPMENT: (Equipment | 'all')[] = ['all', 'barbell', 'dumbbell', 'machine', 'cable', 'bodyweight', 'kettlebell', 'band'];
 
 export function ExerciseLibrary() {
   const navigate = useNavigate();
@@ -51,6 +51,11 @@ export function ExerciseLibrary() {
           <FilterChip key={eq} active={equipment === eq} onClick={() => setEquipment(eq)}>{eq}</FilterChip>
         ))}
       </div>
+
+      <p className="-mb-1 text-xs text-content-faint">
+        {results.length} {results.length === 1 ? 'exercise' : 'exercises'}
+        {(muscle !== 'all' || equipment !== 'all' || query.trim() !== '') && ' match'}
+      </p>
 
       <div className="flex flex-col gap-2">
         {results.map((ex) => (
