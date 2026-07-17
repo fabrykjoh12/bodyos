@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUp, Camera, ChevronRight, Dumbbell, Play, Plus, Trophy } from 'lucide-react';
+import { ArrowUp, Camera, ChevronRight, Dumbbell, Moon, Play, Plus, Trophy } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { exerciseName } from '@/data/exercises';
 import { computeStreak, diffInDays, relativeDay } from '@/lib/date';
+import { resolveTodayPlan, weekdayLabel } from '@/lib/plan';
 import { formatVolume, formatWeight } from '@/lib/format';
 import { sessionSetCount, sessionTotalVolume } from '@/lib/prstats';
 import {
@@ -38,18 +39,18 @@ export function Dashboard() {
   const unit = user.settings.unit;
   const [range, setRange] = useState<'Week' | 'Month'>('Week');
 
-  const todayTemplate = useMemo(() => {
-    const wd = new Date().getDay();
-    const planned = weeklyPlan[wd];
-    const fromPlan = planned ? templates.find((t) => t.id === planned) : undefined;
-    if (fromPlan) return fromPlan;
-    for (let i = 1; i <= 7; i += 1) {
-      const id = weeklyPlan[(wd + i) % 7];
-      const t = id ? templates.find((x) => x.id === id) : undefined;
-      if (t) return t;
-    }
-    return templates[0];
-  }, [weeklyPlan, templates]);
+  const weekday = new Date().getDay();
+  const todayPlan = useMemo(
+    () => resolveTodayPlan(weeklyPlan, templates, weekday),
+    [weeklyPlan, templates, weekday],
+  );
+  // The template the hero can start (rest days are handled separately).
+  const heroTemplate =
+    todayPlan.kind === 'today' || todayPlan.kind === 'next' || todayPlan.kind === 'suggested'
+      ? todayPlan.template
+      : todayPlan.kind === 'rest'
+        ? todayPlan.next?.template
+        : undefined;
 
   const completed = sessions.filter((s) => s.status === 'completed');
   const streak = computeStreak(store.streakDates);
@@ -85,12 +86,16 @@ export function Dashboard() {
 
   const initial = (user.name || 'A').slice(0, 1).toUpperCase();
 
-  const startToday = (deload: boolean) => {
-    if (!todayTemplate) return;
-    store.startSession(todayTemplate.id, deload);
+  const startSession = (templateId: string | undefined, deload: boolean) => {
+    if (!templateId) return;
+    store.startSession(templateId, deload);
     const created = useStore.getState().activeSession;
     if (created) navigate(`/session/${created.id}`);
   };
+
+  const heroEyebrow =
+    todayPlan.kind === 'today' ? 'Today’s session' : todayPlan.kind === 'next' ? 'Next up' : 'Suggested';
+  const nextDayLabel = todayPlan.kind === 'next' ? weekdayLabel(todayPlan.weekday, weekday) : null;
 
   return (
     <div className="flex flex-col gap-3 pt-3">
@@ -111,51 +116,71 @@ export function Dashboard() {
         </button>
       </header>
 
-      {/* Today's session hero */}
-      {todayTemplate ? (
+      {/* Today's session hero — honest about what's actually scheduled today */}
+      {activeSession ? (
         <section className="rounded-2xl border border-accent bg-surface p-[18px] shadow-card">
           <div className="mb-3 flex items-center justify-between">
             <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.1em] text-ink">
-              Today’s session
+              In progress
             </span>
-            {store.streakDates[0] && (
-              <span className="tnum text-[11px] text-content-faint">
-                Last {relativeDay(store.streakDates[0]).toLowerCase()}
-              </span>
-            )}
           </div>
-          <h2 className="text-[26px] font-extrabold tracking-[-0.03em] text-content">{todayTemplate.name}</h2>
-          <p className="mt-1 text-sm text-content-muted">
-            {todayTemplate.focus} · {todayTemplate.exercises.length} exercises
-          </p>
-          {activeSession ? (
-            <Button size="xl" fullWidth className="mt-4" onClick={() => navigate(`/session/${activeSession.id}`)}>
-              <Play size={18} /> Resume session
-            </Button>
-          ) : (
-            <div className="mt-4 flex items-center gap-2">
-              <Button size="xl" fullWidth onClick={() => startToday(false)}>
-                <Play size={18} /> Start session
-              </Button>
-              <Button
-                size="xl"
-                variant="secondary"
-                className="shrink-0 px-4"
-                onClick={() => startToday(true)}
-                title="Lighter recovery session (~90% load, fewer sets)"
-              >
-                Deload
-              </Button>
-            </div>
-          )}
+          <h2 className="text-[26px] font-extrabold tracking-[-0.03em] text-content">{activeSession.name}</h2>
+          <p className="mt-1 text-sm text-content-muted">{activeSession.focus}</p>
+          <Button size="xl" fullWidth className="mt-4" onClick={() => navigate(`/session/${activeSession.id}`)}>
+            <Play size={18} /> Resume session
+          </Button>
         </section>
-      ) : (
+      ) : todayPlan.kind === 'none' ? (
         <EmptyState
           icon={<Plus size={24} />}
           title="No workout planned"
           description="Build a session to start training with progression."
           action={<Button onClick={() => navigate('/workouts/new')}>Create a workout</Button>}
         />
+      ) : todayPlan.kind === 'rest' ? (
+        <section className="rounded-2xl border border-line bg-surface p-[18px] shadow-card">
+          <div className="mb-3 flex items-center gap-2 text-content-muted">
+            <Moon size={15} />
+            <span className="text-[10px] font-extrabold uppercase tracking-[0.1em]">Rest day</span>
+          </div>
+          <h2 className="text-[22px] font-extrabold tracking-[-0.02em] text-content">Recovery day</h2>
+          <p className="mt-1 text-sm text-content-muted">
+            No session scheduled today — recovery is where the growth happens.
+            {todayPlan.next && <> Next up: <span className="text-content">{todayPlan.next.template.name}</span>.</>}
+          </p>
+          {todayPlan.next && (
+            <Button size="lg" variant="secondary" fullWidth className="mt-4" onClick={() => startSession(heroTemplate?.id, false)}>
+              <Play size={16} /> Train anyway · {todayPlan.next.template.name}
+            </Button>
+          )}
+        </section>
+      ) : (
+        <section className="rounded-2xl border border-accent bg-surface p-[18px] shadow-card">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.1em] text-ink">
+              {heroEyebrow}
+            </span>
+            {nextDayLabel && <span className="text-[11px] font-semibold text-content-faint">{nextDayLabel}</span>}
+          </div>
+          <h2 className="text-[26px] font-extrabold tracking-[-0.03em] text-content">{heroTemplate?.name}</h2>
+          <p className="mt-1 text-sm text-content-muted">
+            {heroTemplate?.focus} · {heroTemplate?.exercises.length} exercises
+          </p>
+          <div className="mt-4 flex items-center gap-2">
+            <Button size="xl" fullWidth onClick={() => startSession(heroTemplate?.id, false)}>
+              <Play size={18} /> Start session
+            </Button>
+            <Button
+              size="xl"
+              variant="secondary"
+              className="shrink-0 px-4"
+              onClick={() => startSession(heroTemplate?.id, true)}
+              title="Lighter recovery session (~90% load, fewer sets)"
+            >
+              Deload
+            </Button>
+          </div>
+        </section>
       )}
 
       {/* At a glance — counts that aren't already shown in the charts below */}
