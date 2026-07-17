@@ -87,9 +87,13 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 - ⬜ **Relational schema** (per-table sessions/PRs) — only if server-side queries/analytics are
   ever needed; the blob model already covers multi-device sync.
 
-## ⬜ Phase 5 — Deeper training features
+## 🟡 Phase 5 — Deeper training features
 
-- ⬜ Plate calculator + warm-up set generator
+- ✅ **Plate calculator** — per-side barbell breakdown shown live under the weight in Gym Mode
+  (barbell lifts only), unit-aware (kg/lb bar + plate sets), reports any unloadable remainder.
+  Pure logic in `lib/plates.ts` (`computePlates`), 7 tests.
+- ✅ **Warm-up set generator** — one tap inserts a ramping warm-up (empty bar → ~50/70/85 %) before
+  the working sets on a barbell exercise (`generateWarmups` + `addWarmupSets` store action), 4 tests.
 - ⬜ Supersets / circuits
 - ⬜ Optional RPE/RIR entry (types already support `rir`)
 - ⬜ Body-measurement tracking UI

@@ -1,6 +1,7 @@
-import type { Unit } from '@/types';
+import type { Equipment, Unit } from '@/types';
 import { NumericStepper } from '@/components/ui/NumericStepper';
 import { Chip } from '@/components/ui/Chip';
+import { PlateBar } from '@/components/workout/PlateBar';
 import { formatRepRange, formatWeightValue } from '@/lib/format';
 
 interface ActiveSetCardProps {
@@ -12,6 +13,7 @@ interface ActiveSetCardProps {
   reps: number;
   unit: Unit;
   incrementKg: number;
+  equipment: Equipment;
   isWarmup: boolean;
   objective: string;
   onWeightChange: (v: number) => void;
@@ -31,6 +33,7 @@ export function ActiveSetCard({
   reps,
   unit,
   incrementKg,
+  equipment,
   isWarmup,
   objective,
   onWeightChange,
@@ -69,6 +72,8 @@ export function ActiveSetCard({
         />
         <NumericStepper label="Reps" value={reps} step={1} onChange={onRepsChange} />
       </div>
+
+      {equipment === 'barbell' && <PlateBar weightKg={weightKg} unit={unit} />}
     </section>
   );
 }

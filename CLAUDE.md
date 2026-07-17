@@ -44,6 +44,7 @@ src/
     progression.ts        Double-progression engine (pure, tested). Every rec has a reason.
     analytics.ts          e1rmSeries, strengthTrends, weeklyVolume, last7DaysVolume, muscleBalance
     volume.ts             Epley 1RM, tonnage (tested)
+    plates.ts             Barbell plate-breakdown calculator + warm-up ramp generator (pure, tested)
     prstats.ts            PR detection + session totals
     history.ts            previous-performance lookup, stall counting, buildActiveSession (smart prefill)
     format.ts date.ts id.ts haptics.ts
@@ -61,7 +62,7 @@ src/
                           Sheet, Chip, SegmentedControl, ProgressRing, IconButton, BackButton
     layout/               AppShell (mobile frame + resume bar), BottomNav (5 tabs), ScreenHeader
     workout/              ActiveSetCard, SetGrid, RestTimerBar, UndoBar, DifficultyPicker,
-                          ExerciseHistory, ProgressionRecommendation, WorkoutSummary
+                          ExerciseHistory, ProgressionRecommendation, WorkoutSummary, PlateBar
     progress/             StrengthChart, BeforeAfterSlider, PoseGuide
     exercise/ExerciseThumb.tsx   Exercise photo w/ muscle-tinted fallback
   screens/                One file per route (see routing below)

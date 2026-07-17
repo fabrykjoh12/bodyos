@@ -16,6 +16,8 @@ import { requireExercise } from '@/data/exercises';
 import { uid } from '@/lib/id';
 import { now } from '@/lib/date';
 import { round1 } from '@/lib/volume';
+import { lbToKg } from '@/lib/format';
+import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { recommendFromExerciseSession } from '@/lib/progression';
 import { buildActiveSession, countPriorStalls } from '@/lib/history';
 import { detectPersonalRecords } from '@/lib/prstats';
@@ -52,6 +54,8 @@ interface StoreState extends AppData {
   editSet: (exerciseIndex: number, setId: string, patch: Partial<Pick<SetEntry, 'weightKg' | 'reps'>>) => void;
   addSet: (exerciseIndex: number) => void;
   removeSet: (exerciseIndex: number, setId: string) => void;
+  /** Prepend generated ramping warm-up sets before the working sets. */
+  addWarmupSets: (exerciseIndex: number) => void;
   setExerciseDifficulty: (exerciseIndex: number, difficulty: Difficulty) => void;
   goToExercise: (index: number) => void;
   nextExercise: () => void;
@@ -360,6 +364,37 @@ export const useStore = create<StoreState>((set, get) => ({
           .filter((set2) => set2.id !== setId)
           .map((set2, idx) => ({ ...set2, setNumber: idx + 1 }));
         return { ...ex, sets };
+      });
+      const next = { ...s, activeSession: { ...s.activeSession, exercises } };
+      persist(next);
+      return next;
+    }),
+
+  addWarmupSets: (exerciseIndex) =>
+    set((s) => {
+      if (!s.activeSession) return s;
+      const barKg = s.user.settings.unit === 'kg' ? BAR_KG : lbToKg(BAR_LB);
+      const exercises = s.activeSession.exercises.map((ex, i) => {
+        if (i !== exerciseIndex) return ex;
+        // Don't add warm-ups twice, and derive them from the first working set.
+        if (ex.sets.some((st) => st.isWarmup)) return ex;
+        const firstWorking = ex.sets.find((st) => !st.isWarmup);
+        if (!firstWorking) return ex;
+        const warmups = generateWarmups(firstWorking.weightKg, { barKg }).map(
+          (w): SetEntry => ({
+            id: uid('set'),
+            exerciseId: ex.exerciseId,
+            setNumber: 0, // renumbered below
+            type: 'warmup',
+            weightKg: w.weightKg,
+            reps: w.reps,
+            completed: false,
+            isWarmup: true,
+          }),
+        );
+        if (warmups.length === 0) return ex;
+        const sets = [...warmups, ...ex.sets].map((st, idx) => ({ ...st, setNumber: idx + 1 }));
+        return { ...ex, status: 'active' as const, sets };
       });
       const next = { ...s, activeSession: { ...s.activeSession, exercises } };
       persist(next);
