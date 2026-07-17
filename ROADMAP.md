@@ -66,7 +66,13 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
 - ✅ Refined empty states (inviting accent-tinted icon, fade-in) + onboarding steps animate in
 - ✅ Training-consistency calendar on Progress (`ConsistencyGrid`): contribution-style grid of
   workout days over the last 16 weeks, cells shaded by set count
-- ⬜ Haptics coverage; safe-area audit on a real device
+- ✅ **Rest-timer completion alert** — a two-tone Web Audio chime (`lib/sound.ts`, no assets) plays
+  when the rest timer finishes, alongside the vibration. Both are opt-out: the buzz honours the
+  existing "Haptic feedback" toggle, the chime a new "Rest timer sound" toggle (Settings). Audio is
+  primed from the "Log Set" tap (`unlockAudio`) so mobile browsers allow it.
+- ✅ **Data export** — Settings → Data → "Export data" downloads the full `AppData` as a timestamped
+  JSON backup (`bodyos-backup-YYYY-MM-DD.json`) via a Blob download; new `exportData` store action.
+- 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
 - 🟡 Store-level flow tests exist (`gymFlow.test.ts`); component/E2E for Gym Mode still todo
 
 ## 🟡 Phase 4 — Accounts & cloud sync (Supabase)

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Download } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
 import { useStore } from '@/store/useStore';
 import {
@@ -20,7 +21,22 @@ export function Settings() {
   const settings = useStore((s) => s.user.settings);
   const updateSettings = useStore((s) => s.updateSettings);
   const resetAll = useStore((s) => s.resetAll);
+  const exportData = useStore((s) => s.exportData);
   const [confirmReset, setConfirmReset] = useState(false);
+
+  function exportBackup() {
+    const data = exportData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const stamp = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bodyos-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -60,7 +76,23 @@ export function Settings() {
 
       <Group title="Feedback">
         <Toggle label="Haptic feedback" checked={settings.hapticFeedback} onChange={(v) => updateSettings({ hapticFeedback: v })} />
+        <Toggle
+          label="Rest timer sound"
+          hint="Play a chime when the rest timer finishes"
+          checked={settings.restAlertSound !== false}
+          onChange={(v) => updateSettings({ restAlertSound: v })}
+        />
         <Toggle label="Reduce motion" hint="Minimize animations" checked={settings.reducedMotion} onChange={(v) => updateSettings({ reducedMotion: v })} />
+      </Group>
+
+      <Group title="Data">
+        <button onClick={exportBackup} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left">
+          <div className="min-w-0">
+            <p className="text-sm text-content">Export data</p>
+            <p className="text-xs text-content-faint">Download a JSON backup of your workouts, history &amp; settings</p>
+          </div>
+          <Download size={18} className="shrink-0 text-content-faint" />
+        </button>
       </Group>
 
       <button onClick={() => setConfirmReset(true)} className="mt-2 text-sm font-medium text-danger/80 hover:text-danger">
