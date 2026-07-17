@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check, ChevronRight, Plus, X } from 'lucide-react';
+import { Check, ChevronRight, Flame, Plus, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { requireExercise } from '@/data/exercises';
-import { formatRepRange, formatWeight } from '@/lib/format';
+import { formatRepRange, formatWeight, lbToKg } from '@/lib/format';
+import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { haptics } from '@/lib/haptics';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
@@ -20,10 +21,13 @@ export function GymMode() {
   const { id } = useParams();
   const session = useStore((s) => s.activeSession);
   const unit = useStore((s) => s.user.settings.unit);
+  const showRir = useStore((s) => s.user.settings.showRir);
   const setWeight = useStore((s) => s.setWeight);
   const setReps = useStore((s) => s.setReps);
+  const setRir = useStore((s) => s.setRir);
   const logActiveSet = useStore((s) => s.logActiveSet);
   const addSet = useStore((s) => s.addSet);
+  const addWarmupSets = useStore((s) => s.addWarmupSets);
   const nextExercise = useStore((s) => s.nextExercise);
   const goToExercise = useStore((s) => s.goToExercise);
   const setDifficulty = useStore((s) => s.setExerciseDifficulty);
@@ -54,6 +58,16 @@ export function GymMode() {
   const isLastExercise = exIndex === session.exercises.length - 1;
   const completedWorking = exercise.sets.filter((s) => s.completed && !s.isWarmup).length;
   const totalWorking = exercise.sets.filter((s) => !s.isWarmup).length;
+
+  // Offer generated warm-up sets at the start of a barbell exercise.
+  const firstWorking = exercise.sets.find((s) => !s.isWarmup);
+  const barKg = unit === 'kg' ? BAR_KG : lbToKg(BAR_LB);
+  const canWarmup =
+    meta.equipment === 'barbell' &&
+    !exercise.sets.some((s) => s.isWarmup) &&
+    completedWorking === 0 &&
+    !!firstWorking &&
+    generateWarmups(firstWorking.weightKg, { barKg }).length > 0;
 
   const objective = activeSet
     ? `Complete ${formatRepRange(exercise.repRange)} reps at ${formatWeight(activeSet.weightKg, unit)}`
@@ -124,10 +138,14 @@ export function GymMode() {
             reps={activeSet.reps}
             unit={unit}
             incrementKg={exercise.incrementKg}
+            equipment={meta.equipment}
             isWarmup={activeSet.isWarmup}
             objective={objective}
+            showRir={showRir}
+            rir={activeSet.rir}
             onWeightChange={setWeight}
             onRepsChange={setReps}
+            onRirChange={setRir}
           />
         ) : (
           <section className="card-2 flex flex-col items-center gap-2 p-6 text-center animate-pop-in">
@@ -163,12 +181,22 @@ export function GymMode() {
         <div className="card p-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="label-tiny">Sets</span>
-            <button
-              onClick={() => addSet(exIndex)}
-              className="flex items-center gap-1 text-xs font-semibold text-accent"
-            >
-              <Plus size={14} /> Add set
-            </button>
+            <div className="flex items-center gap-4">
+              {canWarmup && (
+                <button
+                  onClick={() => addWarmupSets(exIndex)}
+                  className="flex items-center gap-1 text-xs font-semibold text-content-muted hover:text-content"
+                >
+                  <Flame size={14} /> Warm-up
+                </button>
+              )}
+              <button
+                onClick={() => addSet(exIndex)}
+                className="flex items-center gap-1 text-xs font-semibold text-accent"
+              >
+                <Plus size={14} /> Add set
+              </button>
+            </div>
           </div>
           <SetGrid exercise={exercise} unit={unit} activeSetIndex={activeSetIndex} />
         </div>

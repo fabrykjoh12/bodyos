@@ -53,6 +53,17 @@ function dedust(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+/**
+ * Map reps-in-reserve to a difficulty rating so per-set RIR feeds the same
+ * progression logic as the difficulty picker. 0–1 RIR = hard (near failure),
+ * 2–3 = good (on target), 4+ = easy (leave room to add load).
+ */
+export function rirToDifficulty(rir: number): Difficulty {
+  if (rir <= 1) return 'hard';
+  if (rir <= 3) return 'good';
+  return 'easy';
+}
+
 /** Worst-biased aggregate difficulty across sets ("easy" only if all easy). */
 export function aggregateDifficulty(
   sets: WorkingSetResult[],

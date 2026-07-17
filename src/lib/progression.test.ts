@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   aggregateDifficulty,
   recommendProgression,
+  rirToDifficulty,
   roundToIncrement,
   type ProgressionInput,
 } from './progression';
@@ -12,6 +13,21 @@ const base: Omit<ProgressionInput, 'workingSets'> = {
   incrementKg: 2.5,
   kind: 'compound',
 };
+
+describe('rirToDifficulty', () => {
+  it('maps low reps-in-reserve to hard (near failure)', () => {
+    expect(rirToDifficulty(0)).toBe('hard');
+    expect(rirToDifficulty(1)).toBe('hard');
+  });
+  it('maps mid reps-in-reserve to good (on target)', () => {
+    expect(rirToDifficulty(2)).toBe('good');
+    expect(rirToDifficulty(3)).toBe('good');
+  });
+  it('maps high reps-in-reserve to easy (room to add load)', () => {
+    expect(rirToDifficulty(4)).toBe('easy');
+    expect(rirToDifficulty(6)).toBe('easy');
+  });
+});
 
 describe('roundToIncrement', () => {
   it('snaps to the nearest increment', () => {

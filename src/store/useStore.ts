@@ -16,10 +16,17 @@ import { requireExercise } from '@/data/exercises';
 import { uid } from '@/lib/id';
 import { now } from '@/lib/date';
 import { round1 } from '@/lib/volume';
-import { recommendFromExerciseSession } from '@/lib/progression';
+import { lbToKg } from '@/lib/format';
+import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
+import { recommendFromExerciseSession, rirToDifficulty } from '@/lib/progression';
 import { buildActiveSession, countPriorStalls } from '@/lib/history';
 import { detectPersonalRecords } from '@/lib/prstats';
 import { loadOrSeed, repository } from './repository';
+import {
+  initCloudSync,
+  notifyLocalWrite,
+  registerSync,
+} from './cloudSync';
 
 interface UndoState {
   exerciseIndex: number;
@@ -42,11 +49,15 @@ interface StoreState extends AppData {
   adjustReps: (delta: number) => void;
   setWeight: (weightKg: number) => void;
   setReps: (reps: number) => void;
+  /** Set the active set's reps-in-reserve (undefined clears it). */
+  setRir: (rir: number | undefined) => void;
   logActiveSet: () => void;
   undoLastSet: () => void;
   editSet: (exerciseIndex: number, setId: string, patch: Partial<Pick<SetEntry, 'weightKg' | 'reps'>>) => void;
   addSet: (exerciseIndex: number) => void;
   removeSet: (exerciseIndex: number, setId: string) => void;
+  /** Prepend generated ramping warm-up sets before the working sets. */
+  addWarmupSets: (exerciseIndex: number) => void;
   setExerciseDifficulty: (exerciseIndex: number, difficulty: Difficulty) => void;
   goToExercise: (index: number) => void;
   nextExercise: () => void;
@@ -68,17 +79,22 @@ interface StoreState extends AppData {
   updateSettings: (patch: Partial<UserSettings>) => void;
   resetAll: () => void;
 
+  // --- sync
+  /** Replace the whole AppData slice (used when cloud sync pulls remote). */
+  replaceAll: (data: AppData) => void;
+
   // --- progress
   addPhoto: (photo: ProgressPhoto) => void;
   deletePhoto: (id: string) => void;
   addMeasurement: (m: BodyMeasurement) => void;
+  deleteMeasurement: (id: string) => void;
 }
 
 const initial = loadOrSeed();
 
-/** Persist the AppData slice after every mutation. */
-function persist(state: StoreState): void {
-  const data: AppData = {
+/** Snapshot the persisted AppData slice out of the (larger) store state. */
+function extractAppData(state: StoreState): AppData {
+  return {
     version: state.version,
     user: state.user,
     templates: state.templates,
@@ -92,7 +108,14 @@ function persist(state: StoreState): void {
     nextPhotoDue: state.nextPhotoDue,
     restTimer: state.restTimer,
   };
+}
+
+/** Persist the AppData slice after every mutation (local + optional cloud). */
+function persist(state: StoreState): void {
+  const data: AppData = extractAppData(state);
   repository.save(data);
+  // Fire-and-forget cloud sync; a no-op unless the user is signed in.
+  notifyLocalWrite(data);
 }
 
 /** Locate the active exercise and its active (first incomplete) set. */
@@ -214,6 +237,16 @@ export const useStore = create<StoreState>((set, get) => ({
 
   setReps: (reps) =>
     set((s) => applyActive(s, (set2) => ({ ...set2, reps: Math.max(0, Math.round(reps)) }))),
+
+  setRir: (rir) =>
+    set((s) =>
+      applyActive(s, (set2) => ({
+        ...set2,
+        rir,
+        // Derive the per-set difficulty so RIR feeds the progression engine.
+        difficulty: rir === undefined ? undefined : rirToDifficulty(rir),
+      })),
+    ),
 
   logActiveSet: () => {
     const state = get();
@@ -344,6 +377,37 @@ export const useStore = create<StoreState>((set, get) => ({
           .filter((set2) => set2.id !== setId)
           .map((set2, idx) => ({ ...set2, setNumber: idx + 1 }));
         return { ...ex, sets };
+      });
+      const next = { ...s, activeSession: { ...s.activeSession, exercises } };
+      persist(next);
+      return next;
+    }),
+
+  addWarmupSets: (exerciseIndex) =>
+    set((s) => {
+      if (!s.activeSession) return s;
+      const barKg = s.user.settings.unit === 'kg' ? BAR_KG : lbToKg(BAR_LB);
+      const exercises = s.activeSession.exercises.map((ex, i) => {
+        if (i !== exerciseIndex) return ex;
+        // Don't add warm-ups twice, and derive them from the first working set.
+        if (ex.sets.some((st) => st.isWarmup)) return ex;
+        const firstWorking = ex.sets.find((st) => !st.isWarmup);
+        if (!firstWorking) return ex;
+        const warmups = generateWarmups(firstWorking.weightKg, { barKg }).map(
+          (w): SetEntry => ({
+            id: uid('set'),
+            exerciseId: ex.exerciseId,
+            setNumber: 0, // renumbered below
+            type: 'warmup',
+            weightKg: w.weightKg,
+            reps: w.reps,
+            completed: false,
+            isWarmup: true,
+          }),
+        );
+        if (warmups.length === 0) return ex;
+        const sets = [...warmups, ...ex.sets].map((st, idx) => ({ ...st, setNumber: idx + 1 }));
+        return { ...ex, status: 'active' as const, sets };
       });
       const next = { ...s, activeSession: { ...s.activeSession, exercises } };
       persist(next);
@@ -499,7 +563,18 @@ export const useStore = create<StoreState>((set, get) => ({
     repository.clear();
     const seeded = loadOrSeed();
     set((s) => ({ ...s, ...seeded, activeSession: null, undo: null, lastCompletedSessionId: null }));
+    // A reset is intentional and should propagate to the cloud when signed in.
+    notifyLocalWrite(seeded);
   },
+
+  replaceAll: (data) =>
+    set((s) => {
+      const next: StoreState = { ...s, ...data, undo: null };
+      // Cache the pulled remote locally; notifyLocalWrite is suppressed while
+      // cloud sync is applying remote, so this won't echo back to the server.
+      persist(next);
+      return next;
+    }),
 
   addPhoto: (photo) =>
     set((s) => {
@@ -521,7 +596,22 @@ export const useStore = create<StoreState>((set, get) => ({
       persist(next);
       return next;
     }),
+
+  deleteMeasurement: (id) =>
+    set((s) => {
+      const next = { ...s, measurements: s.measurements.filter((m) => m.id !== id) };
+      persist(next);
+      return next;
+    }),
 }));
+
+// Wire cloud sync to the store: it reads the current AppData and applies pulled
+// remote state, without either module importing the other's internals.
+registerSync({
+  getLocalData: () => extractAppData(useStore.getState()),
+  applyRemote: (data) => useStore.getState().replaceAll(data),
+});
+initCloudSync();
 
 /** Shared helper for the active-set adjust actions. */
 function applyActive(

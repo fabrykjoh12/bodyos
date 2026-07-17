@@ -306,7 +306,14 @@ export function createSeedData(): AppData {
     activeSession: null,
     personalRecords,
     photos,
-    measurements: [],
+    // A lean-bulk trend over the demo history: body weight and size creeping up
+    // while the waist holds. Newest first, mirroring addMeasurement().
+    measurements: [
+      { id: uid('meas'), takenAt: daysAgoISO(0), bodyWeightKg: 80.1, waistCm: 83, chestCm: 105.5, armCm: 39.5 },
+      { id: uid('meas'), takenAt: daysAgoISO(14), bodyWeightKg: 79.6, waistCm: 82.5, chestCm: 105, armCm: 39.2 },
+      { id: uid('meas'), takenAt: daysAgoISO(28), bodyWeightKg: 79, waistCm: 82.5, chestCm: 104.5, armCm: 38.8 },
+      { id: uid('meas'), takenAt: daysAgoISO(42), bodyWeightKg: 78.5, waistCm: 82, chestCm: 104, armCm: 38.5 },
+    ],
     weeklyPlan,
     streakDates,
     nextPhotoDue: daysAgoISO(-7), // due in a week

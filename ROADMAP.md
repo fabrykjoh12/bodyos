@@ -34,13 +34,16 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   muscle-balance bars, PR list, recent sessions
 - ✅ Contrast fixes (no white-on-volt); ice-blue "last time" values in Gym Mode
 
-## 🟡 Phase 2 — Real-app feel
+## ✅ Phase 2 — Real-app feel
 
 - ✅ Code-splitting: lazy routes → initial bundle **662 kB → ~250 kB**; Recharts isolated in a
   lazy chunk
 - ✅ PWA manifest + volt app icon → installable, standalone display, theme color
-- ⬜ **Offline service worker** (Workbox / vite-plugin-pwa) — precache the app shell + hashed
-  chunks so it works fully offline in the gym. Do this *after* splitting (already done).
+- ✅ **Offline service worker** (`vite-plugin-pwa` / Workbox, `generateSW` + `autoUpdate`) —
+  precaches the app shell, all hashed chunks, fonts, and exercise photos (49 entries, ~1 MB);
+  `navigateFallback` → `/bodyos/index.html` so SPA deep links resolve offline. SW disabled in
+  dev (`devOptions.enabled: false`); the hand-authored `public/manifest.webmanifest` is kept
+  (`manifest: false`).
 
 ## 🟡 Exercises & photos
 
@@ -64,23 +67,40 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
 - ⬜ Haptics coverage; safe-area audit on a real device
 - ⬜ Component/E2E tests for Gym Mode (Testing Library is installed but unused)
 
-## 🔒 Phase 4 — Accounts & sync (Supabase)
+## 🟡 Phase 4 — Accounts & cloud sync (Supabase)
 
-Blocked: the Supabase MCP connector needs OAuth authorization in claude.ai connector settings
-before it can be used from here.
+Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud sync.
 
-- ⬜ Supabase project (free tier): auth (email/OAuth)
-- ⬜ Postgres tables mirroring the TS domain model; RLS
-- ⬜ Storage bucket for progress photos (private)
-- ⬜ `SupabaseRepository implements Repository` — drop-in behind the existing interface;
-  localStorage demotes to an offline cache with background sync
+- ✅ **Auth** — Supabase email/password, fully optional (the app stays offline-first; no forced
+  login). "Account & Sync" section in Settings (`src/store/cloudSync.ts`, `src/lib/supabase.ts`).
+- ✅ **Cloud sync** — the whole `AppData` is mirrored to `public.bodyos_app_state` (one `jsonb`
+  row per user, owner-only RLS). Pushed on save (debounced 1.5 s), pulled + reconciled on
+  sign-in. Conflicts: whole-blob **last-write-wins** by server `updated_at`. localStorage stays
+  the synchronous source of truth; cloud is a background layer — so the synchronous `Repository`
+  interface is untouched. Reconciliation core is unit-tested (`cloudSync.test.ts`); the Supabase
+  client is lazy-loaded to keep it out of the initial bundle.
+- ✅ **Cost-free isolation** — lives in the existing shared Supabase project (Pro org, no new
+  ~$10/mo project) in its own `bodyos_app_state` table; never touches the co-hosted app's tables.
+- ⬜ **Progress-photo sync** — photos are device-local by design (privacy + `jsonb` size), so they
+  are excluded from the synced blob. Needs a private Storage bucket + upload flow to sync.
+- ⬜ **OAuth (Google)** sign-in — needs provider + redirect-URL config in the Supabase dashboard.
+- ⬜ **Relational schema** (per-table sessions/PRs) — only if server-side queries/analytics are
+  ever needed; the blob model already covers multi-device sync.
 
-## ⬜ Phase 5 — Deeper training features
+## 🟡 Phase 5 — Deeper training features
 
-- ⬜ Plate calculator + warm-up set generator
+- ✅ **Plate calculator** — per-side barbell breakdown shown live under the weight in Gym Mode
+  (barbell lifts only), unit-aware (kg/lb bar + plate sets), reports any unloadable remainder.
+  Pure logic in `lib/plates.ts` (`computePlates`), 7 tests.
+- ✅ **Warm-up set generator** — one tap inserts a ramping warm-up (empty bar → ~50/70/85 %) before
+  the working sets on a barbell exercise (`generateWarmups` + `addWarmupSets` store action), 4 tests.
 - ⬜ Supersets / circuits
-- ⬜ Optional RPE/RIR entry (types already support `rir`)
-- ⬜ Body-measurement tracking UI
+- ✅ **Optional RPE/RIR entry** — when "Show RIR / RPE" is on (Settings), each working set gets a
+  0–4+ reps-in-reserve picker in Gym Mode (with RPE equivalent); RIR is shown in the set ledger and
+  **feeds progression** by mapping to per-set difficulty (`rirToDifficulty`, in the tested engine).
+- ✅ **Body-measurement tracking UI** — `/progress/measurements`: log body weight + waist/chest/arm,
+  latest-snapshot tiles with deltas, dated history with delete, unit-aware (kg/cm or lb/in). Seeded
+  with a demo lean-bulk trend; `deleteMeasurement` action added.
 - ⬜ Week planning / deload scheduling
 - ⬜ Landing/marketing page
 
@@ -88,8 +108,9 @@ before it can be used from here.
 
 ## Suggested next session
 
-1. Finish exercise photos (remaining ~40) — quick, high visual impact.
-2. Offline service worker (Phase 2 finish) — makes it a true gym PWA.
-3. Authorize Supabase, then build `SupabaseRepository` (Phase 4) — the real product milestone.
+1. Finish exercise photos (remaining ~40) — quick, high visual impact. (Higgsfield now
+   reachable from here — ~936 credits available.)
+2. Build `SupabaseRepository` (Phase 4) — the real product milestone. **Now unblocked:** the
+   Supabase connector is authorized and an `ACTIVE_HEALTHY` project already exists (eu-west-3).
 
 See `CLAUDE.md` for architecture, conventions, the design system, and gotchas.
