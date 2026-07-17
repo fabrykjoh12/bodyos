@@ -145,6 +145,11 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
     Also offered during onboarding (days-matched split pre-selected as "Recommended").
   - ✅ **Week planning** — the Workouts weekly strip is now editable: tap any day to assign a
     template or set a rest day (wires up the existing `setPlanForDay` + `weeklyPlan`).
+  - ✅ **Honest home hero** — the Dashboard hero no longer mislabels everything "Today's session".
+    A pure `resolveTodayPlan` reads the weekly plan and the hero adapts: *Today's session* when one
+    is planned, a calm **Rest day** card (with a "Train anyway · {next}" option) on scheduled rest
+    days, *Next up · {Tomorrow/weekday}* when today is unplanned, or *Suggested* with no plan at all.
+    Tested (`plan.test.ts`, 9 cases).
   - ✅ **Deload** — start any workout as a deload (Dashboard hero / workout detail): ~90% load,
     sets capped at 2, badged in Gym Mode + history. Deloads are excluded from progression
     baselines (prefill, stall counting, PRs) so they don't corrupt your numbers.
