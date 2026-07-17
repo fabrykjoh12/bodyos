@@ -88,8 +88,10 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   earlier session sets, so only genuine new tops celebrate; it's ephemeral (completion's
   `detectPersonalRecords` stays the recorded-PR source of truth) and skipped on deloads.
 - 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
-- 🟡 Component tests started (`ActiveSetCard.test.tsx`, first Testing-Library suite) + store flow
-  tests (`gymFlow.test.ts`); broader Gym Mode component/E2E coverage still todo
+- ✅ Component/integration tests for Gym Mode: `ActiveSetCard.test.tsx`, `SetGrid.test.tsx`, and a
+  `GymMode.test.tsx` integration suite that renders the screen on its route and drives the wired-up
+  flow (active set → log → advance, plus the "no longer active" fallback). Store flow stays covered
+  by `gymFlow.test.ts`. **84 tests** total.
 
 ## 🟡 Phase 4 — Accounts & cloud sync (Supabase)
 
