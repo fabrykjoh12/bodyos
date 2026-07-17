@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Check, ChevronRight, Flame, Plus, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import { requireExercise } from '@/data/exercises';
+import { EXERCISES, requireExercise } from '@/data/exercises';
 import { formatRepRange, formatWeight, lbToKg } from '@/lib/format';
 import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { haptics } from '@/lib/haptics';
@@ -30,11 +30,13 @@ export function GymMode() {
   const addWarmupSets = useStore((s) => s.addWarmupSets);
   const nextExercise = useStore((s) => s.nextExercise);
   const goToExercise = useStore((s) => s.goToExercise);
+  const swapExercise = useStore((s) => s.swapExercise);
   const setDifficulty = useStore((s) => s.setExerciseDifficulty);
   const abandonSession = useStore((s) => s.abandonSession);
   const completeSession = useStore((s) => s.completeSession);
 
   const [confirmQuit, setConfirmQuit] = useState(false);
+  const [swapOpen, setSwapOpen] = useState(false);
 
   const exIndex = session?.currentExerciseIndex ?? 0;
   const exercise = session?.exercises[exIndex];
@@ -68,6 +70,17 @@ export function GymMode() {
     completedWorking === 0 &&
     !!firstWorking &&
     generateWarmups(firstWorking.weightKg, { barKg }).length > 0;
+
+  // Swap is offered until the exercise is started (nothing logged yet).
+  const canSwap = !exercise.sets.some((s) => s.completed);
+  const swapOptions = useMemo(() => {
+    const ids = meta.substitutions.length
+      ? meta.substitutions
+      : EXERCISES.filter((e) => e.primaryMuscle === meta.primaryMuscle && e.id !== meta.id)
+          .map((e) => e.id)
+          .slice(0, 6);
+    return ids.map((id) => requireExercise(id));
+  }, [meta]);
 
   const objective = activeSet
     ? `Complete ${formatRepRange(exercise.repRange)} reps at ${formatWeight(activeSet.weightKg, unit)}`
@@ -143,6 +156,7 @@ export function GymMode() {
             objective={objective}
             showRir={showRir}
             rir={activeSet.rir}
+            onSwap={canSwap ? () => setSwapOpen(true) : undefined}
             onWeightChange={setWeight}
             onRepsChange={setReps}
             onRirChange={setRir}
@@ -220,6 +234,32 @@ export function GymMode() {
           </Button>
         )}
       </div>
+
+      <Sheet open={swapOpen} onClose={() => setSwapOpen(false)} title={`Swap ${meta.name}`}>
+        <p className="mb-3 text-sm text-content-muted">
+          Pick an alternative — sets are re-prefilled from that exercise&rsquo;s history.
+        </p>
+        <div className="flex flex-col gap-1.5">
+          {swapOptions.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => {
+                swapExercise(exIndex, opt.id);
+                setSwapOpen(false);
+              }}
+              className="flex items-center gap-3 rounded-xl border border-line px-4 py-3 text-left transition-colors hover:bg-surface-2"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-content">{opt.name}</p>
+                <p className="truncate text-xs capitalize text-content-muted">
+                  {opt.primaryMuscle} · {opt.equipment}
+                </p>
+              </div>
+              <ChevronRight size={18} className="text-content-faint" />
+            </button>
+          ))}
+        </div>
+      </Sheet>
 
       <Sheet open={confirmQuit} onClose={() => setConfirmQuit(false)} title="Leave this workout?">
         <p className="text-sm text-content-muted">
