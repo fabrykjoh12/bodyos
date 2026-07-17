@@ -1,4 +1,4 @@
-import type { PersonalRecord, WorkoutSession } from '@/types';
+import type { ExerciseSession, PersonalRecord, WorkoutSession } from '@/types';
 import { uid } from './id';
 import { epley1RM, round1, setVolume } from './volume';
 
@@ -63,6 +63,52 @@ export function detectPersonalRecords(
   }
 
   return found;
+}
+
+export interface LiveSetPr {
+  setId: string;
+  weightKg: number;
+  reps: number;
+  /** Beats the all-time heaviest completed set for this exercise. */
+  weight: boolean;
+  /** Beats the all-time best estimated 1RM for this exercise. */
+  e1rm: boolean;
+}
+
+/**
+ * For the most-recently-completed working set in `ex`, report whether it just
+ * set a new all-time weight and/or e1RM PR — comparing against prior records
+ * *and* the exercise's other completed working sets this session, so only a
+ * genuinely new top celebrates (and not every set once you're above baseline).
+ *
+ * Ephemeral: used for the in-session celebration only. `detectPersonalRecords`
+ * at completion stays the single source of recorded PR truth. Callers should
+ * skip deloads.
+ */
+export function liveSetPr(ex: ExerciseSession, existing: PersonalRecord[]): LiveSetPr | null {
+  const working = ex.sets.filter((s) => s.completed && !s.isWarmup && s.reps > 0);
+  if (working.length === 0) return null;
+
+  // The set logged last (latest completedAt) is the candidate.
+  const candidate = working.reduce((a, b) => ((b.completedAt ?? '') >= (a.completedAt ?? '') ? b : a));
+  const others = working.filter((s) => s.id !== candidate.id);
+
+  let bestWeight = 0;
+  let bestE1RM = 0;
+  for (const pr of existing) {
+    if (pr.exerciseId !== ex.exerciseId) continue;
+    if (pr.type === 'weight') bestWeight = Math.max(bestWeight, pr.value);
+    if (pr.type === 'e1rm') bestE1RM = Math.max(bestE1RM, pr.value);
+  }
+  for (const s of others) {
+    bestWeight = Math.max(bestWeight, s.weightKg);
+    bestE1RM = Math.max(bestE1RM, epley1RM(s.weightKg, s.reps));
+  }
+
+  const weight = candidate.weightKg > bestWeight;
+  const e1rm = round1(epley1RM(candidate.weightKg, candidate.reps)) > round1(bestE1RM) + 0.4;
+  if (!weight && !e1rm) return null;
+  return { setId: candidate.id, weightKg: candidate.weightKg, reps: candidate.reps, weight, e1rm };
 }
 
 export function sessionTotalVolume(session: WorkoutSession): number {

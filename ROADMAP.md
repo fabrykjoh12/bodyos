@@ -81,6 +81,12 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   logged that beats it (heavier, or same load for more reps), the set ledger flags it with a volt
   "Beat" chip — closing the loop with a small celebration in the reserved accent colour. Both are
   suppressed on warm-ups and deloads (where going lighter is the point).
+- ✅ **In-session PR celebration** — logging a set that sets a new **all-time** best (heaviest set or
+  best est. 1RM for that exercise) fires an immediate volt-glow moment (`PrCelebration`, the reserved
+  `shadow-accent-glow`) with a trophy, the lift, and which record fell — auto-dismissing after 3 s.
+  Detection (`liveSetPr`, tested) compares the just-logged set against prior PRs *and* the exercise's
+  earlier session sets, so only genuine new tops celebrate; it's ephemeral (completion's
+  `detectPersonalRecords` stays the recorded-PR source of truth) and skipped on deloads.
 - 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
 - 🟡 Component tests started (`ActiveSetCard.test.tsx`, first Testing-Library suite) + store flow
   tests (`gymFlow.test.ts`); broader Gym Mode component/E2E coverage still todo
