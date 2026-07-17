@@ -110,6 +110,7 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 - 🟡 Week planning / deload scheduling
   - ✅ **Starter routines** (`/workouts/routines`): pick a split (Full Body 3×, Upper/Lower 4×,
     PPL 6×) and it builds the workout templates and drops them onto the weekly plan in one tap.
+    Also offered during onboarding (days-matched split pre-selected as "Recommended").
   - ✅ **Week planning** — the Workouts weekly strip is now editable: tap any day to assign a
     template or set a rest day (wires up the existing `setPlanForDay` + `weeklyPlan`).
   - ✅ **Deload** — start any workout as a deload (Dashboard hero / workout detail): ~90% load,
