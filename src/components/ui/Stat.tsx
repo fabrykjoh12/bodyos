@@ -24,7 +24,7 @@ export function Stat({ label, value, sub, icon, accent = 'default', className = 
         {icon}
         <span className="label-tiny">{label}</span>
       </div>
-      <div className={`mt-2 text-stat tnum ${accentText[accent]}`}>{value}</div>
+      <div className={`mt-2 whitespace-nowrap text-stat tnum ${accentText[accent]}`}>{value}</div>
       {sub && <div className="mt-0.5 text-xs text-content-muted">{sub}</div>}
     </div>
   );

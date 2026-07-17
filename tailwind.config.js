@@ -45,7 +45,7 @@ export default {
       },
       fontSize: {
         display: ['3rem', { lineHeight: '1.02', letterSpacing: '-0.03em', fontWeight: '800' }],
-        stat: ['2.25rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '600' }],
+        stat: ['1.7rem', { lineHeight: '1.05', letterSpacing: '-0.02em', fontWeight: '600' }],
       },
       borderRadius: {
         xl: '0.875rem', // 14px inputs/chips

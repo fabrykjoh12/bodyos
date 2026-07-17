@@ -157,8 +157,8 @@ export function Dashboard() {
       <div className="grid grid-cols-2 gap-3">
         <Kpi label="Week volume" value={formatVolume(weekVolume, unit)} delta={newPRs > 0 ? '+' + newPRs : undefined} note="PRs" />
         <Kpi label="Sessions" value={String(monthSessions)} note="this month" />
-        <Kpi label={topTrend ? `Est. 1RM ${exerciseName(topTrend.exerciseId).split(' ').slice(-1)[0]}` : 'Est. 1RM'} value={topTrend ? formatWeight(topTrend.latest, unit, false) : '—'} unit={unit} accent delta={topTrend && topTrend.deltaKg > 0 ? `+${topTrend.deltaKg}` : undefined} note="kg" />
-        <Kpi label="New PRs" value={String(newPRs)} accent note="this week" />
+        <Kpi label={topTrend ? `Est. 1RM ${exerciseName(topTrend.exerciseId).split(' ').slice(-1)[0]}` : 'Est. 1RM'} value={topTrend ? formatWeight(topTrend.latest, unit, false) : '—'} unit={unit} delta={topTrend && topTrend.deltaKg > 0 ? `+${topTrend.deltaKg}` : undefined} note="kg" />
+        <Kpi label="New PRs" value={String(newPRs)} note="this week" />
       </div>
 
       {/* Weekly volume */}
@@ -279,7 +279,7 @@ export function Dashboard() {
                     <div className="flex items-center gap-2">
                       <span className="text-[14.5px] font-bold text-content">{s.name}</span>
                       {prCount > 0 && (
-                        <span className="rounded-full bg-accent px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-ink">
+                        <span className="rounded-full bg-accent-soft px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-accent">
                           {prCount} PR
                         </span>
                       )}
