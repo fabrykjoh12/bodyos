@@ -75,8 +75,13 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   file picker. Import is validated + normalized by a pure, tested `parseBackup` (rejects non-BodyOS
   JSON so a stray file can't wipe your log) and gated behind a confirm sheet that shows the backup's
   template/session counts before it overwrites. `exportData` store action + `replaceAll` for apply.
+- ✅ **Per-set "beat this" target** — the active-set card now shows last time's performance on the
+  *same working set* (e.g. "Beat last time · 105 kg × 7") in ice under the objective, making the
+  product promise ("always know exactly what to beat next") concrete set-by-set. Suppressed on
+  warm-ups and deloads (where going lighter is the point).
 - 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
-- 🟡 Store-level flow tests exist (`gymFlow.test.ts`); component/E2E for Gym Mode still todo
+- 🟡 Component tests started (`ActiveSetCard.test.tsx`, first Testing-Library suite) + store flow
+  tests (`gymFlow.test.ts`); broader Gym Mode component/E2E coverage still todo
 
 ## 🟡 Phase 4 — Accounts & cloud sync (Supabase)
 

@@ -17,6 +17,8 @@ interface ActiveSetCardProps {
   equipment: Equipment;
   isWarmup: boolean;
   objective: string;
+  /** Last time's performance on this same working set — the number to beat. */
+  beat?: { weightKg: number; reps: number };
   showRir: boolean;
   rir?: number;
   /** When provided, shows a swap button (only while the exercise is unstarted). */
@@ -42,6 +44,7 @@ export function ActiveSetCard({
   equipment,
   isWarmup,
   objective,
+  beat,
   showRir,
   rir,
   onSwap,
@@ -80,6 +83,11 @@ export function ActiveSetCard({
       <div className="mt-3 rounded-xl bg-surface px-3.5 py-2.5">
         <p className="label-tiny">Today’s objective</p>
         <p className="mt-0.5 text-sm font-medium text-content">{objective}</p>
+        {beat && !isWarmup && (
+          <p className="tnum mt-1 text-xs font-semibold text-ice">
+            Beat last time · {formatWeightValue(beat.weightKg, unit)} {unit} × {beat.reps}
+          </p>
+        )}
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-2">
