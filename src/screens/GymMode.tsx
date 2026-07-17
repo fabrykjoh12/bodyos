@@ -1,21 +1,32 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Check, ChevronRight, Flame, Plus, Repeat2, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { EXERCISES, requireExercise } from '@/data/exercises';
 import { formatRepRange, formatWeight, lbToKg } from '@/lib/format';
 import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
+import { liveSetPr } from '@/lib/prstats';
 import { haptics } from '@/lib/haptics';
 import { unlockAudio } from '@/lib/sound';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Sheet } from '@/components/ui/Sheet';
 import { ActiveSetCard } from '@/components/workout/ActiveSetCard';
+import { PrCelebration } from '@/components/workout/PrCelebration';
 import { RestTimerBar } from '@/components/workout/RestTimerBar';
 import { UndoBar } from '@/components/workout/UndoBar';
 import { SetGrid } from '@/components/workout/SetGrid';
 import { ExerciseHistory } from '@/components/workout/ExerciseHistory';
 import { DifficultyPicker } from '@/components/workout/DifficultyPicker';
+
+interface PrMoment {
+  setId: string;
+  exerciseName: string;
+  weightKg: number;
+  reps: number;
+  weight: boolean;
+  e1rm: boolean;
+}
 
 export function GymMode() {
   const navigate = useNavigate();
@@ -37,9 +48,18 @@ export function GymMode() {
   const setDifficulty = useStore((s) => s.setExerciseDifficulty);
   const abandonSession = useStore((s) => s.abandonSession);
   const completeSession = useStore((s) => s.completeSession);
+  const personalRecords = useStore((s) => s.personalRecords);
 
   const [confirmQuit, setConfirmQuit] = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
+  const [prMoment, setPrMoment] = useState<PrMoment | null>(null);
+
+  // Auto-dismiss the PR celebration; a new PR replaces the object and restarts.
+  useEffect(() => {
+    if (!prMoment) return;
+    const t = window.setTimeout(() => setPrMoment(null), 3000);
+    return () => window.clearTimeout(t);
+  }, [prMoment]);
 
   const exIndex = session?.currentExerciseIndex ?? 0;
   const exercise = session?.exercises[exIndex];
@@ -109,7 +129,17 @@ export function GymMode() {
     // Prime audio from this user gesture so the later rest-end chime can play.
     unlockAudio();
     if (hapticFeedback) haptics.success();
+    const loggedIndex = exIndex;
     logActiveSet();
+    // Celebrate an all-time PR the moment it's logged (never on a deload).
+    if (session && !session.isDeload) {
+      const loggedEx = useStore.getState().activeSession?.exercises[loggedIndex];
+      const pr = loggedEx ? liveSetPr(loggedEx, personalRecords) : null;
+      if (pr && loggedEx) {
+        if (hapticFeedback) haptics.success();
+        setPrMoment({ exerciseName: requireExercise(loggedEx.exerciseId).name, ...pr });
+      }
+    }
   };
 
   const handleFinish = () => {
@@ -169,6 +199,17 @@ export function GymMode() {
       </div>
 
       <div className="mt-3 flex flex-1 flex-col gap-3">
+        {prMoment && (
+          <PrCelebration
+            key={prMoment.setId}
+            exerciseName={prMoment.exerciseName}
+            weightKg={prMoment.weightKg}
+            reps={prMoment.reps}
+            unit={unit}
+            weight={prMoment.weight}
+            e1rm={prMoment.e1rm}
+          />
+        )}
         {supersetMembers.length > 1 && (
           <div className="flex items-center gap-2 rounded-xl border border-accent/25 bg-accent-soft/40 px-3 py-1.5">
             <Repeat2 size={14} className="shrink-0 text-accent" />
