@@ -20,6 +20,7 @@ const ExerciseLibrary = lazy(() => import('@/screens/ExerciseLibrary').then((m) 
 const ExerciseDetail = lazy(() => import('@/screens/ExerciseDetail').then((m) => ({ default: m.ExerciseDetail })));
 const Profile = lazy(() => import('@/screens/Profile').then((m) => ({ default: m.Profile })));
 const Settings = lazy(() => import('@/screens/Settings').then((m) => ({ default: m.Settings })));
+const Account = lazy(() => import('@/screens/Account').then((m) => ({ default: m.Account })));
 const Onboarding = lazy(() => import('@/screens/Onboarding').then((m) => ({ default: m.Onboarding })));
 const NotFound = lazy(() => import('@/screens/NotFound').then((m) => ({ default: m.NotFound })));
 
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/progress/measurements" element={<Measurements />} />
           <Route path="/progress/strength" element={<Navigate to="/stats" replace />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/account" element={<Account />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Route>
