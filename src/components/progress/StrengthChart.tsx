@@ -20,7 +20,7 @@ export function StrengthChart({ data, unit }: { data: StrengthPoint[]; unit: str
   return (
     <div className="h-44 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 8, right: 10, left: -6, bottom: 0 }}>
           <defs>
             <linearGradient id="strengthFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#4C8DFF" stopOpacity={0.35} />
@@ -28,7 +28,7 @@ export function StrengthChart({ data, unit }: { data: StrengthPoint[]; unit: str
             </linearGradient>
           </defs>
           <XAxis dataKey="label" tick={{ fill: '#666C77', fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={20} />
-          <YAxis domain={[min, max]} tick={{ fill: '#666C77', fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
+          <YAxis domain={[min, max]} tick={{ fill: '#666C77', fontSize: 11 }} axisLine={false} tickLine={false} width={46} tickCount={5} />
           <Tooltip
             contentStyle={{
               background: '#1B1E24',

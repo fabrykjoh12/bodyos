@@ -415,7 +415,7 @@ export function GymMode() {
       </Sheet>
 
       <Sheet open={editingSet !== null} onClose={() => setEditingSet(null)} title="Edit set">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-4">
           <NumericStepper
             label="Weight"
             value={editWeight}
