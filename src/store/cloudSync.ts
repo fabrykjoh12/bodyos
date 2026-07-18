@@ -269,6 +269,14 @@ export async function signUp(
   return { error: null, needsConfirmation: !data.session };
 }
 
+/** Re-send the sign-up confirmation email (e.g. the first one never arrived). */
+export async function resendConfirmation(email: string): Promise<{ error: string | null }> {
+  const supabase = await loadSupabase();
+  if (!supabase) return { error: 'Cloud sync is not configured.' };
+  const { error } = await supabase.auth.resend({ type: 'signup', email });
+  return { error: error ? error.message : null };
+}
+
 export async function signOut(): Promise<void> {
   const supabase = await loadSupabase();
   if (!supabase) return;

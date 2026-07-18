@@ -43,7 +43,7 @@ export function Profile() {
       </div>
 
       {syncStatus !== 'unconfigured' && (
-        <AccountCard email={syncEmail} status={syncStatus} onOpen={() => navigate('/settings')} />
+        <AccountCard email={syncEmail} status={syncStatus} onOpen={() => navigate('/account')} />
       )}
 
       <div className="grid grid-cols-3 gap-2">
