@@ -1,30 +1,30 @@
 import { create } from 'zustand';
 import type { AppData } from '@/types';
-import { loadSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { loadFirebase, isFirebaseConfigured } from '@/lib/firebase';
 
 // ---------------------------------------------------------------------------
-// Optional cloud sync.
+// Optional cloud sync (Firebase Auth + Firestore).
 //
 // localStorage stays the synchronous source of truth (the app keeps working
 // fully offline). When signed in, the whole AppData blob is mirrored to a
-// single per-user row (`public.bodyos_app_state`) — pushed on local writes
-// (debounced) and pulled/reconciled on sign-in. Conflicts are resolved
-// last-write-wins at whole-blob granularity: simple and predictable for a
-// single-user app; no field-level merge.
+// single per-user Firestore document (`bodyos_app_state/{uid}`) — pushed on
+// local writes (debounced) and pulled/reconciled on sign-in. Conflicts are
+// resolved last-write-wins at whole-blob granularity: simple and predictable
+// for a single-user app; no field-level merge.
 //
 // Two fields are deliberately NOT synced and stay device-local:
 //   • photos    — private by design ("never uploaded without explicit action")
 //   • restTimer — ephemeral wall-clock state, meaningless on another device
 // ---------------------------------------------------------------------------
 
-const TABLE = 'bodyos_app_state';
+const COLLECTION = 'bodyos_app_state';
 const META_KEY = 'bodyos.sync.meta.v1';
 const PUSH_DEBOUNCE_MS = 1500;
 
 type SyncedData = Omit<AppData, 'photos' | 'restTimer'>;
 
 export type SyncStatus =
-  | 'unconfigured' // no Supabase credentials compiled in
+  | 'unconfigured' // no Firebase config compiled in
   | 'signedOut'
   | 'syncing'
   | 'synced'
@@ -38,7 +38,7 @@ interface SyncState {
 }
 
 export const useSyncStore = create<SyncState>(() => ({
-  status: isSupabaseConfigured ? 'signedOut' : 'unconfigured',
+  status: isFirebaseConfigured ? 'signedOut' : 'unconfigured',
   email: null,
   lastSyncedAt: null,
   error: null,
@@ -144,6 +144,29 @@ export function isSignedIn(): boolean {
   return authUserId !== null;
 }
 
+/** Map Firebase Auth error codes to friendly, human messages. */
+function authMessage(e: unknown): string {
+  const code = e && typeof e === 'object' && 'code' in e ? String((e as { code: unknown }).code) : '';
+  switch (code) {
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return 'Wrong email or password.';
+    case 'auth/email-already-in-use':
+      return 'That email already has an account — sign in instead.';
+    case 'auth/weak-password':
+      return 'Password must be at least 6 characters.';
+    case 'auth/invalid-email':
+      return 'Enter a valid email address.';
+    case 'auth/network-request-failed':
+      return 'Network error — check your connection and try again.';
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Wait a moment and try again.';
+    default:
+      return messageOf(e);
+  }
+}
+
 function messageOf(e: unknown): string {
   if (e && typeof e === 'object' && 'message' in e) {
     return String((e as { message: unknown }).message);
@@ -151,27 +174,27 @@ function messageOf(e: unknown): string {
   return 'Sync failed';
 }
 
+/** Firestore Timestamp → ISO string (the reconcile clock we compare on). */
+function tsToIso(value: unknown): string | null {
+  if (value && typeof value === 'object' && 'toDate' in value && typeof (value as { toDate: unknown }).toDate === 'function') {
+    return (value as { toDate: () => Date }).toDate().toISOString();
+  }
+  return null;
+}
+
 async function pushNow(): Promise<void> {
-  const supabase = await loadSupabase();
-  if (!supabase || !authUserId || !getLocalData) return;
+  const fb = await loadFirebase();
+  if (!fb || !authUserId || !getLocalData) return;
   const local = getLocalData();
   setSync({ status: 'syncing', error: null });
   try {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .upsert(
-        { user_id: authUserId, data: toSynced(local), app_version: local.version },
-        { onConflict: 'user_id' },
-      )
-      .select('updated_at')
-      .single();
-    if (error) throw error;
-    setMeta({
-      dirty: false,
-      dirtyAt: null,
-      remoteUpdatedAt: (data as { updated_at: string }).updated_at,
-      userId: authUserId,
-    });
+    const { doc, setDoc, getDoc, serverTimestamp } = await import('firebase/firestore');
+    const ref = doc(fb.db, COLLECTION, authUserId);
+    await setDoc(ref, { data: toSynced(local), appVersion: local.version, updatedAt: serverTimestamp() });
+    // Read back the resolved server timestamp so both devices compare the same clock.
+    const snap = await getDoc(ref);
+    const remoteUpdatedAt = tsToIso(snap.get('updatedAt')) ?? new Date().toISOString();
+    setMeta({ dirty: false, dirtyAt: null, remoteUpdatedAt, userId: authUserId });
     setSync({ status: 'synced', lastSyncedAt: Date.now(), error: null });
   } catch (e) {
     setSync({ status: 'error', error: messageOf(e) });
@@ -207,20 +230,18 @@ function adopt(remoteData: SyncedData, remoteUpdatedAt: string): void {
 }
 
 async function pullAndReconcile(): Promise<void> {
-  const supabase = await loadSupabase();
-  if (!supabase || !authUserId || !getLocalData || !applyRemote) return;
+  const fb = await loadFirebase();
+  if (!fb || !authUserId || !getLocalData || !applyRemote) return;
   setSync({ status: 'syncing', error: null });
   try {
-    const { data: row, error } = await supabase
-      .from(TABLE)
-      .select('data, updated_at')
-      .eq('user_id', authUserId)
-      .maybeSingle();
-    if (error) throw error;
+    const { doc, getDoc } = await import('firebase/firestore');
+    const snap = await getDoc(doc(fb.db, COLLECTION, authUserId));
+    const remoteExists = snap.exists();
+    const remoteUpdatedAt = remoteExists ? tsToIso(snap.get('updatedAt')) : null;
 
     const decision = decidePull({
-      remoteExists: Boolean(row),
-      remoteUpdatedAt: row ? (row as { updated_at: string }).updated_at : null,
+      remoteExists,
+      remoteUpdatedAt,
       lastSyncedRemoteUpdatedAt: meta.remoteUpdatedAt,
       localDirty: meta.dirty,
       localDirtyAt: meta.dirtyAt,
@@ -231,10 +252,7 @@ async function pullAndReconcile(): Promise<void> {
         await pushNow();
         break;
       case 'adopt':
-        adopt(
-          (row as { data: SyncedData }).data,
-          (row as { updated_at: string }).updated_at,
-        );
+        adopt(snap.get('data') as SyncedData, remoteUpdatedAt ?? new Date().toISOString());
         break;
       case 'noop':
         setSync({ status: 'synced', lastSyncedAt: Date.now(), error: null });
@@ -245,46 +263,63 @@ async function pullAndReconcile(): Promise<void> {
   }
 }
 
-// --- public auth API (called from the Settings UI) -------------------------
+// --- public auth API (called from the Account UI) --------------------------
 
 export async function signIn(
   email: string,
   password: string,
 ): Promise<{ error: string | null }> {
-  const supabase = await loadSupabase();
-  if (!supabase) return { error: 'Cloud sync is not configured.' };
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  return { error: error ? error.message : null };
+  const fb = await loadFirebase();
+  if (!fb) return { error: 'Cloud sync is not configured.' };
+  try {
+    const { signInWithEmailAndPassword } = await import('firebase/auth');
+    await signInWithEmailAndPassword(fb.auth, email, password);
+    return { error: null };
+  } catch (e) {
+    return { error: authMessage(e) };
+  }
 }
 
 export async function signUp(
   email: string,
   password: string,
 ): Promise<{ error: string | null; needsConfirmation: boolean }> {
-  const supabase = await loadSupabase();
-  if (!supabase) return { error: 'Cloud sync is not configured.', needsConfirmation: false };
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) return { error: error.message, needsConfirmation: false };
-  // When email confirmation is required, no session exists until confirmed.
-  return { error: null, needsConfirmation: !data.session };
+  const fb = await loadFirebase();
+  if (!fb) return { error: 'Cloud sync is not configured.', needsConfirmation: false };
+  try {
+    const { createUserWithEmailAndPassword } = await import('firebase/auth');
+    // Firebase signs the user in immediately — no email-confirmation step.
+    await createUserWithEmailAndPassword(fb.auth, email, password);
+    return { error: null, needsConfirmation: false };
+  } catch (e) {
+    return { error: authMessage(e), needsConfirmation: false };
+  }
 }
 
-/** Re-send the sign-up confirmation email (e.g. the first one never arrived). */
-export async function resendConfirmation(email: string): Promise<{ error: string | null }> {
-  const supabase = await loadSupabase();
-  if (!supabase) return { error: 'Cloud sync is not configured.' };
-  const { error } = await supabase.auth.resend({ type: 'signup', email });
-  return { error: error ? error.message : null };
+/** Kept for API compatibility with the Account UI. Firebase needs no email
+ *  confirmation to sign in, so this is effectively unused; if called it sends
+ *  an optional verification email to the current user. */
+export async function resendConfirmation(_email: string): Promise<{ error: string | null }> {
+  const fb = await loadFirebase();
+  if (!fb || !fb.auth.currentUser) return { error: null };
+  try {
+    const { sendEmailVerification } = await import('firebase/auth');
+    await sendEmailVerification(fb.auth.currentUser);
+    return { error: null };
+  } catch (e) {
+    return { error: authMessage(e) };
+  }
 }
 
 export async function signOut(): Promise<void> {
-  const supabase = await loadSupabase();
-  if (!supabase) return;
+  const fb = await loadFirebase();
+  if (!fb) return;
   if (pushTimer) {
     clearTimeout(pushTimer);
     pushTimer = null;
   }
-  await supabase.auth.signOut();
+  const { signOut: fbSignOut } = await import('firebase/auth');
+  await fbSignOut(fb.auth);
 }
 
 /** Manual "Sync now" for the UI. */
@@ -297,29 +332,24 @@ export async function syncNow(): Promise<void> {
 let initialized = false;
 
 export function initCloudSync(): void {
-  if (initialized || !isSupabaseConfigured) return;
+  if (initialized || !isFirebaseConfigured) return;
   initialized = true;
 
   void (async () => {
-    const supabase = await loadSupabase();
-    if (!supabase) return;
-    supabase.auth.onAuthStateChange((event, session) => {
-      const user = session?.user ?? null;
+    const fb = await loadFirebase();
+    if (!fb) return;
+    const { onAuthStateChanged } = await import('firebase/auth');
+    onAuthStateChanged(fb.auth, (user) => {
       if (user) {
-        authUserId = user.id;
+        authUserId = user.uid;
         setSync({ status: 'syncing', email: user.email ?? null, error: null });
         // A different account than we last synced on this device → reset the
         // bookkeeping so reconciliation adopts the account's remote data.
-        if (meta.userId !== user.id) {
-          setMeta({ userId: user.id, dirty: false, dirtyAt: null, remoteUpdatedAt: null });
+        if (meta.userId !== user.uid) {
+          setMeta({ userId: user.uid, dirty: false, dirtyAt: null, remoteUpdatedAt: null });
         }
-        if (
-          event === 'SIGNED_IN' ||
-          event === 'INITIAL_SESSION' ||
-          event === 'TOKEN_REFRESHED'
-        ) {
-          void pullAndReconcile();
-        }
+        // Firebase fires this on init and on sign-in; reconcile either way.
+        void pullAndReconcile();
       } else {
         authUserId = null;
         if (pushTimer) {
