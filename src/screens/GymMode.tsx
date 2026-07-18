@@ -48,6 +48,7 @@ export function GymMode() {
   const nextExercise = useStore((s) => s.nextExercise);
   const goToExercise = useStore((s) => s.goToExercise);
   const swapExercise = useStore((s) => s.swapExercise);
+  const addExerciseToSession = useStore((s) => s.addExerciseToSession);
   const exerciseNotes = useStore((s) => s.exerciseNotes);
   const setDifficulty = useStore((s) => s.setExerciseDifficulty);
   const abandonSession = useStore((s) => s.abandonSession);
@@ -60,6 +61,8 @@ export function GymMode() {
   const [editingSet, setEditingSet] = useState<SetEntry | null>(null);
   const [editWeight, setEditWeight] = useState(0);
   const [editReps, setEditReps] = useState(0);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addQuery, setAddQuery] = useState('');
 
   // Auto-dismiss the PR celebration; a new PR replaces the object and restarts.
   useEffect(() => {
@@ -116,6 +119,14 @@ export function GymMode() {
     return ids.map((id) => requireExercise(id));
   }, [meta]);
 
+  const addResults = useMemo(() => {
+    const q = addQuery.trim().toLowerCase();
+    const pool = q
+      ? EXERCISES.filter((e) => e.name.toLowerCase().includes(q) || e.primaryMuscle.includes(q))
+      : EXERCISES;
+    return pool.slice(0, 40);
+  }, [addQuery]);
+
   const objective = activeSet
     ? `Complete ${formatRepRange(exercise.repRange)} reps at ${formatWeight(activeSet.weightKg, unit)}`
     : 'All sets logged';
@@ -170,6 +181,13 @@ export function GymMode() {
   };
   const editWeightStep = unit === 'kg' ? exercise.incrementKg || 2.5 : 2.5;
 
+  const handleAddExercise = (exerciseId: string) => {
+    const idx = addExerciseToSession(exerciseId);
+    setAddOpen(false);
+    setAddQuery('');
+    if (idx !== null) goToExercise(idx);
+  };
+
   return (
     <div className="flex min-h-full flex-col bg-base px-4 pb-4 safe-top">
       {/* Header: exercise position + quit */}
@@ -218,6 +236,12 @@ export function GymMode() {
             </button>
           );
         })}
+        <button
+          onClick={() => setAddOpen(true)}
+          className="flex shrink-0 items-center gap-1 rounded-full border border-dashed border-line px-3 py-1.5 text-xs font-semibold text-content-muted hover:text-content"
+        >
+          <Plus size={13} /> Add
+        </button>
       </div>
 
       <div className="mt-3 flex flex-1 flex-col gap-3">
@@ -407,6 +431,32 @@ export function GymMode() {
           <Button variant="ghost" fullWidth onClick={removeEdit}>
             <span className="text-danger">Remove this set</span>
           </Button>
+        </div>
+      </Sheet>
+
+      <Sheet open={addOpen} onClose={() => { setAddOpen(false); setAddQuery(''); }} title="Add exercise">
+        <input
+          type="text"
+          autoFocus
+          value={addQuery}
+          onChange={(e) => setAddQuery(e.target.value)}
+          placeholder="Search exercises"
+          className="w-full rounded-lg border border-line bg-surface-3 px-3 py-2.5 text-sm text-content placeholder:text-content-faint focus:border-accent focus:outline-none"
+        />
+        <div className="no-scrollbar mt-3 flex max-h-[52vh] flex-col gap-1.5 overflow-y-auto">
+          {addResults.map((e) => (
+            <button
+              key={e.id}
+              onClick={() => handleAddExercise(e.id)}
+              className="flex items-center justify-between gap-3 rounded-xl border border-line px-4 py-3 text-left transition-colors hover:bg-surface-2"
+            >
+              <span className="text-sm font-semibold text-content">{e.name}</span>
+              <span className="text-xs capitalize text-content-muted">{e.primaryMuscle}</span>
+            </button>
+          ))}
+          {addResults.length === 0 && (
+            <p className="px-1 py-4 text-center text-sm text-content-faint">No exercises match “{addQuery}”.</p>
+          )}
         </div>
       </Sheet>
     </div>

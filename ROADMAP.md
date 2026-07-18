@@ -96,6 +96,10 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
 - ✅ **Edit / remove a logged set** — tap any completed set in the Gym Mode ledger to open a sheet
   and fix its weight/reps or remove it (wires the existing `editSet`/`removeSet` store actions). Fixes
   the gap where only the *last* set could be undone; earlier mis-logs were previously stuck.
+- ✅ **Add an exercise mid-workout** — a "+ Add" chip in the Gym Mode exercise strip opens a searchable
+  library picker; the chosen movement is appended to the active session (prefilled from its history via
+  `prefillFor`) and jumped to. New `addExerciseToSession` action (tested), for accessories you decide
+  to do on the fly.
 - 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
 - ✅ Component/integration tests for Gym Mode: `ActiveSetCard.test.tsx`, `SetGrid.test.tsx`, and a
   `GymMode.test.tsx` integration suite that renders the screen on its route and drives the wired-up
