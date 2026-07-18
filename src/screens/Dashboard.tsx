@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUp, Camera, ChevronRight, Dumbbell, Moon, Play, Plus, Trophy } from 'lucide-react';
+import { ArrowUp, Camera, ChevronRight, Cloud, Dumbbell, Moon, Play, Plus, Trophy } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useSyncStore } from '@/store/cloudSync';
 import { exerciseName } from '@/data/exercises';
 import { computeStreak, diffInDays, relativeDay } from '@/lib/date';
 import { resolveTodayPlan, weekdayLabel } from '@/lib/plan';
@@ -38,6 +39,9 @@ export function Dashboard() {
   const { user, templates, sessions, weeklyPlan, personalRecords, activeSession } = store;
   const unit = user.settings.unit;
   const [range, setRange] = useState<'Week' | 'Month'>('Week');
+  const syncStatus = useSyncStore((s) => s.status);
+  const syncEmail = useSyncStore((s) => s.email);
+  const showSignIn = syncStatus !== 'unconfigured' && syncEmail === null;
 
   const weekday = new Date().getDay();
   const todayPlan = useMemo(
@@ -115,6 +119,24 @@ export function Dashboard() {
           {initial}
         </button>
       </header>
+
+      {/* Sign-in entry — always reachable in the content (not just the avatar,
+          which the iOS status bar can cover in the installed PWA). */}
+      {showSignIn && (
+        <button
+          onClick={() => navigate('/account')}
+          className="flex items-center gap-3 rounded-2xl border border-accent/30 bg-accent-soft p-3.5 text-left"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-ink">
+            <Cloud size={17} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold text-content">Sign in to back up &amp; sync</span>
+            <span className="block text-xs text-content-muted">Save your training and use it on any device</span>
+          </span>
+          <ChevronRight size={18} className="shrink-0 text-content-faint" />
+        </button>
+      )}
 
       {/* Today's session hero — honest about what's actually scheduled today */}
       {activeSession ? (
