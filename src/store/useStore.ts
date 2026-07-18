@@ -64,6 +64,8 @@ interface StoreState extends AppData {
   nextExercise: () => void;
   /** Swap a not-yet-started exercise for another, re-prefilled from its history. */
   swapExercise: (exerciseIndex: number, newExerciseId: string) => void;
+  /** Append an exercise to the active session (prefilled from its history). Returns its index. */
+  addExerciseToSession: (exerciseId: string) => number | null;
 
   // --- rest timer
   startRest: (durationSec: number, exerciseId: string) => void;
@@ -536,6 +538,52 @@ export const useStore = create<StoreState>((set, get) => ({
       persist(next);
       return next;
     }),
+
+  addExerciseToSession: (exerciseId) => {
+    const active = get().activeSession;
+    if (!active) return null;
+    const ex = requireExercise(exerciseId);
+    const repRange = ex.defaultRepRange;
+    const { weightKg, targetReps, previous } = prefillFor(
+      exerciseId,
+      repRange,
+      ex.defaultIncrementKg,
+      undefined,
+      get().sessions,
+    );
+    const sets: SetEntry[] = Array.from({ length: 3 }, (_, i) => ({
+      id: uid('set'),
+      exerciseId,
+      setNumber: i + 1,
+      type: 'working' as const,
+      weightKg,
+      reps: targetReps,
+      completed: false,
+      isWarmup: false,
+    }));
+    const newExercise: ExerciseSession = {
+      id: uid('exs'),
+      exerciseId,
+      order: active.exercises.length,
+      repRange,
+      restSec: ex.kind === 'compound' ? 150 : 90,
+      incrementKg: ex.defaultIncrementKg,
+      status: 'pending',
+      sets,
+      previous,
+    };
+    const newIndex = active.exercises.length;
+    set((s) => {
+      if (!s.activeSession) return s;
+      const next = {
+        ...s,
+        activeSession: { ...s.activeSession, exercises: [...s.activeSession.exercises, newExercise] },
+      };
+      persist(next);
+      return next;
+    });
+    return newIndex;
+  },
 
   startRest: (durationSec, exerciseId) =>
     set((s) => {

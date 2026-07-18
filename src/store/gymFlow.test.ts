@@ -160,6 +160,30 @@ describe('starter routines', () => {
   });
 });
 
+describe('addExerciseToSession', () => {
+  beforeEach(() => S().resetAll());
+
+  it('appends a prefilled exercise to the active session and returns its index', () => {
+    const templateId = S().templates[0]!.id;
+    S().startSession(templateId);
+    const before = S().activeSession!.exercises.length;
+
+    const idx = S().addExerciseToSession('bicep-curl');
+    expect(idx).toBe(before);
+    const active = S().activeSession!;
+    expect(active.exercises.length).toBe(before + 1);
+    const added = active.exercises[idx!]!;
+    expect(added.exerciseId).toBe('bicep-curl');
+    expect(added.status).toBe('pending');
+    expect(added.sets.length).toBeGreaterThan(0);
+    expect(added.sets.every((st) => !st.completed)).toBe(true);
+  });
+
+  it('returns null when there is no active session', () => {
+    expect(S().addExerciseToSession('bicep-curl')).toBeNull();
+  });
+});
+
 describe('exercise notes', () => {
   beforeEach(() => S().resetAll());
 
