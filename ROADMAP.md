@@ -91,6 +91,8 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   Detection (`liveSetPr`, tested) compares the just-logged set against prior PRs *and* the exercise's
   earlier session sets, so only genuine new tops celebrate; it's ephemeral (completion's
   `detectPersonalRecords` stays the recorded-PR source of truth) and skipped on deloads.
+- ✅ **Rest timer −15s** — the running rest timer now has a "−15s" control next to "+15s" and Skip,
+  so you can shorten a rest you don't need (clamps at 0; reuses `addRestTime`).
 - 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
 - ✅ Component/integration tests for Gym Mode: `ActiveSetCard.test.tsx`, `SetGrid.test.tsx`, and a
   `GymMode.test.tsx` integration suite that renders the screen on its route and drives the wired-up
