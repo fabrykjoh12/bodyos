@@ -93,6 +93,9 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   `detectPersonalRecords` stays the recorded-PR source of truth) and skipped on deloads.
 - ✅ **Rest timer −15s** — the running rest timer now has a "−15s" control next to "+15s" and Skip,
   so you can shorten a rest you don't need (clamps at 0; reuses `addRestTime`).
+- ✅ **Edit / remove a logged set** — tap any completed set in the Gym Mode ledger to open a sheet
+  and fix its weight/reps or remove it (wires the existing `editSet`/`removeSet` store actions). Fixes
+  the gap where only the *last* set could be undone; earlier mis-logs were previously stuck.
 - 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
 - ✅ Component/integration tests for Gym Mode: `ActiveSetCard.test.tsx`, `SetGrid.test.tsx`, and a
   `GymMode.test.tsx` integration suite that renders the screen on its route and drives the wired-up

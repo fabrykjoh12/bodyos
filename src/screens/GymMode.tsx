@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Check, ChevronRight, Flame, Plus, Repeat2, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { EXERCISES, requireExercise } from '@/data/exercises';
-import { formatRepRange, formatWeight, lbToKg } from '@/lib/format';
+import type { SetEntry } from '@/types';
+import { formatRepRange, formatWeight, formatWeightValue, lbToKg } from '@/lib/format';
 import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { liveSetPr } from '@/lib/prstats';
 import { haptics } from '@/lib/haptics';
@@ -11,6 +12,7 @@ import { unlockAudio } from '@/lib/sound';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Sheet } from '@/components/ui/Sheet';
+import { NumericStepper } from '@/components/ui/NumericStepper';
 import { ActiveSetCard } from '@/components/workout/ActiveSetCard';
 import { PrCelebration } from '@/components/workout/PrCelebration';
 import { RestTimerBar } from '@/components/workout/RestTimerBar';
@@ -39,6 +41,8 @@ export function GymMode() {
   const setReps = useStore((s) => s.setReps);
   const setRir = useStore((s) => s.setRir);
   const logActiveSet = useStore((s) => s.logActiveSet);
+  const editSet = useStore((s) => s.editSet);
+  const removeSet = useStore((s) => s.removeSet);
   const addSet = useStore((s) => s.addSet);
   const addWarmupSets = useStore((s) => s.addWarmupSets);
   const nextExercise = useStore((s) => s.nextExercise);
@@ -53,6 +57,9 @@ export function GymMode() {
   const [confirmQuit, setConfirmQuit] = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
   const [prMoment, setPrMoment] = useState<PrMoment | null>(null);
+  const [editingSet, setEditingSet] = useState<SetEntry | null>(null);
+  const [editWeight, setEditWeight] = useState(0);
+  const [editReps, setEditReps] = useState(0);
 
   // Auto-dismiss the PR celebration; a new PR replaces the object and restarts.
   useEffect(() => {
@@ -147,6 +154,21 @@ export function GymMode() {
     if (completedId) navigate(`/session/${completedId}/complete`, { replace: true });
     else navigate('/', { replace: true });
   };
+
+  const openEdit = (set: SetEntry) => {
+    setEditingSet(set);
+    setEditWeight(set.weightKg);
+    setEditReps(set.reps);
+  };
+  const saveEdit = () => {
+    if (editingSet) editSet(exIndex, editingSet.id, { weightKg: editWeight, reps: editReps });
+    setEditingSet(null);
+  };
+  const removeEdit = () => {
+    if (editingSet) removeSet(exIndex, editingSet.id);
+    setEditingSet(null);
+  };
+  const editWeightStep = unit === 'kg' ? exercise.incrementKg || 2.5 : 2.5;
 
   return (
     <div className="flex min-h-full flex-col bg-base px-4 pb-4 safe-top">
@@ -297,7 +319,7 @@ export function GymMode() {
               </button>
             </div>
           </div>
-          <SetGrid exercise={exercise} unit={unit} activeSetIndex={activeSetIndex} highlightBeats={!session.isDeload} />
+          <SetGrid exercise={exercise} unit={unit} activeSetIndex={activeSetIndex} highlightBeats={!session.isDeload} onEditSet={openEdit} />
         </div>
 
         <ExerciseHistory exercise={exercise} unit={unit} />
@@ -364,6 +386,26 @@ export function GymMode() {
             }}
           >
             Discard workout
+          </Button>
+        </div>
+      </Sheet>
+
+      <Sheet open={editingSet !== null} onClose={() => setEditingSet(null)} title="Edit set">
+        <div className="grid grid-cols-2 gap-2">
+          <NumericStepper
+            label="Weight"
+            value={editWeight}
+            unit={unit}
+            step={editWeightStep}
+            onChange={setEditWeight}
+            format={(v) => formatWeightValue(v, unit)}
+          />
+          <NumericStepper label="Reps" value={editReps} step={1} onChange={setEditReps} />
+        </div>
+        <div className="mt-5 flex flex-col gap-2">
+          <Button fullWidth onClick={saveEdit}>Save changes</Button>
+          <Button variant="ghost" fullWidth onClick={removeEdit}>
+            <span className="text-danger">Remove this set</span>
           </Button>
         </div>
       </Sheet>
