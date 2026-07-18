@@ -1,4 +1,4 @@
-import { Check, TrendingUp } from 'lucide-react';
+import { Check, Pencil, TrendingUp } from 'lucide-react';
 import type { ExerciseSession, SetEntry, Unit } from '@/types';
 import { formatWeight } from '@/lib/format';
 
@@ -9,6 +9,8 @@ interface SetGridProps {
   activeSetIndex: number;
   /** Flag completed working sets that beat last time's same set. */
   highlightBeats?: boolean;
+  /** When provided, tapping a logged set opens it for editing. */
+  onEditSet?: (set: SetEntry) => void;
 }
 
 /** True when a logged working set beats last time's same working set —
@@ -20,7 +22,7 @@ function beatsPrevious(set: SetEntry, prev?: { weightKg: number; reps: number })
 }
 
 /** Compact ledger of every set: completed, active, and upcoming. */
-export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false }: SetGridProps) {
+export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false, onEditSet }: SetGridProps) {
   let workingIdx = -1;
   return (
     <ol className="flex flex-col gap-1.5" aria-label="Sets">
@@ -30,18 +32,17 @@ export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false
         const thisWorkingIdx = set.isWarmup ? -1 : (workingIdx += 1);
         const prev = thisWorkingIdx >= 0 ? exercise.previous?.sets[thisWorkingIdx] : undefined;
         const beat = highlightBeats && set.completed && !set.isWarmup && beatsPrevious(set, prev);
-        return (
-          <li
-            key={set.id}
-            className={[
-              'flex items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors',
-              state === 'done' && 'border-line/60 bg-surface-2/60 text-content-muted',
-              state === 'active' && 'border-accent/50 bg-accent-soft text-content',
-              state === 'upcoming' && 'border-line/40 text-content-faint',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
+        const editable = set.completed && !!onEditSet;
+        const rowClass = [
+          'flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-sm transition-colors',
+          state === 'done' && 'border-line/60 bg-surface-2/60 text-content-muted',
+          state === 'active' && 'border-accent/50 bg-accent-soft text-content',
+          state === 'upcoming' && 'border-line/40 text-content-faint',
+        ]
+          .filter(Boolean)
+          .join(' ');
+        const rowContent = (
+          <>
             <span
               className={[
                 'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold',
@@ -76,6 +77,23 @@ export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false
               {set.reps}
               <span className="ml-1 text-xs font-normal text-content-faint">reps</span>
             </span>
+            {editable && <Pencil size={13} className="ml-1.5 shrink-0 text-content-faint" aria-hidden />}
+          </>
+        );
+        return (
+          <li key={set.id}>
+            {editable ? (
+              <button
+                type="button"
+                onClick={() => onEditSet!(set)}
+                aria-label={`Edit set ${set.setNumber}`}
+                className={rowClass + ' text-left hover:border-line-strong'}
+              >
+                {rowContent}
+              </button>
+            ) : (
+              <div className={rowClass}>{rowContent}</div>
+            )}
           </li>
         );
       })}

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { SetGrid } from './SetGrid';
 import type { ExerciseSession, SetEntry } from '@/types';
 
@@ -56,6 +56,23 @@ describe('SetGrid beat markers', () => {
     const ex = exercise([set({ weightKg: 65, reps: 10 })], [{ weightKg: 60, reps: 10 }]);
     render(<SetGrid exercise={ex} unit="kg" activeSetIndex={-1} />);
     expect(screen.queryByLabelText('Beat last time')).not.toBeInTheDocument();
+  });
+
+  it('makes completed sets tappable to edit only when a handler is given', () => {
+    const onEditSet = vi.fn();
+    const done = set({ id: 's1', completed: true, setNumber: 1 });
+    const upcoming = set({ id: 's2', completed: false, setNumber: 2 });
+    const ex = { ...exercise([done, upcoming], []), sets: [done, upcoming] };
+
+    const { rerender } = render(<SetGrid exercise={ex} unit="kg" activeSetIndex={1} />);
+    expect(screen.queryByRole('button', { name: /edit set/i })).not.toBeInTheDocument();
+
+    rerender(<SetGrid exercise={ex} unit="kg" activeSetIndex={1} onEditSet={onEditSet} />);
+    const editBtn = screen.getByRole('button', { name: 'Edit set 1' });
+    // Only the completed set is editable, not the upcoming one.
+    expect(screen.getAllByRole('button', { name: /edit set/i })).toHaveLength(1);
+    fireEvent.click(editBtn);
+    expect(onEditSet).toHaveBeenCalledWith(done);
   });
 
   it('compares each working set against its own index, skipping warm-ups', () => {
