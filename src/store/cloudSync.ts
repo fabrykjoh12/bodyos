@@ -144,9 +144,13 @@ export function isSignedIn(): boolean {
   return authUserId !== null;
 }
 
+function codeOf(e: unknown): string {
+  return e && typeof e === 'object' && 'code' in e ? String((e as { code: unknown }).code) : '';
+}
+
 /** Map Firebase Auth error codes to friendly, human messages. */
 function authMessage(e: unknown): string {
-  const code = e && typeof e === 'object' && 'code' in e ? String((e as { code: unknown }).code) : '';
+  const code = codeOf(e);
   switch (code) {
     case 'auth/invalid-credential':
     case 'auth/wrong-password':
@@ -296,6 +300,35 @@ export async function signUp(
   }
 }
 
+/** One-tap Google sign-in. Uses a popup, falling back to a full-page redirect
+ *  where popups are blocked or unsupported (common in installed PWAs). */
+export async function signInWithGoogle(): Promise<{ error: string | null }> {
+  const fb = await loadFirebase();
+  if (!fb) return { error: 'Cloud sync is not configured.' };
+  try {
+    const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import('firebase/auth');
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(fb.auth, provider);
+      return { error: null };
+    } catch (e) {
+      const code = codeOf(e);
+      // User dismissed the popup — not an error worth showing.
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        return { error: null };
+      }
+      // Popup blocked/unsupported → redirect (navigates away; completes on load).
+      if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+        await signInWithRedirect(fb.auth, provider);
+        return { error: null };
+      }
+      return { error: authMessage(e) };
+    }
+  } catch (e) {
+    return { error: authMessage(e) };
+  }
+}
+
 /** Send a password-reset email (Firebase delivers these reliably). */
 export async function resetPassword(email: string): Promise<{ error: string | null }> {
   const fb = await loadFirebase();
@@ -351,7 +384,10 @@ export function initCloudSync(): void {
   void (async () => {
     const fb = await loadFirebase();
     if (!fb) return;
-    const { onAuthStateChanged } = await import('firebase/auth');
+    const { onAuthStateChanged, getRedirectResult } = await import('firebase/auth');
+    // Finish a redirect-based Google sign-in if one is pending; onAuthStateChanged
+    // then fires with the user. Errors here are non-fatal.
+    void getRedirectResult(fb.auth).catch(() => {});
     onAuthStateChanged(fb.auth, (user) => {
       if (user) {
         authUserId = user.uid;
