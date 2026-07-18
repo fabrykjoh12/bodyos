@@ -94,8 +94,9 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
 - 🟡 Haptics coverage (Gym Mode logs honour the toggle); safe-area audit on a real device still todo
 - ✅ Component/integration tests for Gym Mode: `ActiveSetCard.test.tsx`, `SetGrid.test.tsx`, and a
   `GymMode.test.tsx` integration suite that renders the screen on its route and drives the wired-up
-  flow (active set → log → advance, plus the "no longer active" fallback). Store flow stays covered
-  by `gymFlow.test.ts`. **84 tests** total.
+  flow — active set → log → advance, the "no longer active" fallback, the **beat marker + PR
+  celebration** lighting up on a record set, and the **superset banner** when parked on a superset
+  exercise. Store flow stays covered by `gymFlow.test.ts`. **98 tests** total.
 
 ## 🟡 Phase 4 — Accounts & cloud sync (Supabase)
 

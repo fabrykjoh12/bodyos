@@ -1,14 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { act, render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import type { WorkoutSession } from '@/types';
 import { GymMode } from './GymMode';
 import { useStore } from '@/store/useStore';
 import { requireExercise } from '@/data/exercises';
 
-function startSessionAndRender() {
-  const templateId = useStore.getState().templates[0]!.id;
-  useStore.getState().startSession(templateId);
-  const session = useStore.getState().activeSession!;
+function renderSession(session: WorkoutSession) {
   render(
     <MemoryRouter initialEntries={[`/session/${session.id}`]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
@@ -18,6 +16,12 @@ function startSessionAndRender() {
     </MemoryRouter>,
   );
   return session;
+}
+
+function startSessionAndRender() {
+  const templateId = useStore.getState().templates[0]!.id;
+  useStore.getState().startSession(templateId);
+  return renderSession(useStore.getState().activeSession!);
 }
 
 describe('GymMode integration', () => {
@@ -61,5 +65,31 @@ describe('GymMode integration', () => {
       </MemoryRouter>,
     );
     expect(screen.getByText(/no longer active/i)).toBeInTheDocument();
+  });
+
+  it('lights up the beat marker and PR celebration when a record set is logged', () => {
+    startSessionAndRender();
+    // A weight well above any history guarantees both a last-time beat and an
+    // all-time PR for the exercise.
+    act(() => {
+      useStore.getState().setWeight(500);
+    });
+    fireEvent.click(screen.getByRole('button', { name: /log set/i }));
+
+    expect(screen.getByRole('status', { name: 'New personal record' })).toBeInTheDocument();
+    expect(screen.getAllByLabelText('Beat last time').length).toBeGreaterThan(0);
+  });
+
+  it('shows the superset banner when parked on a superset exercise', () => {
+    const tpl = useStore.getState().templates.find((t) => t.exercises.some((e) => e.supersetGroup));
+    expect(tpl).toBeDefined();
+    useStore.getState().startSession(tpl!.id);
+    const session = useStore.getState().activeSession!;
+    const memberIdx = session.exercises.findIndex((e) => e.supersetGroup);
+    act(() => {
+      useStore.getState().goToExercise(memberIdx);
+    });
+    renderSession(useStore.getState().activeSession!);
+    expect(screen.getByText('Superset')).toBeInTheDocument();
   });
 });
