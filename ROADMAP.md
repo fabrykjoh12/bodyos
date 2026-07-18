@@ -126,8 +126,11 @@ Optional email/password accounts + whole-blob cloud sync. **Migrated from Supaba
   fully offline.
 - ⬜ **Progress-photo sync** — photos are device-local by design; would need Firebase Storage + an
   upload flow.
-- ⬜ **OAuth (Google)** sign-in — Firebase makes this easy (GoogleAuthProvider + popup/redirect);
-  needs the provider enabled in the Firebase console.
+- ✅ **Google sign-in** — one-tap "Continue with Google" at the top of the auth form
+  (`signInWithGoogle`): popup with an automatic full-page **redirect fallback** for installed PWAs
+  where popups are blocked; `getRedirectResult` completes the redirect flow on load. Inline Google
+  'G' mark (no asset). **Console step to enable:** turn on the Google provider in Firebase Auth and
+  add `fabrykjoh12.github.io` to Auth → Settings → Authorized domains.
 
 ## 🟡 Phase 5 — Deeper training features
 
