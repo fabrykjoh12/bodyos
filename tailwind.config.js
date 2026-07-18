@@ -14,8 +14,8 @@ export default {
           3: '#2A3037', // hover / active fill
         },
         line: {
-          DEFAULT: 'rgba(255,255,255,0.10)',
-          strong: 'rgba(255,255,255,0.16)',
+          DEFAULT: 'rgba(255,255,255,0.07)',
+          strong: 'rgba(255,255,255,0.14)',
         },
         content: {
           DEFAULT: '#F4F6F8', // primary text
@@ -25,7 +25,7 @@ export default {
         // Volt — the one brand accent
         accent: {
           DEFAULT: '#CDFB45',
-          soft: 'rgba(205,251,69,0.14)',
+          soft: 'rgba(205,251,69,0.10)',
           strong: '#B4E82A',
         },
         ink: '#0A0C05', // near-black text on volt fills

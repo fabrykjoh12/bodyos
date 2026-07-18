@@ -305,7 +305,7 @@ export function GymMode() {
         )}
 
         {exerciseNotes[exercise.exerciseId] && (
-          <p className="rounded-xl border border-accent/20 bg-accent-soft/40 px-3.5 py-2 text-sm text-content-muted">
+          <p className="rounded-xl border border-line bg-surface px-3.5 py-2 text-sm text-content-muted">
             <span className="font-semibold text-accent">Note</span> · {exerciseNotes[exercise.exerciseId]}
           </p>
         )}
