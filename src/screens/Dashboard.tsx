@@ -125,9 +125,9 @@ export function Dashboard() {
       {showSignIn && (
         <button
           onClick={() => navigate('/account')}
-          className="flex items-center gap-3 rounded-2xl border border-accent/30 bg-accent-soft p-3.5 text-left"
+          className="card flex items-center gap-3 p-3.5 text-left"
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent text-ink">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-accent">
             <Cloud size={17} />
           </span>
           <span className="min-w-0 flex-1">
