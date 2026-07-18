@@ -118,6 +118,9 @@ Optional email/password accounts + whole-blob cloud sync. **Migrated from Supaba
   **Home sign-in banner** when signed out, so login doesn't depend on the header avatar — which the
   iOS status bar could cover in the installed PWA. Fixed that too: the app frame now applies
   `safe-top`, so headers/avatars clear the notch on iPhone.
+- ✅ **Password reset** — a "Forgot password?" link on the sign-in form sends a Firebase reset email
+  (`resetPassword` → `sendPasswordResetEmail`); Firebase delivers these reliably. Positive feedback
+  shown in a neutral notice, errors in red.
 - 🔧 **Enable it** — paste the Firebase web config into `src/lib/firebase.ts` and set the Firestore
   owner-only rules (both documented in `CLAUDE.md`). Empty config ⇒ the sync UI hides; app stays
   fully offline.

@@ -8,6 +8,7 @@ import {
   signOut,
   syncNow,
   resendConfirmation,
+  resetPassword,
   type SyncStatus,
 } from '@/store/cloudSync';
 import { Button } from '@/components/ui/Button';
@@ -32,6 +33,7 @@ export function CloudSync({ heading = true }: { heading?: boolean }) {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   // Set once a sign-up needs email confirmation — switches to the pending panel.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [resendNote, setResendNote] = useState<string | null>(null);
@@ -44,6 +46,7 @@ export function CloudSync({ heading = true }: { heading?: boolean }) {
     e.preventDefault();
     setBusy(true);
     setMessage(null);
+    setNotice(null);
     const address = emailInput.trim();
     try {
       if (mode === 'signin') {
@@ -67,6 +70,21 @@ export function CloudSync({ heading = true }: { heading?: boolean }) {
     setResendNote(null);
     const { error } = await resendConfirmation(pendingEmail);
     setResendNote(error ? error : 'Sent again — check your inbox and spam folder.');
+    setBusy(false);
+  }
+
+  async function forgotPassword() {
+    const address = emailInput.trim();
+    if (!address) {
+      setMessage('Enter your email above first, then tap “Forgot password?”.');
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    setNotice(null);
+    const { error } = await resetPassword(address);
+    if (error) setMessage(error);
+    else setNotice(`Password-reset email sent to ${address}. Check your inbox.`);
     setBusy(false);
   }
 
@@ -154,19 +172,33 @@ export function CloudSync({ heading = true }: { heading?: boolean }) {
         </button>
       </div>
       {message && <p className="text-xs text-danger">{message}</p>}
+      {notice && <p className="text-xs text-content-faint">{notice}</p>}
       <Button type="submit" fullWidth disabled={busy}>
         {busy ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
       </Button>
-      <button
-        type="button"
-        className="text-xs text-content-muted hover:text-content"
-        onClick={() => {
-          setMode(mode === 'signin' ? 'signup' : 'signin');
-          setMessage(null);
-        }}
-      >
-        {mode === 'signin' ? 'No account? Create one' : 'Have an account? Sign in'}
-      </button>
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          className="text-xs text-content-muted hover:text-content"
+          onClick={() => {
+            setMode(mode === 'signin' ? 'signup' : 'signin');
+            setMessage(null);
+            setNotice(null);
+          }}
+        >
+          {mode === 'signin' ? 'No account? Create one' : 'Have an account? Sign in'}
+        </button>
+        {mode === 'signin' && (
+          <button
+            type="button"
+            className="text-xs text-content-muted hover:text-content"
+            onClick={() => void forgotPassword()}
+            disabled={busy}
+          >
+            Forgot password?
+          </button>
+        )}
+      </div>
     </form>
   );
 

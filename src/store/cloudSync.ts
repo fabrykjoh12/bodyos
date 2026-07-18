@@ -296,6 +296,19 @@ export async function signUp(
   }
 }
 
+/** Send a password-reset email (Firebase delivers these reliably). */
+export async function resetPassword(email: string): Promise<{ error: string | null }> {
+  const fb = await loadFirebase();
+  if (!fb) return { error: 'Cloud sync is not configured.' };
+  try {
+    const { sendPasswordResetEmail } = await import('firebase/auth');
+    await sendPasswordResetEmail(fb.auth, email);
+    return { error: null };
+  } catch (e) {
+    return { error: authMessage(e) };
+  }
+}
+
 /** Kept for API compatibility with the Account UI. Firebase needs no email
  *  confirmation to sign in, so this is effectively unused; if called it sends
  *  an optional verification email to the current user. */
