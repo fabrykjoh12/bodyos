@@ -75,7 +75,7 @@ export function NumericStepper({
   return (
     <div className="flex flex-col items-center gap-2">
       <span className="label-tiny">{label}</span>
-      <div className="flex items-center gap-3">
+      <div className="flex w-full items-center justify-between gap-2">
         <button
           type="button"
           aria-label={`Decrease ${label}`}
@@ -83,7 +83,7 @@ export function NumericStepper({
           onPointerUp={endHold}
           onPointerLeave={endHold}
           onPointerCancel={endHold}
-          className="flex h-14 w-14 items-center justify-center rounded-2xl border border-line bg-surface-2 text-content transition-colors hover:border-line-strong active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-line bg-surface-2 text-content transition-colors hover:border-line-strong active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
         >
           <Minus size={26} strokeWidth={2.5} />
         </button>
@@ -100,7 +100,7 @@ export function NumericStepper({
               if (e.key === 'Escape') setEditing(false);
             }}
             aria-label={`Edit ${label}`}
-            className={`${bigText} tnum w-28 rounded-xl bg-surface-2 text-center font-bold text-content outline-none ring-2 ring-accent`}
+            className={`${bigText} tnum min-w-0 flex-1 rounded-xl bg-surface-2 px-1 text-center font-bold text-content outline-none ring-2 ring-accent`}
           />
         ) : (
           <button
@@ -110,7 +110,7 @@ export function NumericStepper({
               setEditing(true);
             }}
             aria-label={`${label} is ${display}${unit ? ' ' + unit : ''}, tap to edit`}
-            className="flex min-w-[7rem] flex-col items-center rounded-xl px-2 py-1 transition-colors hover:bg-surface-2"
+            className="flex min-w-0 flex-1 flex-col items-center rounded-xl px-1 py-1 transition-colors hover:bg-surface-2"
           >
             <span className={`${bigText} tnum font-bold leading-none text-content`}>{display}</span>
             {unit && <span className="mt-1 text-xs font-medium text-content-faint">{unit}</span>}
@@ -124,7 +124,7 @@ export function NumericStepper({
           onPointerUp={endHold}
           onPointerLeave={endHold}
           onPointerCancel={endHold}
-          className="flex h-14 w-14 items-center justify-center rounded-2xl border border-line bg-surface-2 text-content transition-colors hover:border-line-strong active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-line bg-surface-2 text-content transition-colors hover:border-line-strong active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
         >
           <Plus size={26} strokeWidth={2.5} />
         </button>

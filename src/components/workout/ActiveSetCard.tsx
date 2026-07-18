@@ -90,7 +90,7 @@ export function ActiveSetCard({
         )}
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-2">
+      <div className="mt-6 flex flex-col gap-4">
         <NumericStepper
           label="Weight"
           value={weightKg}
