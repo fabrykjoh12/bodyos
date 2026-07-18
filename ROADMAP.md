@@ -114,7 +114,10 @@ Optional email/password accounts + whole-blob cloud sync. **Migrated from Supaba
   chunk) to keep it out of the initial bundle.
 - ✅ **Discoverable sign-in** — the Profile account card + a dedicated `/account` screen put the
   sign-in form one tap from Profile (shared `CloudSync` component; Settings hosts it too). Friendly
-  auth-error messages, password show/hide. (`Profile.test.tsx` covers the three states.)
+  auth-error messages, password show/hide. (`Profile.test.tsx` covers the three states.) Also a
+  **Home sign-in banner** when signed out, so login doesn't depend on the header avatar — which the
+  iOS status bar could cover in the installed PWA. Fixed that too: the app frame now applies
+  `safe-top`, so headers/avatars clear the notch on iPhone.
 - 🔧 **Enable it** — paste the Firebase web config into `src/lib/firebase.ts` and set the Firestore
   owner-only rules (both documented in `CLAUDE.md`). Empty config ⇒ the sync UI hides; app stays
   fully offline.
