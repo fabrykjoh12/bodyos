@@ -1,4 +1,4 @@
-import { Check, Plus, SkipForward } from 'lucide-react';
+import { Check, Minus, Plus, SkipForward } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useRestTimer } from '@/hooks/useRestTimer';
 import { formatDuration } from '@/lib/format';
@@ -33,7 +33,16 @@ export function RestTimerBar() {
         <div className="ml-auto flex items-center gap-1.5">
           <button
             type="button"
+            onClick={() => addRestTime(-15)}
+            aria-label="Subtract 15 seconds"
+            className="flex h-9 items-center gap-0.5 rounded-lg bg-surface-3 px-2.5 text-xs font-semibold text-content-muted hover:text-content"
+          >
+            <Minus size={13} /> 15s
+          </button>
+          <button
+            type="button"
             onClick={() => addRestTime(15)}
+            aria-label="Add 15 seconds"
             className="flex h-9 items-center gap-0.5 rounded-lg bg-surface-3 px-2.5 text-xs font-semibold text-content-muted hover:text-content"
           >
             <Plus size={13} /> 15s
