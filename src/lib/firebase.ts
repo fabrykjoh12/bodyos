@@ -22,13 +22,13 @@ import type { Firestore } from 'firebase/firestore';
 // ---------------------------------------------------------------------------
 
 const FIREBASE_CONFIG = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  appId: '',
+  apiKey: 'AIzaSyC8HWzbReeW_vRoYKt8qNlJAy4WnYyI-PY',
+  authDomain: 'bodyos-e7372.firebaseapp.com',
+  projectId: 'bodyos-e7372',
+  appId: '1:596389728089:web:3e6fad1ff9d6645c470648',
   // storageBucket / messagingSenderId are optional for auth + Firestore.
-  storageBucket: '',
-  messagingSenderId: '',
+  storageBucket: 'bodyos-e7372.firebasestorage.app',
+  messagingSenderId: '596389728089',
 };
 
 export const isFirebaseConfigured =
