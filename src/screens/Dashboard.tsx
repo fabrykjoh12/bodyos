@@ -102,12 +102,12 @@ export function Dashboard() {
   const nextDayLabel = todayPlan.kind === 'next' ? weekdayLabel(todayPlan.weekday, weekday) : null;
 
   return (
-    <div className="flex flex-col gap-3 pt-3">
+    <div className="flex flex-col gap-4 pt-3">
       {/* Header */}
       <header className="mb-1 flex items-start justify-between">
         <div>
           <p className="text-[13px] font-medium text-content-muted">{greeting()}</p>
-          <h1 className="mt-0.5 text-[30px] font-extrabold leading-none tracking-[-0.03em] text-content">
+          <h1 className="mt-0.5 text-[26px] font-bold leading-none tracking-[-0.02em] text-content">
             {user.name}
           </h1>
         </div>
@@ -142,11 +142,11 @@ export function Dashboard() {
       {activeSession ? (
         <section className="rounded-2xl border border-accent bg-surface p-[18px] shadow-card">
           <div className="mb-3 flex items-center justify-between">
-            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.1em] text-ink">
+            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-ink">
               In progress
             </span>
           </div>
-          <h2 className="text-[26px] font-extrabold tracking-[-0.03em] text-content">{activeSession.name}</h2>
+          <h2 className="text-[23px] font-bold tracking-[-0.02em] text-content">{activeSession.name}</h2>
           <p className="mt-1 text-sm text-content-muted">{activeSession.focus}</p>
           <Button size="xl" fullWidth className="mt-4" onClick={() => navigate(`/session/${activeSession.id}`)}>
             <Play size={18} /> Resume session
@@ -163,9 +163,9 @@ export function Dashboard() {
         <section className="rounded-2xl border border-line bg-surface p-[18px] shadow-card">
           <div className="mb-3 flex items-center gap-2 text-content-muted">
             <Moon size={15} />
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.1em]">Rest day</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Rest day</span>
           </div>
-          <h2 className="text-[22px] font-extrabold tracking-[-0.02em] text-content">Recovery day</h2>
+          <h2 className="text-[22px] font-bold tracking-[-0.02em] text-content">Recovery day</h2>
           <p className="mt-1 text-sm text-content-muted">
             No session scheduled today — recovery is where the growth happens.
             {todayPlan.next && <> Next up: <span className="text-content">{todayPlan.next.template.name}</span>.</>}
@@ -179,12 +179,12 @@ export function Dashboard() {
       ) : (
         <section className="rounded-2xl border border-accent bg-surface p-[18px] shadow-card">
           <div className="mb-3 flex items-center justify-between">
-            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.1em] text-ink">
+            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-ink">
               {heroEyebrow}
             </span>
             {nextDayLabel && <span className="text-[11px] font-semibold text-content-faint">{nextDayLabel}</span>}
           </div>
-          <h2 className="text-[26px] font-extrabold tracking-[-0.03em] text-content">{heroTemplate?.name}</h2>
+          <h2 className="text-[23px] font-bold tracking-[-0.02em] text-content">{heroTemplate?.name}</h2>
           <p className="mt-1 text-sm text-content-muted">
             {heroTemplate?.focus} · {heroTemplate?.exercises.length} exercises
           </p>
@@ -327,7 +327,7 @@ export function Dashboard() {
                           Deload
                         </span>
                       ) : prCount > 0 ? (
-                        <span className="rounded-full bg-accent-soft px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-accent">
+                        <span className="rounded-full bg-accent-soft px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-accent">
                           {prCount} PR
                         </span>
                       ) : null}
