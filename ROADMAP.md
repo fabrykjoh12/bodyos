@@ -182,11 +182,65 @@ Optional email/password accounts + whole-blob cloud sync. **Migrated from Supaba
 
 ---
 
+## Phase 6 — Competitive positioning (beat the market)
+
+> Source note: the leaders below are summarised from prior product knowledge (through
+> early 2026), **not** freshly scraped — the build sandbox has no outbound web access, so a live
+> competitor crawl couldn't run. Treat specifics (pricing/tier limits) as approximate; the strategic
+> gaps hold regardless.
+
+### What each leader does best (and its main gripe)
+
+| App | Best-loved feature | Model | Main complaint |
+| --- | --- | --- | --- |
+| **Strong** | The UX benchmark — fastest, cleanest set logging; plate + warm-up calc; Apple Watch | Freemium sub | Free tier capped (~3 routines); slow to add features; no programs |
+| **Hevy** | Generous free tier + **social feed** ("Strava for lifting") + routine sharing + web app | Freemium (Pro ~$24/yr) | Deeper analytics behind Pro |
+| **JeFit** | Huge exercise DB with **animations** + community programs | Freemium Elite | Cluttered, dated UI; ads |
+| **FitNotes** | Dead-simple, free, offline, no account | Free | Android-only; minimal analytics |
+| **Boostcamp** | Free library of **proven structured programs** (5/3/1, PPL…) + program runner | Free + coaching | Less free-form logging |
+| **Fitbod** | **Adaptive AI** "what to train today" w/ muscle-recovery heatmap | Sub (~$80/yr) | Pricey; feels black-box/repetitive; bad if you follow your own plan |
+| **Caliber** | Free structured strength plans + **1:1 coaching** marketplace | Free app + paid coaching | Coaching-led, less DIY |
+| **Strava** *(social model)* | The **gamification engine** — feed, kudos, segments/leaderboards, challenges, streaks | Freemium sub | Not lifting-specific |
+
+### Table-stakes — where BodyOS already stands
+
+- Fast one-tap logging ✅ (our strongest area) · cloud sync + web/PWA + multi-device ✅ · rich
+  analytics (heatmap, e1RM, trends, consistency) ✅ · progression engine ✅
+- **Gaps vs. the field:** ⬜ multi-week **program runner** with auto-progression · ⬜ exercise
+  **demo media** (animation/video) · ⬜ **wearable / hands-free** logging · ⬜ any **social/sharing**
+
+### Where BodyOS can win (differentiation whitespace)
+
+Our edge is **transparent progression intelligence** (per-set "beat last time", reasoned
+recommendations, deloads). Lean into it rather than copying Fitbod's black box or Boostcamp's
+static PDFs.
+
+**Prioritised (impact × fit × buildable-as-PWA):**
+
+1. ⬜ **Program runner** — turn templates into multi-week programs that auto-progress
+   (linear, double-progression cycles, 5/3/1-style) and auto-schedule **deloads on stall**. Biggest
+   competitive gap and it leverages the engine we already have. *High effort, high impact.*
+2. ⬜ **Per-muscle weekly volume targets (MEV/MAV/MRV)** — layer RP-style "enough / too much per
+   muscle this week" onto the existing heatmap. Analytics few free apps do well. *Medium.*
+3. ⬜ **Shareable workout summary cards** — export a polished PNG of a session/PR (Strava-style
+   virality **without** a social graph). Low complexity, high reach. *Medium.*
+4. ⬜ **Hands-free "gym mode"** — screen **wake-lock** + a big-tap layout: the closest a PWA gets to
+   the Apple-Watch logging advantage. *Low effort, real daily win.*
+5. ⬜ **Exercise demo media** — short looping form demos (table stakes vs. JeFit/Fitbod); keep it
+   lightweight (Lottie/inline) to stay offline-friendly. *Medium.*
+6. ⬜ **Reminders + Health integration** — rest-day / next-workout PWA notifications; export to Apple
+   Health / Google Fit. Retention. *Medium.*
+7. ⬜ **Optional privacy-first social** — follow friends + kudos via Firebase, off by default. *Higher
+   effort — do after 1–4 prove the core.*
+
+---
+
 ## Suggested next session
 
-1. **Enable Firebase sync** — create a Firebase project, enable Email/Password auth, paste the web
-   config into `src/lib/firebase.ts`, and set the Firestore owner-only rules (see `CLAUDE.md`).
-2. Finish exercise photos (remaining ~40) — quick, high visual impact.
-3. Google (OAuth) sign-in — easy on Firebase once the base auth is live.
+Cloud sync (Firebase, incl. Google sign-in) is live. The highest-leverage work now is Phase 6:
+
+1. **Program runner** (Phase 6 #1) — the biggest competitive gap; builds on the progression engine.
+2. **Hands-free "gym mode"** (Phase 6 #4) — quick win: screen wake-lock + big-tap layout.
+3. **Per-muscle weekly volume targets** (Phase 6 #2) — differentiation on top of the muscle heatmap.
 
 See `CLAUDE.md` for architecture, conventions, the design system, and gotchas.
