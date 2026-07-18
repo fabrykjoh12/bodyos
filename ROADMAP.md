@@ -98,33 +98,30 @@ Ported the user's mockup design system so it reads as a real product, not an AI 
   celebration** lighting up on a record set, and the **superset banner** when parked on a superset
   exercise. Store flow stays covered by `gymFlow.test.ts`. **98 tests** total.
 
-## 🟡 Phase 4 — Accounts & cloud sync (Supabase)
+## 🟡 Phase 4 — Accounts & cloud sync (Firebase)
 
-Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud sync.
+Optional email/password accounts + whole-blob cloud sync. **Migrated from Supabase → Firebase**
+(ran out of free Supabase project slots; Supabase's default email delivery blocked sign-up).
 
-- ✅ **Auth** — Supabase email/password, fully optional (the app stays offline-first; no forced
-  login). "Account & Sync" section in Settings (`src/store/cloudSync.ts`, `src/lib/supabase.ts`).
-- ✅ **Cloud sync** — the whole `AppData` is mirrored to `public.bodyos_app_state` (one `jsonb`
-  row per user, owner-only RLS). Pushed on save (debounced 1.5 s), pulled + reconciled on
-  sign-in. Conflicts: whole-blob **last-write-wins** by server `updated_at`. localStorage stays
-  the synchronous source of truth; cloud is a background layer — so the synchronous `Repository`
-  interface is untouched. Reconciliation core is unit-tested (`cloudSync.test.ts`); the Supabase
-  client is lazy-loaded to keep it out of the initial bundle.
-- ✅ **Cost-free isolation** — lives in the existing shared Supabase project (Pro org, no new
-  ~$10/mo project) in its own `bodyos_app_state` table; never touches the co-hosted app's tables.
-- ✅ **Discoverable sign-in** — the Profile screen shows an account card: an inviting "Back up &
-  sync your training" prompt when signed out, or the account email + live sync status when signed in.
-  Hidden when cloud sync isn't compiled in. (`Profile.test.tsx` covers all three states.)
-- ✅ **Dedicated `/account` screen** — the sign-in form is extracted into a shared `CloudSync`
-  component and mounted on its own route, so the Profile card is now *one tap* to the form (no more
-  hunting through Settings; Settings still hosts it too). Includes a **"Resend confirmation email"**
-  recovery flow with a clear pending state (`resendConfirmation`) for when the first email doesn't
-  arrive, plus the password show/hide toggle.
-- ⬜ **Progress-photo sync** — photos are device-local by design (privacy + `jsonb` size), so they
-  are excluded from the synced blob. Needs a private Storage bucket + upload flow to sync.
-- ⬜ **OAuth (Google)** sign-in — needs provider + redirect-URL config in the Supabase dashboard.
-- ⬜ **Relational schema** (per-table sessions/PRs) — only if server-side queries/analytics are
-  ever needed; the blob model already covers multi-device sync.
+- ✅ **Auth** — Firebase email/password, fully optional (offline-first; no forced login). Crucially
+  **no email-confirmation step** — sign-up signs you in immediately, which fixes the "confirmation
+  email never arrives" problem. `src/store/cloudSync.ts`, `src/lib/firebase.ts`.
+- ✅ **Cloud sync** — the whole `AppData` is mirrored to Firestore doc `bodyos_app_state/{uid}`.
+  Pushed on save (debounced 1.5 s), pulled + reconciled on sign-in. Conflicts: whole-blob
+  **last-write-wins** by Firestore `serverTimestamp`. localStorage stays the synchronous source of
+  truth; cloud is a background layer — the synchronous `Repository` interface is untouched.
+  Reconciliation core is unit-tested (`cloudSync.test.ts`); the Firebase SDK is lazy-loaded (its own
+  chunk) to keep it out of the initial bundle.
+- ✅ **Discoverable sign-in** — the Profile account card + a dedicated `/account` screen put the
+  sign-in form one tap from Profile (shared `CloudSync` component; Settings hosts it too). Friendly
+  auth-error messages, password show/hide. (`Profile.test.tsx` covers the three states.)
+- 🔧 **Enable it** — paste the Firebase web config into `src/lib/firebase.ts` and set the Firestore
+  owner-only rules (both documented in `CLAUDE.md`). Empty config ⇒ the sync UI hides; app stays
+  fully offline.
+- ⬜ **Progress-photo sync** — photos are device-local by design; would need Firebase Storage + an
+  upload flow.
+- ⬜ **OAuth (Google)** sign-in — Firebase makes this easy (GoogleAuthProvider + popup/redirect);
+  needs the provider enabled in the Firebase console.
 
 ## 🟡 Phase 5 — Deeper training features
 
@@ -169,9 +166,9 @@ Unblocked and shipped (v1): optional email/password accounts + whole-blob cloud 
 
 ## Suggested next session
 
-1. Finish exercise photos (remaining ~40) — quick, high visual impact. (Higgsfield now
-   reachable from here — ~936 credits available.)
-2. Build `SupabaseRepository` (Phase 4) — the real product milestone. **Now unblocked:** the
-   Supabase connector is authorized and an `ACTIVE_HEALTHY` project already exists (eu-west-3).
+1. **Enable Firebase sync** — create a Firebase project, enable Email/Password auth, paste the web
+   config into `src/lib/firebase.ts`, and set the Firestore owner-only rules (see `CLAUDE.md`).
+2. Finish exercise photos (remaining ~40) — quick, high visual impact.
+3. Google (OAuth) sign-in — easy on Firebase once the base auth is live.
 
 See `CLAUDE.md` for architecture, conventions, the design system, and gotchas.
