@@ -148,6 +148,8 @@ Optional email/password accounts + whole-blob cloud sync. **Migrated from Supaba
   Pure logic in `lib/plates.ts` (`computePlates`), 7 tests.
 - ✅ **Warm-up set generator** — one tap inserts a ramping warm-up (empty bar → ~50/70/85 %) before
   the working sets on a barbell exercise (`generateWarmups` + `addWarmupSets` store action), 4 tests.
+- ✅ **Rep-max estimates** — the exercise-detail screen predicts working weights across rep targets
+  (1/3/5/8/10/12) from your best set's e1RM (inverse Epley; pure `repMax` lib, 5 tests).
 - ✅ **Swap exercise mid-workout** — in Gym Mode, tap the swap icon on an unstarted exercise to
   replace it with a substitution (or a same-muscle alternative); sets are re-prefilled from the new
   exercise's history via `prefillFor` (`swapExercise` action). Hidden once a set is logged.

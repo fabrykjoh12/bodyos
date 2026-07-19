@@ -4,11 +4,13 @@ import { Lightbulb } from 'lucide-react';
 import { getExercise, exerciseName } from '@/data/exercises';
 import { useStore } from '@/store/useStore';
 import { e1rmSeries } from '@/lib/analytics';
+import { bestE1RM, round1 } from '@/lib/volume';
 import { formatWeight } from '@/lib/format';
 import { relativeDay } from '@/lib/date';
 import { findLastExerciseSession } from '@/lib/history';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { StrengthChart } from '@/components/progress/StrengthChart';
+import { RepMaxTable } from '@/components/exercise/RepMaxTable';
 import { Chip } from '@/components/ui/Chip';
 import { MuscleMap } from '@/components/exercise/MuscleMap';
 
@@ -26,6 +28,9 @@ export function ExerciseDetail() {
 
   const series = useMemo(() => (id ? e1rmSeries(id, sessions) : []), [id, sessions]);
   const last = id ? findLastExerciseSession(id, sessions) : undefined;
+  const last1RM = last
+    ? round1(bestE1RM(last.exercise.sets.filter((s) => s.completed && !s.isWarmup)))
+    : 0;
 
   if (!ex) {
     return (
@@ -91,6 +96,16 @@ export function ExerciseDetail() {
                 </li>
               ))}
           </ul>
+        </div>
+      )}
+
+      {last1RM > 0 && (
+        <div className="card p-4">
+          <p className="label-tiny mb-1">Rep-max estimates</p>
+          <p className="mb-3 text-xs text-content-faint">
+            Predicted working weights from your best set (~{formatWeight(last1RM, unit)} 1RM).
+          </p>
+          <RepMaxTable oneRepMax={last1RM} unit={unit} />
         </div>
       )}
 
