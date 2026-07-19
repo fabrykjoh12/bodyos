@@ -10,7 +10,7 @@ const NAV_ROUTES = ['/', '/workouts', '/exercises', '/stats', '/progress', '/pro
 // hidden so it doesn't overlap the primary CTA (Start Workout / Save).
 const HIDE_NAV_PREFIXES = ['/workouts/'];
 
-/** Mobile-first frame: a centered column with a bottom tab bar on main tabs. */
+/** Mobile-first frame: a centered column with a floating nav on main tabs. */
 export function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export function AppShell() {
   const showResume = activeSession && !location.pathname.startsWith('/session');
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-4 safe-top">
+    <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-[var(--gutter)] safe-top">
       <main className="flex flex-1 flex-col pb-4">
         {/* Keyed by route so each screen gets a subtle enter transition. */}
         <div key={location.pathname} className="flex flex-1 flex-col animate-page-in">
@@ -34,14 +34,15 @@ export function AppShell() {
       {showResume && (
         <button
           onClick={() => navigate(`/session/${activeSession.id}`)}
-          className="sticky bottom-20 z-30 mb-2 flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent-soft px-4 py-3 text-left animate-slide-up"
+          className="glass pressable sticky bottom-[4.75rem] z-30 mb-3 flex items-center gap-3 rounded-2xl border-accent/35 px-4 py-3 text-left shadow-float animate-slide-up"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-ink">
+          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-ink">
             <Dumbbell size={18} />
+            <span className="absolute inset-0 rounded-xl bg-accent animate-ping-once" aria-hidden />
           </span>
-          <span className="flex-1">
-            <span className="block text-sm font-semibold text-content">Workout in progress</span>
-            <span className="block text-xs text-content-muted">{activeSession.name} · tap to resume</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-content">Workout in progress</span>
+            <span className="block truncate text-xs text-content-muted">{activeSession.name} · tap to resume</span>
           </span>
           <span className="text-sm font-bold text-accent">Resume</span>
         </button>

@@ -188,33 +188,47 @@ export function GymMode() {
     if (idx !== null) goToExercise(idx);
   };
 
+  // Whole-session progress — every logged working set moves the bar.
+  const allWorking = session.exercises.flatMap((e) => e.sets.filter((s) => !s.isWarmup));
+  const sessionProgress = allWorking.length
+    ? allWorking.filter((s) => s.completed).length / allWorking.length
+    : 0;
+
   return (
-    <div className="flex min-h-full flex-col bg-base px-4 pb-4 safe-top">
-      {/* Header: exercise position + quit */}
-      <header className="sticky top-0 z-20 -mx-4 flex items-center gap-2 border-b border-line/60 bg-base/85 px-4 py-3 backdrop-blur-md">
-        <IconButton label="Exit workout" onClick={() => setConfirmQuit(true)}>
-          <X size={22} />
-        </IconButton>
-        <div className="min-w-0 flex-1 text-center">
-          <p className="label-tiny">
-            Exercise {exIndex + 1} / {session.exercises.length}
-          </p>
-          <p className="truncate text-sm font-semibold text-content">
-            {session.name}
-            {session.isDeload && (
-              <span className="ml-1.5 align-middle rounded bg-surface-3 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-content-muted">
-                Deload
-              </span>
-            )}
-          </p>
+    <div className="flex min-h-full flex-col bg-base px-[var(--gutter)] pb-4 safe-top">
+      {/* Header: exercise position + quit, with live session progress */}
+      <header className="bleed sticky top-0 z-20 bg-base/85 pt-1 backdrop-blur-md">
+        <div className="flex items-center gap-2 py-2">
+          <IconButton label="Exit workout" onClick={() => setConfirmQuit(true)}>
+            <X size={22} />
+          </IconButton>
+          <div className="min-w-0 flex-1 text-center">
+            <p className="label-tiny">
+              Exercise {exIndex + 1} / {session.exercises.length}
+            </p>
+            <p className="truncate text-sm font-semibold text-content">
+              {session.name}
+              {session.isDeload && (
+                <span className="ml-1.5 align-middle rounded bg-surface-3 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-content-muted">
+                  Deload
+                </span>
+              )}
+            </p>
+          </div>
+          <span className="tnum w-11 text-right text-sm font-semibold text-content-muted">
+            {completedWorking}/{totalWorking}
+          </span>
         </div>
-        <span className="tnum w-11 text-right text-sm font-semibold text-content-muted">
-          {completedWorking}/{totalWorking}
-        </span>
+        <div className="h-[3px] w-full bg-surface-2">
+          <div
+            className="h-full rounded-r-full bg-accent transition-[width] duration-500 ease-spring"
+            style={{ width: `${sessionProgress * 100}%`, boxShadow: '0 0 12px rgba(205,251,69,0.5)' }}
+          />
+        </div>
       </header>
 
       {/* Exercise quick-nav */}
-      <div className="no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
+      <div className="no-scrollbar bleed mt-3 flex gap-2 overflow-x-auto pb-1">
         {session.exercises.map((ex, i) => {
           const done = ex.sets.every((s) => s.completed);
           const active = i === exIndex;
@@ -350,7 +364,7 @@ export function GymMode() {
       </div>
 
       {/* Primary sticky action */}
-      <div className="sticky bottom-0 -mx-4 mt-3 border-t border-line/60 bg-base/90 px-4 py-3 backdrop-blur-md safe-bottom">
+      <div className="bleed sticky bottom-0 mt-3 border-t border-line/60 bg-base/90 py-3 backdrop-blur-md safe-bottom">
         {!exerciseDone ? (
           <Button size="xl" fullWidth onClick={handleLog} variant="primary">
             <Check size={22} strokeWidth={3} /> Log Set

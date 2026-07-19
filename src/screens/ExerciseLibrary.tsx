@@ -28,7 +28,7 @@ export function ExerciseLibrary() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader title="Exercises" subtitle={`${EXERCISES.length} in your library`} back />
 
       <label className="flex items-center gap-2 rounded-xl border border-line bg-surface-2 px-3">
@@ -41,12 +41,12 @@ export function ExerciseLibrary() {
         />
       </label>
 
-      <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4">
+      <div className="no-scrollbar bleed flex gap-1.5 overflow-x-auto">
         {MUSCLES.map((m) => (
           <FilterChip key={m} active={muscle === m} onClick={() => setMuscle(m)}>{m}</FilterChip>
         ))}
       </div>
-      <div className="no-scrollbar -mx-4 -mt-2 flex gap-1.5 overflow-x-auto px-4">
+      <div className="no-scrollbar bleed -mt-2 flex gap-1.5 overflow-x-auto">
         {EQUIPMENT.map((eq) => (
           <FilterChip key={eq} active={equipment === eq} onClick={() => setEquipment(eq)}>{eq}</FilterChip>
         ))}

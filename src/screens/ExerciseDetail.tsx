@@ -34,7 +34,7 @@ export function ExerciseDetail() {
 
   if (!ex) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6 pb-4">
         <ScreenHeader title="Exercise" back />
         <p className="card p-4 text-sm text-content-muted">Exercise not found.</p>
       </div>
@@ -42,7 +42,7 @@ export function ExerciseDetail() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader title={ex.name} subtitle={`${ex.primaryMuscle} · ${ex.equipment}`} back />
 
       <div className="card py-5">

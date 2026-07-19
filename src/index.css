@@ -7,6 +7,8 @@
 @layer base {
   :root {
     color-scheme: dark;
+    /* Screen gutter — every full-bleed element derives from this. */
+    --gutter: 1.25rem;
   }
 
   * {
@@ -22,6 +24,11 @@
   body {
     @apply bg-base text-content font-sans antialiased;
     overscroll-behavior-y: none;
+    /* A faint volt aurora at the very top — depth without decoration. */
+    background-image:
+      radial-gradient(120% 44% at 50% 0%, rgba(205, 251, 69, 0.045), transparent 62%),
+      radial-gradient(90% 34% at 12% 0%, rgba(95, 168, 255, 0.03), transparent 58%);
+    background-repeat: no-repeat;
   }
 
   /* Every numeral in the app is monospace — the core "training tool" signal. */
@@ -37,27 +44,64 @@
 }
 
 @layer components {
+  /* ---------- Cards: physical, lit from above ---------- */
   .card {
     @apply rounded-2xl border border-line bg-surface shadow-card;
+    background-image: linear-gradient(172deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 42%);
   }
 
   .card-2 {
     @apply rounded-2xl border border-line bg-surface;
   }
 
+  /* Hero card — the one big moment per screen. */
+  .card-hero {
+    @apply rounded-3xl border border-line bg-surface shadow-lift;
+    background-image:
+      radial-gradient(130% 90% at 85% -10%, rgba(205, 251, 69, 0.09), transparent 55%),
+      linear-gradient(172deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 45%);
+  }
+
+  /* Quiet inset panel used inside cards (objectives, pickers). */
+  .inset-panel {
+    @apply rounded-xl bg-black/25 border border-white/[0.04];
+  }
+
   /* Tactile press feedback on tappable cards (buttons only, not static ones). */
   button.card,
-  a.card {
-    @apply transition-transform duration-100 ease-out;
+  a.card,
+  button.card-hero,
+  a.card-hero,
+  .pressable {
+    @apply transition-transform duration-150 ease-spring;
   }
   button.card:active,
-  a.card:active {
-    transform: scale(0.985);
+  a.card:active,
+  button.card-hero:active,
+  a.card-hero:active,
+  .pressable:active {
+    transform: scale(0.98);
   }
 
   /* Uppercase tracked eyebrow label — used on every card. */
   .label-tiny {
-    @apply text-[0.69rem] font-bold uppercase tracking-[0.08em] text-content-faint;
+    @apply text-[0.66rem] font-semibold uppercase tracking-[0.14em] text-content-faint;
+  }
+
+  /* Divider-list row — content that shouldn't live in a box. */
+  .row-list {
+    @apply divide-y divide-line;
+  }
+
+  /* Frosted floating chrome (nav, sticky bars). */
+  .glass {
+    @apply border border-line-strong bg-surface/75 backdrop-blur-xl;
+  }
+
+  /* Full-bleed to the screen edge from inside the gutter. */
+  .bleed {
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
   }
 
   .no-scrollbar {
@@ -73,6 +117,37 @@
   }
   .safe-bottom {
     padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  }
+
+  /* ---------- Motion choreography ---------- */
+  /* Stagger children: each direct child rises in sequence. */
+  .stagger > * {
+    animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0.02s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.07s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.12s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.17s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.22s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.27s; }
+  .stagger > *:nth-child(7) { animation-delay: 0.32s; }
+  .stagger > *:nth-child(8) { animation-delay: 0.37s; }
+  .stagger > *:nth-child(9) { animation-delay: 0.42s; }
+  .stagger > *:nth-child(10) { animation-delay: 0.47s; }
+  .stagger > *:nth-child(n + 11) { animation-delay: 0.52s; }
+
+  /* One-shot shimmer sweep across a volt surface (celebrations only). */
+  .shimmer-once {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer-once::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    animation: shimmer 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
   }
 }
 

@@ -189,7 +189,7 @@ export function WorkoutNew() {
         <Plus size={18} /> Add exercise
       </Button>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md border-t border-line/60 bg-base/90 px-4 py-3 backdrop-blur-md safe-bottom">
+      <div className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md border-t border-line/60 bg-base/90 px-[var(--gutter)] py-3 backdrop-blur-md safe-bottom">
         <Button size="lg" fullWidth disabled={!canSave} onClick={save}>
           <Check size={18} /> {existing ? 'Save changes' : 'Create workout'}
         </Button>

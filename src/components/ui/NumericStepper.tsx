@@ -70,10 +70,13 @@ export function NumericStepper({
   };
 
   const display = format ? format(value) : String(value);
-  const bigText = size === 'lg' ? 'text-5xl' : 'text-3xl';
+  const bigText = size === 'lg' ? 'text-[3.4rem]' : 'text-3xl';
+
+  const holdBtn =
+    'flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-line-strong bg-white/[0.05] text-content shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-all duration-150 ease-spring hover:bg-white/[0.09] active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70';
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-1.5">
       <span className="label-tiny">{label}</span>
       <div className="flex w-full items-center justify-between gap-2">
         <button
@@ -83,7 +86,7 @@ export function NumericStepper({
           onPointerUp={endHold}
           onPointerLeave={endHold}
           onPointerCancel={endHold}
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-line bg-surface-2 text-content transition-colors hover:border-line-strong active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+          className={holdBtn}
         >
           <Minus size={26} strokeWidth={2.5} />
         </button>
@@ -112,8 +115,11 @@ export function NumericStepper({
             aria-label={`${label} is ${display}${unit ? ' ' + unit : ''}, tap to edit`}
             className="flex min-w-0 flex-1 flex-col items-center rounded-xl px-1 py-1 transition-colors hover:bg-surface-2"
           >
-            <span className={`${bigText} tnum font-bold leading-none text-content`}>{display}</span>
-            {unit && <span className="mt-1 text-xs font-medium text-content-faint">{unit}</span>}
+            {/* Keyed by value: each change re-pops the numeral for tactile feedback. */}
+            <span key={display} className={`${bigText} tnum animate-pop-in font-bold leading-none tracking-[-0.03em] text-content`}>
+              {display}
+            </span>
+            {unit && <span className="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-content-faint">{unit}</span>}
           </button>
         )}
 
@@ -124,7 +130,7 @@ export function NumericStepper({
           onPointerUp={endHold}
           onPointerLeave={endHold}
           onPointerCancel={endHold}
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-line bg-surface-2 text-content transition-colors hover:border-line-strong active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+          className={holdBtn}
         >
           <Plus size={26} strokeWidth={2.5} />
         </button>

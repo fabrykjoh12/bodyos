@@ -30,7 +30,7 @@ export function Progress() {
 
   if (completed.length === 0) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6 pb-4">
         <ScreenHeader title="Progress" />
         <EmptyState
           icon={<TrendingUp size={24} />}
@@ -42,7 +42,7 @@ export function Progress() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader title="Progress" subtitle="Strength, volume & photos" />
 
       <div className="grid grid-cols-2 gap-2">

@@ -3,7 +3,7 @@ import type { Unit } from '@/types';
 import { formatWeight } from '@/lib/format';
 
 /**
- * The in-session PR moment. Volt glow (`shadow-accent-glow`) is reserved for
+ * The in-session PR moment. Volt glow + a single shimmer sweep — reserved for
  * exactly this kind of celebration. Purely presentational — the parent owns
  * when it shows and auto-dismisses.
  */
@@ -27,10 +27,11 @@ export function PrCelebration({
     <div
       role="status"
       aria-label="New personal record"
-      className="animate-pop-in flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent-soft px-4 py-3 shadow-accent-glow"
+      className="shimmer-once animate-pop-in flex items-center gap-3 rounded-2xl border border-accent/40 bg-accent-soft px-4 py-3.5 shadow-accent-glow"
     >
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent text-ink">
-        <Trophy size={20} strokeWidth={2.5} />
+      <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-ink">
+        <Trophy size={21} strokeWidth={2.5} />
+        <span className="absolute inset-0 rounded-xl bg-accent animate-ping-once" aria-hidden />
       </span>
       <div className="min-w-0">
         <p className="label-tiny text-accent">New personal record</p>

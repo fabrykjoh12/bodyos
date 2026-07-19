@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Award, Check } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { exerciseName } from '@/data/exercises';
+import { formatVolume, formatWeight } from '@/lib/format';
 import { Button } from '@/components/ui/Button';
-import { WorkoutSummary } from '@/components/workout/WorkoutSummary';
+import { CountUp } from '@/components/ui/CountUp';
+import { summaryStats } from '@/components/workout/WorkoutSummary';
 import { SessionRecap } from '@/components/workout/SessionRecap';
 import { ProgressionRecommendation } from '@/components/workout/ProgressionRecommendation';
 
@@ -33,39 +35,94 @@ export function WorkoutComplete() {
     );
   }
 
+  const stats = summaryStats(session);
+
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-4 pb-8 safe-top">
-      <div className="flex flex-col items-center py-8 text-center animate-pop-in">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-ink shadow-accent-glow">
-          <Sparkles size={30} />
-        </span>
-        <h1 className="mt-4 text-2xl font-bold text-content">Workout complete</h1>
-        <p className="mt-1 text-sm text-content-muted">
-          {session.name} · {session.isDeload ? 'deload done — recover well' : 'nicely done'}
-        </p>
-      </div>
-
-      <WorkoutSummary session={session} prs={prs} unit={unit} />
-
-      <SessionRecap session={session} unit={unit} />
-
-      <div className="mt-5">
-        <h2 className="mb-2 text-sm font-semibold text-content">Next session plan</h2>
-        <div className="flex flex-col gap-2">
-          {recommendations.map((rec) => (
-            <div key={rec.exerciseId}>
-              <p className="mb-1 text-xs font-medium text-content-faint">{exerciseName(rec.exerciseId)}</p>
-              <ProgressionRecommendation rec={rec} />
-            </div>
-          ))}
+    <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-[var(--gutter)] pb-8 safe-top">
+      <div className="stagger flex flex-col gap-7">
+        {/* The cinematic beat: mark → verdict → the work, counted up */}
+        <div className="flex flex-col items-center pt-14 text-center">
+          <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-accent text-ink shadow-accent-glow">
+            <Check size={38} strokeWidth={3} />
+            <span className="absolute inset-0 rounded-full bg-accent animate-ping-once" aria-hidden />
+          </span>
+          <p className="label-tiny mt-8">{session.name}</p>
+          <h1 className="mt-2 text-display text-content">
+            {session.isDeload ? 'Deload done' : 'Session complete'}
+          </h1>
+          <p className="mt-2 text-sm text-content-muted">
+            {session.isDeload ? 'Lighter on purpose — recover well.' : 'Every set is in the book.'}
+          </p>
         </div>
-      </div>
 
-      <div className="mt-6">
+        {/* The work, in numbers — volume is the headline */}
+        <section className="card-hero p-6 text-center">
+          <p className="label-tiny">Total volume</p>
+          <p className="mt-2 text-[3rem] font-bold leading-none tracking-[-0.03em] text-content">
+            <CountUp value={stats.volume} duration={1300} delay={250} format={(v) => formatVolume(v, unit)} />
+          </p>
+          <div className="mt-6 flex divide-x divide-line border-t border-line pt-5">
+            <CompleteCell label="Minutes" value={stats.minutes} delay={400} />
+            <CompleteCell label="Sets" value={stats.sets} delay={500} />
+            <CompleteCell label="Exercises" value={stats.exercises} delay={600} />
+          </div>
+        </section>
+
+        {/* PRs get their own glowing moment */}
+        {prs.length > 0 && (
+          <section className="shimmer-once card rounded-3xl border-accent/40 bg-accent-soft p-5 shadow-accent-glow">
+            <div className="flex items-center gap-2 text-accent">
+              <Award size={17} />
+              <span className="label-tiny text-accent">
+                {prs.length} personal record{prs.length > 1 ? 's' : ''}
+              </span>
+            </div>
+            <ul className="mt-3 space-y-2">
+              {prs.map((pr) => (
+                <li key={pr.id} className="flex items-baseline justify-between gap-3">
+                  <span className="min-w-0 truncate text-sm font-bold text-content">{exerciseName(pr.exerciseId)}</span>
+                  <span className="tnum shrink-0 text-sm text-content-muted">
+                    {pr.type === 'weight'
+                      ? `${formatWeight(pr.value, unit)} × ${pr.reps}`
+                      : `${formatWeight(pr.value, unit)} est. 1RM`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <SessionRecap session={session} unit={unit} />
+
+        {recommendations.length > 0 && (
+          <div>
+            <h2 className="label-tiny mb-3">Next session plan</h2>
+            <div className="flex flex-col gap-2">
+              {recommendations.map((rec) => (
+                <div key={rec.exerciseId}>
+                  <p className="mb-1 text-xs font-medium text-content-faint">{exerciseName(rec.exerciseId)}</p>
+                  <ProgressionRecommendation rec={rec} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <Button size="xl" fullWidth onClick={() => navigate('/', { replace: true })}>
           Done
         </Button>
       </div>
+    </div>
+  );
+}
+
+function CompleteCell({ label, value, delay }: { label: string; value: number; delay: number }) {
+  return (
+    <div className="flex-1">
+      <p className="tnum text-[1.6rem] font-semibold leading-none tracking-[-0.02em] text-content">
+        <CountUp value={value} duration={900} delay={delay} />
+      </p>
+      <p className="label-tiny mt-2">{label}</p>
     </div>
   );
 }

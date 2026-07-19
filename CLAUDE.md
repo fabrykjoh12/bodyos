@@ -4,14 +4,13 @@ Context for Claude Code (and humans) working on this repo. Read this first in a 
 
 ## Current status (2026-07-19) — read before picking work
 
-- **THE OPEN DECISION IS DESIGN.** The user finds the current UI "messy / not good" and asked for
-  distinct redesign options. Two option sheets were published as artifacts:
-  - Round 1 (palettes/identities, same layout): https://claude.ai/code/artifact/72c88a8f-b6fc-46a7-9dc8-974eda66cb98
-  - Round 2 (completely different layouts/UX, options 6–10 — Focus Mode, Session Timeline,
-    Bento, Swipe Deck, Data Terminal): https://claude.ai/code/artifact/0f769585-d459-4864-8918-71475bb6a0db
-  The user rejected round 1 wholesale. **Waiting on their pick (a number, or a blend).** When they
-  choose, turn it into real tokens (`tailwind.config.js`) and rebuild screens to match. Until then,
-  avoid investing in new visual surface.
+- **THE REDESIGN SHIPPED** (branch `claude/bodyos-ui-ux-redesign-nh0994`, PR pending). The user
+  superseded the option-sheet process with an "award-level redesign" mandate, and the full
+  "precision instrument" redesign was implemented: deeper graphite palette, display type scale,
+  physical gradient cards, floating pill nav, staggered motion + count-ups, cinematic Workout
+  Complete. See "Design system" below — it describes the NEW system. Verify UI changes with
+  `node scripts/shot.mjs <outdir>` (builds must exist in `dist/`; serves at /bodyos/ and
+  screenshots key screens + the full gym flow at 390×844).
 - **Cloud sync is LIVE on Firebase** (project `bodyos-e7372`): email/password (no confirmation
   step), Google one-tap, password reset. Config is committed in `src/lib/firebase.ts` (public by
   design). Sign-in is one tap from Home/Profile → `/account`.
@@ -107,24 +106,30 @@ docs/superpowers/specs/   Design spec (2026-07-16-ui-redesign-roadmap-design.md)
 `/session/:id` (Gym Mode) · `/session/:id/complete` · `/onboarding`. `/progress/strength` →
 redirects to `/stats`. Screens are `React.lazy`-loaded in `App.tsx` (except Dashboard + GymMode).
 
-## Design system (CURRENT tokens — but see "Current status": a redesign pick is pending)
+## Design system ("precision instrument" — shipped 2026-07-19)
 
-Tokens live in `tailwind.config.js`; class names are stable, values are the mockup's.
-Two "calm passes" already softened it (borders 7% white, accent-soft 10%, bold not extrabold,
-more gap) — the user still wants a bigger change, so expect these values to be replaced once
-they pick a direction. Until then:
+Tokens live in `tailwind.config.js`; component classes in `src/index.css`.
 
-- **Volt `#CDFB45` is the ONLY accent** — primary action, PRs, active tab. Dark ink
+- **Volt `#CDFB45` is the ONLY accent** — primary action, PRs, active nav pill. Dark ink
   (`text-ink` = `#0A0C05`) on volt fills (never `text-white` on volt).
 - **Ice `#5FA8FF` (`text-ice`) means "reference / last-time data" ONLY** — never decorative.
-- Near-black surface stack: `base #0E1013` < `surface` < `surface-2` < `surface-3`; hairline
-  borders are white-alpha (`border-line`).
-- **Fonts:** Archivo (display/UI) + Geist Mono. **Every numeral uses `.tnum`** (maps to Geist
-  Mono) — the single strongest "training tool" signal. Prose stays Archivo.
-- Card labels are eyebrow style: `.label-tiny` (11px, bold, uppercase, tracked).
-- **One volt primary action per screen.** Glow (`shadow-accent-glow`) is reserved for the
-  primary action / PR celebration moments only.
-- 48px min touch targets, 52px primary buttons, mono numbers dominate the active-set screen.
+- Graphite surface stack: `base #0B0D11` < `surface #171B21` < `surface-2` < `surface-3`;
+  hairline borders are white-alpha (`border-line`). The body has a faint volt aurora at the top.
+- **Cards are "physical"**: `.card` = gradient light-from-above + inset top highlight + soft
+  ambient shadow; `.card-hero` (bigger radius, volt-tinged radial) is the one big moment per
+  screen; `.inset-panel` for quiet panels inside cards; `.row-list` for un-boxed divider lists.
+- **Typography carries hierarchy**: display scale `text-display-xl/display/title/heading/stat`
+  (Archivo, tight tracking, ~750 weight). **Every numeral uses `.tnum`** (Geist Mono).
+  Eyebrow labels: `.label-tiny` (10.5px, semibold, 0.14em tracking).
+- **Motion is choreography, not decoration**: `.stagger` (children rise in sequence),
+  `CountUp` (ui component — animated stat numerals), `animate-rise/pop-in/ping-once`,
+  `.shimmer-once` + `shadow-accent-glow` reserved for PR/celebration moments,
+  spring easings (`ease-spring`). All gated by prefers-reduced-motion.
+- **Layout**: screen gutter is `--gutter` (1.25rem) — use `px-[var(--gutter)]` for frames and
+  `.bleed` for full-bleed rows. Sections breathe: `gap-6`+ between sections, `p-6` hero/stat cards.
+- **Nav**: floating frosted pill (`BottomNav`) — active tab expands into a volt capsule.
+- **One volt primary action per screen.** 48px min touch targets, 56px primary buttons (`size="xl"`),
+  mono numbers dominate the active-set screen.
 
 ## Data & state
 

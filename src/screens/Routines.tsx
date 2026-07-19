@@ -22,7 +22,7 @@ export function Routines() {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader title="Starter routines" subtitle="Pick a split — we build & schedule it" back="/workouts" />
 
       <div className="flex flex-col gap-3">

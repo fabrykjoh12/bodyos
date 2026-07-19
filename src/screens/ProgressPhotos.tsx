@@ -79,7 +79,7 @@ export function ProgressPhotos() {
       : [undefined, undefined];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader
         title="Progress photos"
         back="/progress"
@@ -128,7 +128,7 @@ export function ProgressPhotos() {
             </p>
           )}
 
-          <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
+          <div className="no-scrollbar bleed flex gap-2 overflow-x-auto">
             <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>All</FilterChip>
             {POSES.map((p) => (
               <FilterChip key={p.value} active={filter === p.value} onClick={() => setFilter(p.value)}>{p.label}</FilterChip>
@@ -175,7 +175,7 @@ export function ProgressPhotos() {
 
       {/* Capture sheet */}
       <Sheet open={captureOpen} onClose={() => setCaptureOpen(false)} title="New progress photo">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6 pb-4">
           <div className="relative mx-auto aspect-[3/4] w-40 overflow-hidden rounded-2xl border border-line bg-surface-2">
             {preview ? (
               <>

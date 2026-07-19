@@ -19,7 +19,7 @@ export function Profile() {
   const syncEmail = useSyncStore((s) => s.email);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader
         title="Profile"
         right={

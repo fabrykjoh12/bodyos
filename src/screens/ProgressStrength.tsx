@@ -20,10 +20,10 @@ export function ProgressStrength() {
   const trend = trends.find((t) => t.exerciseId === selected);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader title="Strength" subtitle="Estimated 1RM over time" back="/progress" />
 
-      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+      <div className="no-scrollbar bleed flex gap-2 overflow-x-auto pb-1">
         {trends.map((t) => (
           <button
             key={t.exerciseId}

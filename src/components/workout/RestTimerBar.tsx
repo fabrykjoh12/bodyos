@@ -13,53 +13,42 @@ export function RestTimerBar() {
     return (
       <div
         role="status"
-        className="flex items-center justify-center gap-2 rounded-2xl border border-success/40 bg-success-soft py-3 text-success animate-flash-success"
+        className="flex items-center justify-center gap-2 rounded-2xl border border-success/40 bg-success-soft py-3.5 text-success animate-flash-success"
       >
         <Check size={18} strokeWidth={3} />
-        <span className="text-sm font-semibold">Rest complete — go</span>
+        <span className="text-sm font-bold">Rest complete — go</span>
       </div>
     );
   }
 
   if (!active) return null;
 
+  const chipBtn =
+    'flex h-9 items-center gap-0.5 rounded-full bg-white/[0.06] px-3 text-xs font-semibold text-content-muted transition-all duration-150 ease-spring hover:text-content active:scale-95';
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-surface-2">
-      <div className="flex items-center gap-3 px-3 py-2.5">
+    <div className="card overflow-hidden animate-slide-up">
+      <div className="flex items-center gap-3 px-4 py-3">
         <span className="label-tiny shrink-0">Rest</span>
-        <span className="tnum text-2xl font-bold tabular-nums text-content" aria-live="polite">
+        <span className="tnum text-[1.75rem] font-bold tabular-nums tracking-[-0.02em] text-content" aria-live="polite">
           {formatDuration(remainingSec)}
         </span>
         <div className="ml-auto flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => addRestTime(-15)}
-            aria-label="Subtract 15 seconds"
-            className="flex h-9 items-center gap-0.5 rounded-lg bg-surface-3 px-2.5 text-xs font-semibold text-content-muted hover:text-content"
-          >
+          <button type="button" onClick={() => addRestTime(-15)} aria-label="Subtract 15 seconds" className={chipBtn}>
             <Minus size={13} /> 15s
           </button>
-          <button
-            type="button"
-            onClick={() => addRestTime(15)}
-            aria-label="Add 15 seconds"
-            className="flex h-9 items-center gap-0.5 rounded-lg bg-surface-3 px-2.5 text-xs font-semibold text-content-muted hover:text-content"
-          >
+          <button type="button" onClick={() => addRestTime(15)} aria-label="Add 15 seconds" className={chipBtn}>
             <Plus size={13} /> 15s
           </button>
-          <button
-            type="button"
-            onClick={skipRest}
-            className="flex h-9 items-center gap-1 rounded-lg bg-surface-3 px-2.5 text-xs font-semibold text-content-muted hover:text-content"
-          >
+          <button type="button" onClick={skipRest} className={chipBtn}>
             <SkipForward size={13} /> Skip
           </button>
         </div>
       </div>
-      <div className="h-1 w-full bg-surface-3">
+      <div className="h-1 w-full bg-surface-2">
         <div
           className="h-full bg-accent transition-[width] duration-300 ease-linear"
-          style={{ width: `${progress * 100}%` }}
+          style={{ width: `${progress * 100}%`, boxShadow: '0 0 10px rgba(205,251,69,0.5)' }}
         />
       </div>
     </div>

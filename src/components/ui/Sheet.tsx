@@ -22,10 +22,12 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 animate-fade-in bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md animate-sheet-up rounded-t-3xl border border-line bg-surface p-5 pb-8 shadow-lift sm:rounded-3xl safe-bottom">
+      <div className="absolute inset-0 animate-fade-in bg-black/65 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-md animate-sheet-up rounded-t-4xl border border-line bg-surface px-5 pb-8 pt-3 shadow-sheet sm:rounded-4xl safe-bottom">
+        {/* Grabber */}
+        <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-line-strong" aria-hidden />
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-content">{title}</h2>
+          <h2 className="text-heading text-content">{title}</h2>
           <IconButton label="Close" onClick={onClose}>
             <X size={20} />
           </IconButton>

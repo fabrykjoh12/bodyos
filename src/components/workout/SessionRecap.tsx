@@ -15,8 +15,8 @@ export function SessionRecap({ session, unit }: { session: WorkoutSession; unit:
   if (rows.length === 0) return null;
 
   return (
-    <div className="mt-5">
-      <h2 className="mb-2 text-sm font-semibold text-content">This session</h2>
+    <div>
+      <h2 className="label-tiny mb-3">This session</h2>
       <div className="card divide-y divide-line">
         {rows.map((r) => (
           <div key={r.id} className="px-4 py-3">

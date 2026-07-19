@@ -26,7 +26,7 @@ export function Stats() {
 
   if (trends.length === 0) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6 pb-4">
         <ScreenHeader title="Stats" />
         <EmptyState icon={<BarChart3 size={24} />} title="No data yet" description="Complete a few sessions to see strength trends and records." />
       </div>
@@ -34,10 +34,10 @@ export function Stats() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader title="Stats" subtitle="Strength & records" />
 
-      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+      <div className="no-scrollbar bleed flex gap-2 overflow-x-auto pb-1">
         {trends.map((t) => (
           <button
             key={t.exerciseId}
@@ -52,7 +52,7 @@ export function Stats() {
       </div>
 
       {selected && trend && (
-        <div className="card p-[18px]">
+        <div className="card p-6">
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="label-tiny">Current est. 1RM</p>

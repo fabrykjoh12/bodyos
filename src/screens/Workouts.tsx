@@ -45,7 +45,7 @@ export function Workouts() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader
         title="Workouts"
         subtitle="Your templates & weekly plan"

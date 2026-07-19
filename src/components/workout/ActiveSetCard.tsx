@@ -1,7 +1,6 @@
 import { Repeat2 } from 'lucide-react';
 import type { Equipment, Unit } from '@/types';
 import { NumericStepper } from '@/components/ui/NumericStepper';
-import { Chip } from '@/components/ui/Chip';
 import { PlateBar } from '@/components/workout/PlateBar';
 import { formatRepRange, formatWeightValue } from '@/lib/format';
 
@@ -54,43 +53,44 @@ export function ActiveSetCard({
 }: ActiveSetCardProps) {
   const weightStep = unit === 'kg' ? incrementKg || 2.5 : 2.5;
   return (
-    <section className="card-2 relative overflow-hidden p-5" aria-label="Active set">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <h2 className="truncate text-xl font-bold text-content">{exerciseName}</h2>
-            {onSwap && (
-              <button
-                onClick={onSwap}
-                aria-label="Swap exercise"
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-content-faint hover:bg-surface-2 hover:text-content"
-              >
-                <Repeat2 size={16} />
-              </button>
-            )}
-          </div>
-          <p className="mt-0.5 text-sm text-content-muted">
+    <section className="card relative overflow-hidden p-6" aria-label="Active set">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-heading text-content [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] overflow-hidden">
+            {exerciseName}
+          </h2>
+          <p className="mt-1 text-sm text-content-muted">
             Set <span className="font-semibold text-content">{setNumber}</span> of {totalSets}
+            <span className="mx-1.5 text-content-faint">·</span>
+            {isWarmup ? (
+              <span className="font-semibold text-caution">Warmup</span>
+            ) : (
+              <span className="tnum">{formatRepRange(repRange)} reps</span>
+            )}
           </p>
         </div>
-        {isWarmup ? (
-          <Chip tone="caution">Warmup</Chip>
-        ) : (
-          <Chip tone="accent">{formatRepRange(repRange)} reps</Chip>
+        {onSwap && (
+          <button
+            onClick={onSwap}
+            aria-label="Swap exercise"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-content-faint transition-colors hover:bg-white/[0.09] hover:text-content"
+          >
+            <Repeat2 size={16} />
+          </button>
         )}
       </div>
 
-      <div className="mt-3 rounded-xl bg-surface px-3.5 py-2.5">
+      <div className="inset-panel mt-4 px-4 py-3">
         <p className="label-tiny">Today’s objective</p>
-        <p className="mt-0.5 text-sm font-medium text-content">{objective}</p>
+        <p className="mt-1 text-sm font-medium text-content">{objective}</p>
         {beat && !isWarmup && (
-          <p className="tnum mt-1 text-xs font-semibold text-ice">
+          <p className="tnum mt-1.5 text-xs font-semibold text-ice">
             Beat last time · {formatWeightValue(beat.weightKg, unit)} {unit} × {beat.reps}
           </p>
         )}
       </div>
 
-      <div className="mt-6 flex flex-col gap-4">
+      <div className="mt-7 flex flex-col gap-5">
         <NumericStepper
           label="Weight"
           value={weightKg}
@@ -105,7 +105,7 @@ export function ActiveSetCard({
       {equipment === 'barbell' && <PlateBar weightKg={weightKg} unit={unit} />}
 
       {showRir && !isWarmup && (
-        <div className="mt-2 rounded-xl bg-surface px-3.5 py-2.5">
+        <div className="inset-panel mt-3 px-4 py-3">
           <div className="flex items-center justify-between">
             <p className="label-tiny">Reps in reserve</p>
             {rir !== undefined && (

@@ -69,7 +69,7 @@ export function Onboarding() {
     setEquipment((list) => (list.includes(e) ? list.filter((x) => x !== e) : [...list, e]));
 
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-5 pb-8 safe-top">
+    <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-[var(--gutter)] pb-8 safe-top">
       <div className="flex items-center gap-2 py-6">
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-ink">
           <Dumbbell size={18} />
@@ -221,9 +221,9 @@ export function Onboarding() {
 function Section({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <div className="animate-slide-up">
-      <h1 className="text-2xl font-bold text-content">{title}</h1>
-      <p className="mt-1 text-sm text-content-muted">{subtitle}</p>
-      <div className="mt-6 flex flex-col gap-2">{children}</div>
+      <h1 className="text-title text-content">{title}</h1>
+      <p className="mt-2 text-sm leading-relaxed text-content-muted">{subtitle}</p>
+      <div className="stagger mt-7 flex flex-col gap-2.5">{children}</div>
     </div>
   );
 }

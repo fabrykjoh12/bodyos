@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUp, Camera, ChevronRight, Cloud, Dumbbell, Moon, Play, Plus, Trophy } from 'lucide-react';
+import { ArrowUp, Camera, ChevronRight, Cloud, Dumbbell, Flame, Moon, Play, Plus, Trophy } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useSyncStore } from '@/store/cloudSync';
 import { exerciseName } from '@/data/exercises';
@@ -18,6 +18,7 @@ import {
   type DayVolume,
 } from '@/lib/analytics';
 import { Button } from '@/components/ui/Button';
+import { CountUp } from '@/components/ui/CountUp';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { MuscleMap } from '@/components/exercise/MuscleMap';
 
@@ -31,6 +32,10 @@ function greeting(): string {
   if (h < 12) return 'Good morning';
   if (h < 18) return 'Good afternoon';
   return 'Good evening';
+}
+
+function todayLabel(): string {
+  return new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
 export function Dashboard() {
@@ -102,19 +107,19 @@ export function Dashboard() {
   const nextDayLabel = todayPlan.kind === 'next' ? weekdayLabel(todayPlan.weekday, weekday) : null;
 
   return (
-    <div className="flex flex-col gap-4 pt-3">
-      {/* Header */}
-      <header className="mb-1 flex items-start justify-between">
+    <div className="stagger flex flex-col gap-7 pt-6 pb-4">
+      {/* Masthead — the date sets the scene, the name is the headline */}
+      <header className="flex items-end justify-between">
         <div>
-          <p className="text-[13px] font-medium text-content-muted">{greeting()}</p>
-          <h1 className="mt-0.5 text-[26px] font-bold leading-none tracking-[-0.02em] text-content">
-            {user.name}
+          <p className="label-tiny">{todayLabel()}</p>
+          <h1 className="mt-1.5 text-display text-content">
+            {greeting()},<br />{user.name}
           </h1>
         </div>
         <button
           aria-label="Profile"
           onClick={() => navigate('/profile')}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-sm font-bold text-content"
+          className="pressable mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface-2 text-sm font-bold text-content shadow-card"
         >
           {initial}
         </button>
@@ -125,7 +130,7 @@ export function Dashboard() {
       {showSignIn && (
         <button
           onClick={() => navigate('/account')}
-          className="card flex items-center gap-3 p-3.5 text-left"
+          className="card -my-2 flex items-center gap-3 p-3.5 text-left"
         >
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-accent">
             <Cloud size={17} />
@@ -140,55 +145,53 @@ export function Dashboard() {
 
       {/* Today's session hero — honest about what's actually scheduled today */}
       {activeSession ? (
-        <section className="rounded-2xl border border-accent bg-surface p-[18px] shadow-card">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-ink">
-              In progress
-            </span>
-          </div>
-          <h2 className="text-[23px] font-bold tracking-[-0.02em] text-content">{activeSession.name}</h2>
-          <p className="mt-1 text-sm text-content-muted">{activeSession.focus}</p>
-          <Button size="xl" fullWidth className="mt-4" onClick={() => navigate(`/session/${activeSession.id}`)}>
+        <section className="card-hero border-accent/50 p-6">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-ink">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ink" /> In progress
+          </span>
+          <h2 className="mt-4 text-title text-content">{activeSession.name}</h2>
+          <p className="mt-1.5 text-sm text-content-muted">{activeSession.focus}</p>
+          <Button size="xl" fullWidth className="mt-6" onClick={() => navigate(`/session/${activeSession.id}`)}>
             <Play size={18} /> Resume session
           </Button>
         </section>
       ) : todayPlan.kind === 'none' ? (
         <EmptyState
-          icon={<Plus size={24} />}
+          icon={<Plus size={28} />}
           title="No workout planned"
           description="Build a session to start training with progression."
           action={<Button onClick={() => navigate('/workouts/new')}>Create a workout</Button>}
         />
       ) : todayPlan.kind === 'rest' ? (
-        <section className="rounded-2xl border border-line bg-surface p-[18px] shadow-card">
-          <div className="mb-3 flex items-center gap-2 text-content-muted">
-            <Moon size={15} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em]">Rest day</span>
+        <section className="card-hero p-6">
+          <div className="flex items-center gap-2 text-content-muted">
+            <Moon size={14} />
+            <span className="label-tiny">Rest day</span>
           </div>
-          <h2 className="text-[22px] font-bold tracking-[-0.02em] text-content">Recovery day</h2>
-          <p className="mt-1 text-sm text-content-muted">
+          <h2 className="mt-3 text-title text-content">Recovery day</h2>
+          <p className="mt-2 text-sm leading-relaxed text-content-muted">
             No session scheduled today — recovery is where the growth happens.
-            {todayPlan.next && <> Next up: <span className="text-content">{todayPlan.next.template.name}</span>.</>}
+            {todayPlan.next && <> Next up: <span className="font-semibold text-content">{todayPlan.next.template.name}</span>.</>}
           </p>
           {todayPlan.next && (
-            <Button size="lg" variant="secondary" fullWidth className="mt-4" onClick={() => startSession(heroTemplate?.id, false)}>
+            <Button size="lg" variant="secondary" fullWidth className="mt-5" onClick={() => startSession(heroTemplate?.id, false)}>
               <Play size={16} /> Train anyway · {todayPlan.next.template.name}
             </Button>
           )}
         </section>
       ) : (
-        <section className="rounded-2xl border border-accent bg-surface p-[18px] shadow-card">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-ink">
+        <section className="card-hero p-6">
+          <div className="flex items-center justify-between">
+            <span className="rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-ink">
               {heroEyebrow}
             </span>
             {nextDayLabel && <span className="text-[11px] font-semibold text-content-faint">{nextDayLabel}</span>}
           </div>
-          <h2 className="text-[23px] font-bold tracking-[-0.02em] text-content">{heroTemplate?.name}</h2>
-          <p className="mt-1 text-sm text-content-muted">
+          <h2 className="mt-4 text-title text-content">{heroTemplate?.name}</h2>
+          <p className="mt-1.5 text-sm text-content-muted">
             {heroTemplate?.focus} · {heroTemplate?.exercises.length} exercises
           </p>
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-6 flex items-center gap-2.5">
             <Button size="xl" fullWidth onClick={() => startSession(heroTemplate?.id, false)}>
               <Play size={18} /> Start session
             </Button>
@@ -207,27 +210,25 @@ export function Dashboard() {
 
       {/* At a glance — counts that aren't already shown in the charts below */}
       <div className="card flex divide-x divide-line p-0">
-        <StripCell label="Streak" value={String(streak)} suffix="d" />
-        <StripCell label="Sessions" value={String(monthSessions)} />
-        <StripCell label="New PRs" value={String(newPRs)} />
+        <StripCell label="Streak" value={streak} suffix="d" icon={streak > 0 ? <Flame size={12} className="text-accent" /> : undefined} />
+        <StripCell label="Sessions" value={monthSessions} />
+        <StripCell label="New PRs" value={newPRs} />
       </div>
 
       {/* Weekly volume */}
       {barTotal > 0 && (
-        <section className="card p-[18px]">
-          <div className="mb-4 flex items-baseline justify-between">
+        <section className="card p-6">
+          <div className="mb-5 flex items-baseline justify-between">
             <div>
               <p className="label-tiny">{range === 'Week' ? 'Weekly volume' : 'Volume trend'}</p>
-              <p className="tnum mt-1 text-[26px] font-semibold tracking-[-0.02em] text-content">
-                {formatVolume(barTotal, unit)}
-              </p>
+              <p className="tnum mt-1.5 text-stat text-content">{formatVolume(barTotal, unit)}</p>
             </div>
-            <div className="flex gap-1 rounded-lg bg-surface-2 p-[3px]">
+            <div className="flex gap-1 rounded-full bg-black/25 p-[3px]">
               {(['Week', 'Month'] as const).map((r) => (
                 <button
                   key={r}
                   onClick={() => setRange(r)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${range === r ? 'bg-surface-3 text-content' : 'text-content-muted'}`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200 ease-spring ${range === r ? 'bg-surface-3 text-content shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]' : 'text-content-muted'}`}
                 >
                   {r}
                 </button>
@@ -236,12 +237,14 @@ export function Dashboard() {
           </div>
           <div className="flex h-[120px] items-end gap-2">
             {bars.map((b, i) => (
-              <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
+              <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
                 <div
-                  className="w-full origin-bottom animate-grow-bar rounded-[5px]"
+                  className="w-full origin-bottom animate-grow-bar rounded-[6px]"
                   style={{
                     height: `${Math.max(2, (b.volume / barMax) * 100)}%`,
-                    background: b.volume === 0 ? '#21262C' : b.volume === barMax ? '#CDFB45' : '#363D45',
+                    animationDelay: `${i * 45}ms`,
+                    background: b.volume === 0 ? '#1E232B' : b.volume === barMax ? '#CDFB45' : '#333B45',
+                    boxShadow: b.volume === barMax ? '0 4px 16px -4px rgba(205,251,69,0.4)' : undefined,
                   }}
                 />
                 <span className="tnum text-[11px] text-content-faint">{b.day}</span>
@@ -253,9 +256,9 @@ export function Dashboard() {
 
       {/* Est 1RM sparkline */}
       {topTrend && spark.length >= 2 && (
-        <button onClick={() => navigate(`/exercises/${topTrend.exerciseId}`)} className="card p-[18px] text-left">
+        <button onClick={() => navigate(`/exercises/${topTrend.exerciseId}`)} className="card p-6 text-left">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-[15px] font-bold text-content">Est. 1RM · {exerciseName(topTrend.exerciseId)}</span>
+            <span className="label-tiny">Est. 1RM · {exerciseName(topTrend.exerciseId)}</span>
             {topTrend.deltaPct > 0 && (
               <span className="flex items-center gap-1 text-success">
                 <ArrowUp size={14} strokeWidth={2.6} />
@@ -263,7 +266,7 @@ export function Dashboard() {
               </span>
             )}
           </div>
-          <p className="tnum mb-2 text-[22px] font-semibold text-content">
+          <p className="tnum mb-3 mt-1.5 text-stat text-content">
             {formatWeight(topTrend.latest, unit, false)}<span className="text-[13px] text-content-faint"> {unit}</span>
           </p>
           <Sparkline values={spark.map((p) => p.value)} />
@@ -272,11 +275,11 @@ export function Dashboard() {
 
       {/* Muscle balance — weekly training heatmap */}
       {balance.length > 0 && (
-        <section className="card p-[18px]">
-          <p className="label-tiny mb-3">Muscle balance · this week</p>
+        <section className="card p-6">
+          <p className="label-tiny mb-4">Muscle balance · this week</p>
           <MuscleMap intensity={muscleHeat} legend="volume" />
           {balance[0] && (
-            <p className="mt-3 text-center text-xs text-content-muted">
+            <p className="mt-4 text-center text-xs text-content-muted">
               Most trained:{' '}
               <span className="font-semibold text-content">{MUSCLE_LABELS[balance[0].muscle] ?? balance[0].muscle}</span>
               {' · '}
@@ -286,24 +289,24 @@ export function Dashboard() {
         </section>
       )}
 
-      {/* Personal records */}
+      {/* Personal records — unboxed rows, the trophies speak */}
       {recentPRs.length > 0 && (
         <section>
-          <div className="mb-3 flex items-baseline justify-between">
+          <div className="mb-1 flex items-baseline justify-between">
             <h3 className="label-tiny">Personal records</h3>
             <button onClick={() => navigate('/stats')} className="text-[13px] font-semibold text-accent">See all</button>
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="row-list">
             {recentPRs.map((pr) => (
-              <div key={pr.id} className="card flex items-center gap-3.5 px-4 py-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft">
-                  <Trophy size={19} className="text-accent" />
+              <div key={pr.id} className="flex items-center gap-3.5 py-3.5">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft">
+                  <Trophy size={18} className="text-accent" />
                 </span>
-                <div className="flex-1">
-                  <p className="text-[15px] font-bold text-content">{exerciseName(pr.exerciseId)}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-bold text-content">{exerciseName(pr.exerciseId)}</p>
                   <p className="tnum text-[13px] text-content-muted">{formatWeight(pr.value, unit)} × {pr.reps}</p>
                 </div>
-                <span className="text-xs text-content-faint">{relativeDay(pr.achievedAt)}</span>
+                <span className="shrink-0 text-xs text-content-faint">{relativeDay(pr.achievedAt)}</span>
               </div>
             ))}
           </div>
@@ -313,28 +316,28 @@ export function Dashboard() {
       {/* Recent sessions */}
       {recentSessions.length > 0 && (
         <section>
-          <h3 className="label-tiny mb-3">Recent sessions</h3>
-          <div className="flex flex-col gap-2.5">
+          <h3 className="label-tiny mb-1">Recent sessions</h3>
+          <div className="row-list">
             {recentSessions.map((s) => {
               const prCount = personalRecords.filter((p) => p.sessionId === s.id && p.type === 'weight').length;
               return (
-                <div key={s.id} className="card flex items-center gap-3 px-4 py-3">
+                <div key={s.id} className="flex items-center gap-3 py-3.5">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[14.5px] font-bold text-content">{s.name}</span>
+                      <span className="truncate text-[14.5px] font-bold text-content">{s.name}</span>
                       {s.isDeload ? (
-                        <span className="rounded-full bg-surface-3 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-content-muted">
+                        <span className="shrink-0 rounded-full bg-surface-3 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-content-muted">
                           Deload
                         </span>
                       ) : prCount > 0 ? (
-                        <span className="rounded-full bg-accent-soft px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-accent">
+                        <span className="shrink-0 rounded-full bg-accent-soft px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-accent">
                           {prCount} PR
                         </span>
                       ) : null}
                     </div>
-                    <p className="text-xs text-content-faint">{relativeDay(s.completedAt ?? s.startedAt)}</p>
+                    <p className="mt-0.5 text-xs text-content-faint">{relativeDay(s.completedAt ?? s.startedAt)}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="shrink-0 text-right">
                     <p className="tnum text-sm font-semibold text-content">{formatVolume(sessionTotalVolume(s), unit)}</p>
                     <p className="tnum text-[11.5px] text-content-faint">{sessionSetCount(s)} sets</p>
                   </div>
@@ -346,7 +349,7 @@ export function Dashboard() {
       )}
 
       {/* Photo reminder */}
-      <button onClick={() => navigate('/progress')} className="card mb-2 flex items-center gap-3 p-4 text-left">
+      <button onClick={() => navigate('/progress')} className="card flex items-center gap-3 p-4 text-left">
         <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-accent">
           <Camera size={18} />
         </span>
@@ -366,14 +369,15 @@ export function Dashboard() {
   );
 }
 
-function StripCell({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
+function StripCell({ label, value, suffix, icon }: { label: string; value: number; suffix?: string; icon?: React.ReactNode }) {
   return (
-    <div className="flex-1 px-3 py-3.5 text-center">
-      <p className="tnum text-[22px] font-semibold leading-none tracking-[-0.02em] text-content">
-        {value}
+    <div className="flex-1 px-3 py-4 text-center">
+      <p className="tnum flex items-center justify-center gap-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-content">
+        {icon}
+        <CountUp value={value} duration={700} />
         {suffix && <span className="text-[13px] font-medium text-content-faint">{suffix}</span>}
       </p>
-      <p className="mt-2 text-[10.5px] font-bold uppercase tracking-[0.06em] text-content-faint">{label}</p>
+      <p className="mt-2.5 label-tiny">{label}</p>
     </div>
   );
 }
@@ -388,10 +392,18 @@ function Sparkline({ values }: { values: number[] }) {
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   });
   const last = pts[pts.length - 1]!.split(',');
+  const areaPts = `0,90 ${pts.join(' ')} 300,90`;
   return (
     <svg viewBox="0 0 300 90" preserveAspectRatio="none" style={{ width: '100%', height: 90, overflow: 'visible' }}>
+      <defs>
+        <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#CDFB45" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#CDFB45" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon fill="url(#sparkfill)" points={areaPts} />
       <polyline fill="none" stroke="#CDFB45" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={pts.join(' ')} />
-      <circle cx={last[0]} cy={last[1]} r="4" fill="#CDFB45" stroke="#1B1F24" strokeWidth="2" />
+      <circle cx={last[0]} cy={last[1]} r="4" fill="#CDFB45" stroke="#171B21" strokeWidth="2" />
     </svg>
   );
 }

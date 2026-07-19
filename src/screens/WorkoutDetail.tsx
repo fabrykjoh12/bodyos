@@ -104,7 +104,7 @@ export function WorkoutDetail() {
       </button>
 
       {/* Sticky start */}
-      <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-md items-center gap-2 border-t border-line/60 bg-base/90 px-4 py-3 backdrop-blur-md safe-bottom">
+      <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-w-md items-center gap-2 border-t border-line/60 bg-base/90 px-[var(--gutter)] py-3 backdrop-blur-md safe-bottom">
         <Button size="xl" fullWidth onClick={() => start()}>
           <Play size={20} /> Start Workout
         </Button>
