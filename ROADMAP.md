@@ -239,12 +239,112 @@ static PDFs.
 
 ---
 
-## Suggested next session
+# The long roadmap (v2 — brainstormed 2026-07-19)
 
-Cloud sync (Firebase, incl. Google sign-in) is live. The highest-leverage work now is Phase 6:
+Produced with the superpowers brainstorming process (context → divergent generation across five
+lenses → converge on impact × fit × PWA-buildable). Guiding star stays the product promise:
 
-1. **Program runner** (Phase 6 #1) — the biggest competitive gap; builds on the progression engine.
-2. **Hands-free "gym mode"** (Phase 6 #4) — quick win: screen wake-lock + big-tap layout.
-3. **Per-muscle weekly volume targets** (Phase 6 #2) — differentiation on top of the muscle heatmap.
+> **Track every set in seconds, and always know exactly what to beat next.**
+
+**Standing constraints:** PWA-only (no HealthKit/Watch/native), offline-first, Firebase free tier,
+volt-on-graphite "precision instrument" design system, 121-test suite must stay green, one
+mergeable PR per session.
+
+**Decision rule used to order phases:** (1) does it strengthen the *promise* (logging speed or
+"what to beat")? (2) does it deepen our differentiation (transparent progression intelligence)
+rather than copy a competitor's moat? (3) is it fully buildable + verifiable in the PWA sandbox?
+
+## Phase 7 — The reward loop (quick wins, high feel) 🔜 *(started 2026-07-19)*
+
+Make every session *end* as well as it runs. Small builds, daily-felt value.
+
+- 🟡 **Hands-free Gym Mode: screen wake lock** — the screen must never sleep mid-set. Screen Wake
+  Lock API during an active session, re-acquired on `visibilitychange`, released on exit; silent
+  no-op where unsupported. *(tiny effort, daily win — closes the "phone locked mid-superset" gripe)*
+- 🟡 **Shareable session card** — one tap on Workout Complete renders a branded 1080×1350 PNG
+  (volt-on-graphite: session name, volume, sets, duration, PRs) and hands it to the Web Share
+  sheet (download fallback). Strava-style reach with **no social graph**. Pure, tested
+  `buildShareModel`; canvas drawing kept separate.
+- ⬜ **Milestones & achievements** — lifetime tonnage, session counts (50/100/250), streak tiers,
+  PR counts; computed by a pure `milestones` lib, celebrated once on Workout Complete and
+  collected on Profile. Tasteful (volt moments, no cartoon badges).
+- ⬜ **Weekly recap** — Monday Home card: last week vs the week before (volume, sets, PRs,
+  sessions), one plain-language takeaway ("Best pull week in 2 months").
+- ⬜ **Rest-timer tab countdown** — when the PWA is backgrounded mid-rest, tick the remaining
+  time in `document.title` and fire a Notification (permission-gated) at zero.
+
+## Phase 8 — Program runner v1 (the flagship gap)
+
+The one feature every leader has that we don't. Build it *our* way: transparent, reasoned,
+auto-deloading — not a static PDF (Boostcamp) and not a black box (Fitbod).
+
+- ⬜ **Data model** — `Program` = ordered weeks of template-refs with intensity modifiers
+  (progress / hold / deload weeks); `activeProgram` state (programId, week index, day index)
+  in `AppData` (syncs). Templates stay the unit of execution — a program *schedules and
+  modifies* templates, never duplicates them.
+- ⬜ **Three launch programs** — linear beginner (weekly +2.5 kg), double-progression mesocycle
+  (4 wk + deload, our engine's native language), 5/3/1-style percentage wave (training-max based).
+- ⬜ **Runner UX** — `/programs` browser + program detail (week × day grid, "you are here"),
+  Home hero reads the program *before* the weekly plan; per-week progress ring; skip/shift a day
+  without derailing the cycle.
+- ⬜ **Auto-progression between cycles** — cycle review screen: per-lift verdict from the existing
+  engine (progress / repeat / deload TM) **with reasons shown**, editable before the next cycle
+  starts. Stall → automatic deload-week insertion.
+- ⬜ **Program sharing (later)** — export/import a program as JSON (pairs with backup format).
+
+## Phase 9 — Insight engine v2 (deepen the moat)
+
+Analytics that *coach*, not just chart — every number explains itself.
+
+- ⬜ **Volume-landmark trends + planning hints** — per-muscle weekly-sets history vs MEV/MAV/MRV
+  band; hints on the Workouts screen ("Back is 4 sets under range — add a row day?").
+- ⬜ **Stall dashboard** — lifts flagged after N stalled sessions with the engine's prescription
+  (deload / swap / rep-range change), one tap to apply.
+- ⬜ **Transparent readiness** — a 0–100 "train hard today?" score from visible inputs only
+  (recent RIR trend, volume vs MAV, rest days, deload recency) with the formula shown inline.
+  Anti-Fitbod: no mystery.
+- ⬜ **Exercise deep-dive** — PR timeline, rep-range distribution, volume trend, best-set history
+  on the detail screen.
+- ⬜ **Body-measurement trends** — sparklines + goal lines on `/progress/measurements`.
+
+## Phase 10 — Library depth & media
+
+- ⬜ **Custom exercises** — user-defined movements (name, muscle, equipment, increment), synced,
+  first-class in search/analytics/progression.
+- ⬜ **Animated form demos** — lightweight looping demos on the glyph language (animated SVG
+  stroke figures, offline-friendly, no video CDN). Table stakes vs JeFit; do it in-brand.
+- ⬜ **Favorites & smart recents** — pin lifts; mid-workout "Add" sheet ranks by your history.
+- ⬜ **Curated photo set** — regenerate the Higgsfield set locally (`docs/exercise-photos.md`).
+
+## Phase 11 — Reach & retention
+
+- ⬜ **Workout reminders** — local notifications on planned days ("Push day — Bench 72.5 kg to
+  beat"); quiet, off by default.
+- ⬜ **Landing page** — marketing splash at the root for signed-out first visits: promise,
+  screenshots, install CTA.
+- ⬜ **Onboarding v2** — first-run demo session in <60 s (log 3 fake sets, feel the loop) before
+  any setup questions.
+- ⬜ **Privacy-first social (opt-in)** — follow a friend by handle, kudos on sessions, nothing
+  public by default. Firebase-only. *Do last — only after 7–9 prove out.*
+
+## Phase 12 — Platform breadth & quality floor
+
+- ⬜ **Tablet/desktop layout** — two-pane ≥ 768 px (list + detail; Gym Mode stays focused).
+- ⬜ **Data portability** — CSV export (sessions/sets), Strong/Hevy CSV *import* (switcher moat).
+- ⬜ **View transitions** — shared-element route transitions (View Transitions API, reduced-motion
+  gated) — the last polish gap from the redesign.
+- ⬜ **A11y audit** — full keyboard pass, focus traps in sheets, contrast re-check, SR labels.
+- ⬜ **Perf budget** — initial JS ≤ 250 kB gz; Lighthouse PWA ≥ 95; `shot.mjs` visual-regression
+  diffing in CI.
+
+### Explicitly deferred / rejected (so we stop re-litigating)
+
+- **Apple Watch / wearables & HealthKit** — impossible from a PWA; revisit only if the app goes
+  native (Capacitor wrap is the escape hatch, a project of its own).
+- **AI workout generation** — collides with the transparent-progression identity; our engine
+  already prescribes. Revisit as "explain more", never "black box more".
+- **In-app coaching marketplace / paid tiers** — single-user product today; no monetisation work
+  until there are users to monetise.
+- **Video exercise library** — heavy, CDN-dependent, off-brand; animated glyphs cover the need.
 
 See `CLAUDE.md` for architecture, conventions, the design system, and gotchas.
