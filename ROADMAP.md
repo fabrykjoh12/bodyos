@@ -258,10 +258,10 @@ rather than copy a competitor's moat? (3) is it fully buildable + verifiable in 
 
 Make every session *end* as well as it runs. Small builds, daily-felt value.
 
-- 🟡 **Hands-free Gym Mode: screen wake lock** — the screen must never sleep mid-set. Screen Wake
+- ✅ **Hands-free Gym Mode: screen wake lock** — the screen must never sleep mid-set. Screen Wake
   Lock API during an active session, re-acquired on `visibilitychange`, released on exit; silent
   no-op where unsupported. *(tiny effort, daily win — closes the "phone locked mid-superset" gripe)*
-- 🟡 **Shareable session card** — one tap on Workout Complete renders a branded 1080×1350 PNG
+- ✅ **Shareable session card** — one tap on Workout Complete renders a branded 1080×1350 PNG
   (volt-on-graphite: session name, volume, sets, duration, PRs) and hands it to the Web Share
   sheet (download fallback). Strava-style reach with **no social graph**. Pure, tested
   `buildShareModel`; canvas drawing kept separate.

@@ -1,9 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Award, Check } from 'lucide-react';
+import { Award, Check, Share2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { exerciseName } from '@/data/exercises';
 import { formatVolume, formatWeight } from '@/lib/format';
+import { shareSessionCard } from '@/lib/shareCard';
 import { Button } from '@/components/ui/Button';
 import { CountUp } from '@/components/ui/CountUp';
 import { summaryStats } from '@/components/workout/WorkoutSummary';
@@ -17,6 +18,7 @@ export function WorkoutComplete() {
   const unit = useStore((s) => s.user.settings.unit);
   const personalRecords = useStore((s) => s.personalRecords);
   const prs = useMemo(() => personalRecords.filter((p) => p.sessionId === id), [personalRecords, id]);
+  const [shareState, setShareState] = useState<'idle' | 'busy' | 'downloaded' | 'failed'>('idle');
 
   const recommendations = useMemo(
     () =>
@@ -108,9 +110,34 @@ export function WorkoutComplete() {
           </div>
         )}
 
-        <Button size="xl" fullWidth onClick={() => navigate('/', { replace: true })}>
-          Done
-        </Button>
+        <div className="flex flex-col gap-2.5">
+          <Button
+            size="lg"
+            variant="secondary"
+            fullWidth
+            disabled={shareState === 'busy'}
+            onClick={async () => {
+              setShareState('busy');
+              const result = await shareSessionCard(session, prs, unit);
+              setShareState(result === 'shared' ? 'idle' : result);
+            }}
+          >
+            <Share2 size={17} /> {shareState === 'busy' ? 'Preparing card…' : 'Share session card'}
+          </Button>
+          {shareState === 'downloaded' && (
+            <p className="text-center text-xs text-content-muted animate-fade-in" role="status">
+              Card saved as a PNG — sharing isn&rsquo;t available in this browser.
+            </p>
+          )}
+          {shareState === 'failed' && (
+            <p className="text-center text-xs text-danger animate-fade-in" role="status">
+              Couldn&rsquo;t create the card — try again.
+            </p>
+          )}
+          <Button size="xl" fullWidth onClick={() => navigate('/', { replace: true })}>
+            Done
+          </Button>
+        </div>
       </div>
     </div>
   );

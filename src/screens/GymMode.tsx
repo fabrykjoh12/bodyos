@@ -9,6 +9,7 @@ import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { liveSetPr } from '@/lib/prstats';
 import { haptics } from '@/lib/haptics';
 import { unlockAudio } from '@/lib/sound';
+import { useWakeLock } from '@/hooks/useWakeLock';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Sheet } from '@/components/ui/Sheet';
@@ -70,6 +71,9 @@ export function GymMode() {
     const t = window.setTimeout(() => setPrMoment(null), 3000);
     return () => window.clearTimeout(t);
   }, [prMoment]);
+
+  // The screen must never sleep mid-set — hold a wake lock while training.
+  useWakeLock(Boolean(session && session.id === id));
 
   const exIndex = session?.currentExerciseIndex ?? 0;
   const exercise = session?.exercises[exIndex];
