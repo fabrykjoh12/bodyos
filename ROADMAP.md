@@ -220,8 +220,10 @@ static PDFs.
 1. ⬜ **Program runner** — turn templates into multi-week programs that auto-progress
    (linear, double-progression cycles, 5/3/1-style) and auto-schedule **deloads on stall**. Biggest
    competitive gap and it leverages the engine we already have. *High effort, high impact.*
-2. ⬜ **Per-muscle weekly volume targets (MEV/MAV/MRV)** — layer RP-style "enough / too much per
-   muscle this week" onto the existing heatmap. Analytics few free apps do well. *Medium.*
+2. 🟡 **Per-muscle weekly volume targets (MEV/MAV/MRV)** — *v1 shipped:* a "Weekly volume by muscle"
+   card on Stats shows each muscle's last-7-day working sets vs. its growth range (shaded MEV–MAV
+   band), colour-coded below-range / in-range / near-max / over. Pure `volumeLandmarks` +
+   `weeklyMuscleSets` (tested). Next: per-muscle history/trend + planning hints.
 3. ⬜ **Shareable workout summary cards** — export a polished PNG of a session/PR (Strava-style
    virality **without** a social graph). Low complexity, high reach. *Medium.*
 4. ⬜ **Hands-free "gym mode"** — screen **wake-lock** + a big-tap layout: the closest a PWA gets to
