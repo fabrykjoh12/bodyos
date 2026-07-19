@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronRight, Dumbbell, Moon, Plus, Sparkles } from 'lucide-react';
+import { Check, Dumbbell, Moon, Plus, Sparkles } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { weekdayName, todayWeekday } from '@/lib/date';
 import { resolveTodayPlan, weekdayLabel } from '@/lib/plan';
@@ -96,20 +96,33 @@ export function Workouts() {
         )}
       </section>
 
-      {/* Starter routines */}
-      <button
-        onClick={() => navigate('/workouts/routines')}
-        className="card flex items-center gap-3 p-4 text-left"
-      >
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
-          <Sparkles size={18} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-content">Browse starter routines</p>
-          <p className="text-xs text-content-muted">Proven splits, built &amp; scheduled in a tap</p>
-        </div>
-        <ChevronRight size={18} className="text-content-faint" />
-      </button>
+      {/* Create — the two ways in, side by side */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <button
+          onClick={() => navigate('/workouts/routines')}
+          className="card flex flex-col gap-2.5 p-4 text-left"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+            <Sparkles size={18} />
+          </span>
+          <div>
+            <p className="text-sm font-bold text-content">Proven split</p>
+            <p className="mt-0.5 text-xs leading-snug text-content-muted">Built &amp; scheduled in one tap</p>
+          </div>
+        </button>
+        <button
+          onClick={() => navigate('/workouts/new')}
+          className="card flex flex-col gap-2.5 p-4 text-left"
+        >
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-content">
+            <Plus size={18} />
+          </span>
+          <div>
+            <p className="text-sm font-bold text-content">Build your own</p>
+            <p className="mt-0.5 text-xs leading-snug text-content-muted">Custom day in a minute</p>
+          </div>
+        </button>
+      </div>
 
       {templates.length === 0 ? (
         <EmptyState
