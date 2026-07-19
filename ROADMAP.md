@@ -148,6 +148,8 @@ Optional email/password accounts + whole-blob cloud sync. **Migrated from Supaba
   Pure logic in `lib/plates.ts` (`computePlates`), 7 tests.
 - ✅ **Warm-up set generator** — one tap inserts a ramping warm-up (empty bar → ~50/70/85 %) before
   the working sets on a barbell exercise (`generateWarmups` + `addWarmupSets` store action), 4 tests.
+- ✅ **Rep-max estimates** — the exercise-detail screen predicts working weights across rep targets
+  (1/3/5/8/10/12) from your best set's e1RM (inverse Epley; pure `repMax` lib, 5 tests).
 - ✅ **Swap exercise mid-workout** — in Gym Mode, tap the swap icon on an unstarted exercise to
   replace it with a substitution (or a same-muscle alternative); sets are re-prefilled from the new
   exercise's history via `prefillFor` (`swapExercise` action). Hidden once a set is logged.
@@ -220,8 +222,10 @@ static PDFs.
 1. ⬜ **Program runner** — turn templates into multi-week programs that auto-progress
    (linear, double-progression cycles, 5/3/1-style) and auto-schedule **deloads on stall**. Biggest
    competitive gap and it leverages the engine we already have. *High effort, high impact.*
-2. ⬜ **Per-muscle weekly volume targets (MEV/MAV/MRV)** — layer RP-style "enough / too much per
-   muscle this week" onto the existing heatmap. Analytics few free apps do well. *Medium.*
+2. 🟡 **Per-muscle weekly volume targets (MEV/MAV/MRV)** — *v1 shipped:* a "Weekly volume by muscle"
+   card on Stats shows each muscle's last-7-day working sets vs. its growth range (shaded MEV–MAV
+   band), colour-coded below-range / in-range / near-max / over. Pure `volumeLandmarks` +
+   `weeklyMuscleSets` (tested). Next: per-muscle history/trend + planning hints.
 3. ⬜ **Shareable workout summary cards** — export a polished PNG of a session/PR (Strava-style
    virality **without** a social graph). Low complexity, high reach. *Medium.*
 4. ⬜ **Hands-free "gym mode"** — screen **wake-lock** + a big-tap layout: the closest a PWA gets to

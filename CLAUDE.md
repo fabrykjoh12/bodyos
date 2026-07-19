@@ -2,6 +2,25 @@
 
 Context for Claude Code (and humans) working on this repo. Read this first in a new session.
 
+## Current status (2026-07-19) — read before picking work
+
+- **THE OPEN DECISION IS DESIGN.** The user finds the current UI "messy / not good" and asked for
+  distinct redesign options. Two option sheets were published as artifacts:
+  - Round 1 (palettes/identities, same layout): https://claude.ai/code/artifact/72c88a8f-b6fc-46a7-9dc8-974eda66cb98
+  - Round 2 (completely different layouts/UX, options 6–10 — Focus Mode, Session Timeline,
+    Bento, Swipe Deck, Data Terminal): https://claude.ai/code/artifact/0f769585-d459-4864-8918-71475bb6a0db
+  The user rejected round 1 wholesale. **Waiting on their pick (a number, or a blend).** When they
+  choose, turn it into real tokens (`tailwind.config.js`) and rebuild screens to match. Until then,
+  avoid investing in new visual surface.
+- **Cloud sync is LIVE on Firebase** (project `bodyos-e7372`): email/password (no confirmation
+  step), Google one-tap, password reset. Config is committed in `src/lib/firebase.ts` (public by
+  design). Sign-in is one tap from Home/Profile → `/account`.
+- **Backlog** = `ROADMAP.md` Phase 6 (competitive positioning): program runner is the flagship gap;
+  volume-landmarks v1 + rep-max estimates already shipped.
+- Recent workflow: feature branch `claude/what-next-*` → PR → user merges (or asks to merge) →
+  `git merge --ff-only origin/main`. Deploy is automatic on push to main. CI runs on push to main
+  only — PRs get no checks, so local `typecheck && test && build` is the gate.
+
 ## What this is
 
 **BodyOS** — a mobile-first workout tracker. The whole product is built around one promise:
@@ -21,7 +40,7 @@ training tool, **not** a generic AI-looking dashboard.
 ```bash
 npm install
 npm run dev        # Vite dev server → http://localhost:5173  (base "/" in dev)
-npm run test       # Vitest (27 tests: progression engine, volume/1RM, store flow)
+npm run test       # Vitest (121 tests: pure libs, store flows, component/integration)
 npm run typecheck  # tsc -p tsconfig.json (strict, noUncheckedIndexedAccess)
 npm run build      # tsc -b && vite build  (base "/bodyos/", emits dist/ + 404.html)
 ```
@@ -42,14 +61,19 @@ src/
                           sessions (what happened) — never mutate history.
   lib/
     progression.ts        Double-progression engine (pure, tested). Every rec has a reason.
-    analytics.ts          e1rmSeries, strengthTrends, weeklyVolume, last7DaysVolume, muscleBalance
+    analytics.ts          e1rmSeries, strengthTrends, weeklyVolume, weeklyMuscleSets, muscleBalance (tested)
     volume.ts             Epley 1RM, tonnage (tested)
+    volumeLandmarks.ts    MEV/MAV/MRV per muscle + classifyWeeklyVolume (pure, tested)
+    repMax.ts             Inverse-Epley rep-max table (pure, tested)
     plates.ts             Barbell plate-breakdown calculator + warm-up ramp generator (pure, tested)
-    prstats.ts            PR detection + session totals
+    prstats.ts            PR detection + liveSetPr (in-session PR check) + session totals (tested)
     history.ts            previous-performance lookup, stall counting, buildActiveSession (smart prefill)
+    plan.ts               resolveTodayPlan — honest "today" state from the weekly plan (tested)
+    sound.ts              Web Audio rest-timer chime (unlockAudio on Log Set gesture)
     format.ts date.ts id.ts haptics.ts
   data/
-    exercises.ts          55-exercise library (stable slug ids). getExercise/requireExercise/exerciseName
+    exercises.ts          66-exercise library (stable slug ids). getExercise/requireExercise/exerciseName
+    routines.ts           Starter splits (full-body-3 / upper-lower-4 / ppl-6) for applyRoutine
     seed.ts               Demo user + PPL templates + ~6 weeks of history (dates relative to now)
   store/
     repository.ts         Repository interface + LocalStorage/Memory impls + loadOrSeed. SWAP THIS for a backend.
@@ -58,15 +82,19 @@ src/
                           last-write-wins reconciliation (localStorage stays the sync source of truth).
   lib/firebase.ts         Lazily-loaded Firebase client (public web config; Firestore rules protect data).
   components/
-    ui/                   Design system: Button, NumericStepper, Stat, MetricCard, EmptyState,
-                          Sheet, Chip, SegmentedControl, ProgressRing, IconButton, BackButton
-    layout/               AppShell (mobile frame + resume bar), BottomNav (5 tabs), ScreenHeader
-    workout/              ActiveSetCard, SetGrid, RestTimerBar, UndoBar, DifficultyPicker,
+    ui/                   Design system: Button, NumericStepper (fluid, edge-pinned ±), Stat,
+                          MetricCard, EmptyState, Sheet, Chip, SegmentedControl, IconButton, BackButton
+    layout/               AppShell (mobile frame, safe-top, resume bar), BottomNav (5 tabs), ScreenHeader
+    workout/              ActiveSetCard (beat-last-time target), SetGrid (beat chips, tap-to-edit),
+                          PrCelebration, RestTimerBar (−15s/+15s/skip), UndoBar, DifficultyPicker,
                           ExerciseHistory, ProgressionRecommendation, WorkoutSummary, PlateBar
-    progress/             StrengthChart, BeforeAfterSlider, PoseGuide
-    exercise/ExerciseThumb.tsx   Exercise photo w/ muscle-tinted fallback
-  screens/                One file per route (see routing below)
-  hooks/                  useInterval, useRestTimer
+    progress/             StrengthChart, MuscleVolume (landmarks card), ConsistencyGrid,
+                          BeforeAfterSlider, PoseGuide
+    account/CloudSync.tsx Shared auth panel (email+Google sign-in, resend, reset) — used by
+                          /account and Settings
+    exercise/             ExerciseThumb (glyph tile), ExerciseGlyph, MuscleMap, RepMaxTable
+  screens/                One file per route (incl. Account.tsx) — see routing below
+  hooks/                  useInterval, useRestTimer (chime + haptic, settings-gated)
 public/
   exercises/*.webp        Higgsfield exercise photos (15 of 55 so far; rest use fallback)
   icon.svg manifest.webmanifest
@@ -74,14 +102,17 @@ docs/superpowers/specs/   Design spec (2026-07-16-ui-redesign-roadmap-design.md)
 ```
 
 ### Routing (5-tab nav + profile in header avatar)
-`/` Home · `/workouts` (+`/new`, `/:id`) · `/exercises` (+`/:id`) · `/stats` · `/progress`
-(+`/photos`, `/measurements`) · `/profile` · `/settings` · `/session/:id` (Gym Mode) ·
-`/session/:id/complete` · `/onboarding`. `/progress/strength` → redirects to `/stats`.
-Screens are `React.lazy`-loaded in `App.tsx` (except Dashboard + GymMode).
+`/` Home · `/workouts` (+`/new`, `/routines`, `/:id`) · `/exercises` (+`/:id`) · `/stats` ·
+`/progress` (+`/photos`, `/measurements`) · `/profile` · `/account` (sign-in) · `/settings` ·
+`/session/:id` (Gym Mode) · `/session/:id/complete` · `/onboarding`. `/progress/strength` →
+redirects to `/stats`. Screens are `React.lazy`-loaded in `App.tsx` (except Dashboard + GymMode).
 
-## Design system (this is what makes it not look AI-generated — keep it)
+## Design system (CURRENT tokens — but see "Current status": a redesign pick is pending)
 
 Tokens live in `tailwind.config.js`; class names are stable, values are the mockup's.
+Two "calm passes" already softened it (borders 7% white, accent-soft 10%, bold not extrabold,
+more gap) — the user still wants a bigger change, so expect these values to be replaced once
+they pick a direction. Until then:
 
 - **Volt `#CDFB45` is the ONLY accent** — primary action, PRs, active tab. Dark ink
   (`text-ink` = `#0A0C05`) on volt fills (never `text-white` on volt).
@@ -139,14 +170,18 @@ Tokens live in `tailwind.config.js`; class names are stable, values are the mock
 4. Build artifacts `vite.config.js/.d.ts` + `*.tsbuildinfo` are git-ignored — don't commit them.
 5. Private repo + GitHub Pages needs GitHub Pro (site is currently serving, so it's fine).
 
-## Environment notes (this machine)
+## Environment notes
 
-- **git push works** over HTTPS via the cached Git Credential Manager token (account
-  `fabrykjoh12`). `gh` CLI is **not installed**; the repo was created via the GitHub REST API
-  using that token. The GitHub MCP has no token.
-- An **ECC "GateGuard" hook** prompts for "facts" before the first Bash command and before each
-  new-file write. It re-arms per session. Just present the requested facts and retry (an
-  immediate retry of a denied write passes). Writes to `.claude/settings*.json` bypass it.
+- **Cloud (Claude Code on the web) sessions:** `gh` is unavailable — use the GitHub MCP tools for
+  PRs/merges; plain `git push` works. Set `git config user.email noreply@anthropic.com` +
+  `user.name Claude` before committing (a stop-hook checks committer email). Outbound network is
+  blocked (Firebase/Supabase/CDNs unreachable) — verify UI with local Playwright: build, serve
+  `dist/` at `/bodyos/` with a tiny node http server, launch
+  `/opt/pw-browsers/chromium-*/chrome-linux/chrome` via the global playwright at
+  `/opt/node22/lib/node_modules/playwright`, screenshot at 390×844. Run scripts from the repo dir.
+- **Local (user's Windows machine):** git push works via cached Git Credential Manager; an ECC
+  "GateGuard" hook prompts for "facts" before the first Bash command / new-file writes — present
+  the facts and retry.
 - End commit messages with `Co-Authored-By: Claude <noreply@anthropic.com>`.
 
 ## Exercise visuals
@@ -176,13 +211,15 @@ the fallback. See `ROADMAP.md` for the remaining list.
 
 ## Testing
 
-High-risk logic is covered: progression rules, 1RM/volume, unit conversion, and the full store
-flow (start → log → copy-forward → undo → complete-with-recommendation). Run `npm run test`.
-No component/E2E tests yet (Testing Library is installed).
+121 tests. Pure libs (progression, volume, plates, format, plan, prstats/liveSetPr, analytics,
+volumeLandmarks, repMax), store flows (gymFlow: supersets, deloads, warm-ups, RIR, routines,
+addExerciseToSession; repository incl. parseBackup; cloudSync reconciliation), and Testing-Library
+component/integration suites (ActiveSetCard, SetGrid, Profile, GymMode on its real route). Match
+these styles when adding tests. Run `npm run test`.
 
 ## How to verify a change (before claiming done)
 
-`npm run typecheck && npm run test && npm run build`, then run `npm run dev` and drive the flow
-in a browser. Note: in the in-app Browser pane, screenshots often time out — use `read_page` /
-`javascript_tool` to confirm DOM, fonts, and colors instead. Synthetic clicks sometimes don't
-fire; drive via a real DOM `.click()` in `javascript_tool` when needed.
+`npm run typecheck && npm run test && npm run build`, then drive the real flow in a browser.
+In cloud sessions use the Playwright pattern from "Environment notes" (serve `dist/`, screenshot
+at 390×844 — this caught real bugs like the clipped Gym stepper). On the user's machine,
+`npm run dev` + the in-app browser (screenshots may time out; prefer DOM checks).

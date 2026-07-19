@@ -8,6 +8,7 @@ import { formatWeight } from '@/lib/format';
 import { relativeDay } from '@/lib/date';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { StrengthChart } from '@/components/progress/StrengthChart';
+import { MuscleVolume } from '@/components/progress/MuscleVolume';
 import { Chip } from '@/components/ui/Chip';
 import { EmptyState } from '@/components/ui/EmptyState';
 
@@ -69,6 +70,8 @@ export function Stats() {
           </p>
         </div>
       )}
+
+      <MuscleVolume sessions={sessions} />
 
       <section>
         <h3 className="label-tiny mb-3">All personal records</h3>

@@ -152,6 +152,18 @@ export function muscleBalance(sessions: WorkoutSession[], days = 7): MuscleShare
   }));
 }
 
+/** Working-set count per primary muscle over the last `days` days (for volume landmarks). */
+export function weeklyMuscleSets(
+  sessions: WorkoutSession[],
+  days = 7,
+): Partial<Record<MuscleGroup, number>> {
+  const out: Partial<Record<MuscleGroup, number>> = {};
+  muscleSetCounts(sessions, days).forEach((sets, muscle) => {
+    out[muscle] = sets;
+  });
+  return out;
+}
+
 /** Per-muscle training intensity (0..1, relative to the most-trained) for a body heatmap. */
 export function muscleTrainingMap(
   sessions: WorkoutSession[],
