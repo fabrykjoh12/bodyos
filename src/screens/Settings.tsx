@@ -16,6 +16,8 @@ export function Settings() {
   const settings = useStore((s) => s.user.settings);
   const updateSettings = useStore((s) => s.updateSettings);
   const resetAll = useStore((s) => s.resetAll);
+  const clearHistory = useStore((s) => s.clearHistory);
+  const [confirmClear, setConfirmClear] = useState(false);
   const exportData = useStore((s) => s.exportData);
   const replaceAll = useStore((s) => s.replaceAll);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -127,15 +129,35 @@ export function Settings() {
           className="hidden"
           onChange={onFilePicked}
         />
+        <button onClick={() => setConfirmClear(true)} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left">
+          <div className="min-w-0">
+            <p className="text-sm text-content">Clear training history</p>
+            <p className="text-xs text-content-faint">Wipe logged sessions, records &amp; measurements — keeps your workouts and plan</p>
+          </div>
+        </button>
       </Group>
 
       <button onClick={() => setConfirmReset(true)} className="mt-2 text-sm font-medium text-danger/80 hover:text-danger">
         Reset all data
       </button>
 
+      <Sheet open={confirmClear} onClose={() => setConfirmClear(false)} title="Clear training history?">
+        <p className="text-sm text-content-muted">
+          This removes every logged session, personal record, streak, measurement and photo — including any demo
+          data — so your log starts clean. Your workouts, weekly plan and settings are kept. This cannot be undone.
+        </p>
+        <div className="mt-5 flex flex-col gap-2">
+          <Button variant="danger" fullWidth onClick={() => { clearHistory(); setConfirmClear(false); }}>
+            Clear history
+          </Button>
+          <Button variant="ghost" fullWidth onClick={() => setConfirmClear(false)}>Cancel</Button>
+        </div>
+      </Sheet>
+
       <Sheet open={confirmReset} onClose={() => setConfirmReset(false)} title="Reset all data?">
         <p className="text-sm text-content-muted">
-          This erases your workouts, history, records, and photos, and restores the demo data. This cannot be undone.
+          This erases everything on this device — workouts, history, records, photos and your profile — and starts
+          over from onboarding. This cannot be undone.
         </p>
         <div className="mt-5 flex flex-col gap-2">
           <Button variant="danger" fullWidth onClick={() => { resetAll(); navigate('/', { replace: true }); }}>

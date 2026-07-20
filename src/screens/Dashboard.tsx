@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUp, Camera, ChevronRight, Cloud, Dumbbell, Flame, Moon, Play, Plus, Trophy } from 'lucide-react';
+import { ArrowUp, Camera, ChevronRight, Cloud, Dumbbell, Flame, Moon, Play, Plus, Sparkles, Trophy } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useSyncStore } from '@/store/cloudSync';
 import { exerciseName } from '@/data/exercises';
@@ -124,6 +124,29 @@ export function Dashboard() {
           {initial}
         </button>
       </header>
+
+      {/* Demo-data notice: `currentPhase` is only ever set by the demo seed,
+          so this identifies accounts still carrying history the user never
+          logged. One tap wipes it (keeping workouts, plan and settings). */}
+      {user.currentPhase === 'Lean bulk' && sessions.length > 0 && (
+        <section className="card border-caution/30 p-4">
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-caution-soft text-caution">
+              <Sparkles size={17} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-content">This is demo training data</p>
+              <p className="mt-0.5 text-xs leading-snug text-content-muted">
+                These sessions and records are examples, not your training. Clear them to start your own log —
+                your workouts and weekly plan stay.
+              </p>
+              <Button size="sm" variant="secondary" className="mt-3" onClick={() => store.clearHistory()}>
+                Clear demo data
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Sign-in entry — always reachable in the content (not just the avatar,
           which the iOS status bar can cover in the installed PWA). */}

@@ -29,6 +29,7 @@ export function Onboarding() {
   const navigate = useNavigate();
   const completeOnboarding = useStore((s) => s.completeOnboarding);
   const applyRoutine = useStore((s) => s.applyRoutine);
+  const loadDemo = useStore((s) => s.loadDemo);
   const [step, setStep] = useState(0);
 
   const [name, setName] = useState(() => useStore.getState().user.name);
@@ -208,9 +209,19 @@ export function Onboarding() {
             Start training <ArrowRight size={18} />
           </Button>
         )}
-        {step > 0 && (
+        {step > 0 ? (
           <button onClick={() => setStep((s) => s - 1)} className="mt-3 w-full text-center text-sm text-content-faint">
             Back
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              loadDemo();
+              navigate('/', { replace: true });
+            }}
+            className="mt-3 w-full text-center text-sm text-content-faint underline-offset-2 hover:text-content-muted hover:underline"
+          >
+            Just looking? Explore with demo data
           </button>
         )}
       </div>

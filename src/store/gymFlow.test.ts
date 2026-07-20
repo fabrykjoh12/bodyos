@@ -27,6 +27,7 @@ function supersetTemplate(): WorkoutTemplate {
 describe('gym flow — supersets', () => {
   beforeEach(() => {
     S().resetAll();
+    S().loadDemo();
     S().saveTemplate(supersetTemplate());
     S().startSession('test-superset');
   });
@@ -71,6 +72,7 @@ describe('gym flow — supersets', () => {
 describe('gym flow — warm-ups, swap, RIR', () => {
   beforeEach(() => {
     S().resetAll();
+    S().loadDemo();
     // templates[0] is the seeded Push day; exercise 0 is a barbell bench press.
     S().startSession(S().templates[0]!.id);
   });
@@ -104,7 +106,7 @@ describe('gym flow — warm-ups, swap, RIR', () => {
 });
 
 describe('deload sessions', () => {
-  beforeEach(() => S().resetAll());
+  beforeEach(() => { S().resetAll(); S().loadDemo(); });
 
   it('starts lighter, with fewer sets, and is flagged', () => {
     const tplId = S().templates[0]!.id;
@@ -143,7 +145,7 @@ describe('deload sessions', () => {
 });
 
 describe('starter routines', () => {
-  beforeEach(() => S().resetAll());
+  beforeEach(() => { S().resetAll(); S().loadDemo(); });
 
   it('adds a routine\'s templates and schedules them on the weekly plan', () => {
     const ppl = ROUTINES.find((r) => r.id === 'ppl-6')!;
@@ -161,7 +163,7 @@ describe('starter routines', () => {
 });
 
 describe('addExerciseToSession', () => {
-  beforeEach(() => S().resetAll());
+  beforeEach(() => { S().resetAll(); S().loadDemo(); });
 
   it('appends a prefilled exercise to the active session and returns its index', () => {
     const templateId = S().templates[0]!.id;
@@ -185,7 +187,7 @@ describe('addExerciseToSession', () => {
 });
 
 describe('exercise notes', () => {
-  beforeEach(() => S().resetAll());
+  beforeEach(() => { S().resetAll(); S().loadDemo(); });
 
   it('sets and clears a durable per-exercise note', () => {
     S().setExerciseNote('deadlift', '  mixed grip over 180  ');

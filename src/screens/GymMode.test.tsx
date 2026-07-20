@@ -27,6 +27,7 @@ function startSessionAndRender() {
 describe('GymMode integration', () => {
   beforeEach(() => {
     useStore.getState().resetAll();
+    useStore.getState().loadDemo();
   });
 
   it('renders the active set for the running session', () => {

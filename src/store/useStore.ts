@@ -22,7 +22,8 @@ import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { recommendFromExerciseSession, rirToDifficulty } from '@/lib/progression';
 import { buildActiveSession, countPriorStalls, prefillFor } from '@/lib/history';
 import { detectPersonalRecords } from '@/lib/prstats';
-import { loadOrSeed, repository } from './repository';
+import { loadOrCreate, repository } from './repository';
+import { createEmptyData, createSeedData } from '@/data/seed';
 import {
   initCloudSync,
   notifyLocalWrite,
@@ -86,7 +87,13 @@ interface StoreState extends AppData {
   completeOnboarding: (partial: Partial<User>) => void;
   updateUser: (patch: Partial<User>) => void;
   updateSettings: (patch: Partial<UserSettings>) => void;
+  /** Erase everything on this device and start over (back to onboarding). */
   resetAll: () => void;
+  /** Opt-in: replace the account with the demo dataset (exploring/tests). */
+  loadDemo: () => void;
+  /** Wipe logged history (sessions, PRs, streaks, measurements, photos)
+   *  while keeping the user, settings, workouts and weekly plan. */
+  clearHistory: () => void;
 
   // --- sync
   /** Replace the whole AppData slice (used when cloud sync pulls remote). */
@@ -101,7 +108,7 @@ interface StoreState extends AppData {
   deleteMeasurement: (id: string) => void;
 }
 
-const initial = loadOrSeed();
+const initial = loadOrCreate();
 
 /** Snapshot the persisted AppData slice out of the (larger) store state. */
 function extractAppData(state: StoreState): AppData {
@@ -744,11 +751,39 @@ export const useStore = create<StoreState>((set, get) => ({
 
   resetAll: () => {
     repository.clear();
-    const seeded = loadOrSeed();
-    set((s) => ({ ...s, ...seeded, activeSession: null, undo: null, lastCompletedSessionId: null }));
+    const fresh = createEmptyData();
+    repository.save(fresh);
+    set((s) => ({ ...s, ...fresh, activeSession: null, undo: null, lastCompletedSessionId: null }));
     // A reset is intentional and should propagate to the cloud when signed in.
-    notifyLocalWrite(seeded);
+    notifyLocalWrite(fresh);
   },
+
+  loadDemo: () => {
+    const demo = createSeedData();
+    repository.save(demo);
+    set((s) => ({ ...s, ...demo, activeSession: null, undo: null, lastCompletedSessionId: null }));
+    notifyLocalWrite(demo);
+  },
+
+  clearHistory: () =>
+    set((s) => {
+      const next: StoreState = {
+        ...s,
+        sessions: [],
+        personalRecords: [],
+        streakDates: [],
+        measurements: [],
+        photos: [],
+        activeSession: null,
+        undo: null,
+        lastCompletedSessionId: null,
+        // `currentPhase` only ever comes from the demo dataset — clearing it
+        // also retires the "demo data" banner.
+        user: { ...s.user, currentPhase: undefined },
+      };
+      persist(next);
+      return next;
+    }),
 
   replaceAll: (data) =>
     set((s) => {

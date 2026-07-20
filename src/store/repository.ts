@@ -1,5 +1,5 @@
 import type { AppData } from '@/types';
-import { APP_DATA_VERSION, createSeedData } from '@/data/seed';
+import { APP_DATA_VERSION, createEmptyData } from '@/data/seed';
 
 // ---------------------------------------------------------------------------
 // Persistence abstraction.
@@ -87,11 +87,11 @@ function normalizeAppData(data: AppData): AppData {
 
 /** Forward-compatible migration hook. Currently only guards the version. */
 function migrate(data: AppData): AppData {
-  if (!data || typeof data !== 'object') return createSeedData();
+  if (!data || typeof data !== 'object') return createEmptyData();
   if (data.version !== APP_DATA_VERSION) {
     // Future migrations slot in here. For now, unknown versions fall back to
     // a fresh dataset rather than crashing.
-    if (typeof data.version !== 'number') return createSeedData();
+    if (typeof data.version !== 'number') return createEmptyData();
   }
   return normalizeAppData(data);
 }
@@ -131,10 +131,15 @@ export function parseBackup(text: string): ParseBackupResult {
 
 export const repository: Repository = new LocalStorageRepository();
 
-export function loadOrSeed(repo: Repository = repository): AppData {
+/**
+ * Load persisted data, or create a truly EMPTY account for a fresh install.
+ * Demo data is opt-in only (store `loadDemo` action) — a new user must never
+ * see training history they didn't log.
+ */
+export function loadOrCreate(repo: Repository = repository): AppData {
   const existing = repo.load();
   if (existing) return existing;
-  const seeded = createSeedData();
-  repo.save(seeded);
-  return seeded;
+  const fresh = createEmptyData();
+  repo.save(fresh);
+  return fresh;
 }

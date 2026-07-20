@@ -135,6 +135,12 @@ Tokens live in `tailwind.config.js`; component classes in `src/index.css`.
 
 - `AppData` (persisted root) = user, templates, sessions (history), activeSession, PRs,
   photos, measurements, weeklyPlan, streakDates, restTimer.
+- **Fresh installs start EMPTY** (`loadOrCreate` → `createEmptyData`, onboarded:false →
+  onboarding). Demo data is **opt-in only**: the "Explore with demo data" link on onboarding
+  (store `loadDemo`), which tests and `scripts/shot.mjs` also use. `resetAll` erases to empty
+  (back to onboarding); `clearHistory` wipes logged history but keeps user/templates/plan.
+  `user.currentPhase === 'Lean bulk'` is the demo fingerprint — Home shows a "clear demo data"
+  banner for accounts still carrying it. Never re-introduce seeding-by-default.
 - **Active session + rest timer survive refresh** (persisted). Undo is available after logging.
 - Store persists the whole `AppData` slice to `localStorage` after every mutation, through the
   `Repository` abstraction — so a networked `Repository` can replace it with zero UI changes.

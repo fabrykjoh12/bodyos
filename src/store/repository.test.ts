@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { LocalStorageRepository, MemoryRepository, loadOrSeed, parseBackup } from './repository';
+import { LocalStorageRepository, MemoryRepository, loadOrCreate, parseBackup } from './repository';
 import { createSeedData } from '@/data/seed';
 import { useStore } from './useStore';
 
@@ -13,11 +13,15 @@ describe('repository', () => {
     expect(loaded?.user.goal).toBe(data.user.goal);
   });
 
-  it('seeds when storage is empty', () => {
+  it('creates a truly empty account when storage is empty', () => {
     const repo = new MemoryRepository();
-    const data = loadOrSeed(repo);
-    expect(data.templates.length).toBeGreaterThan(0);
-    // Subsequent load returns the persisted copy, not a new seed.
+    const data = loadOrCreate(repo);
+    // A fresh install must never contain training the user didn't log.
+    expect(data.templates.length).toBe(0);
+    expect(data.sessions.length).toBe(0);
+    expect(data.personalRecords.length).toBe(0);
+    expect(data.user.onboarded).toBe(false);
+    // Subsequent load returns the persisted copy, not a new blank.
     expect(repo.load()?.user.id).toBe(data.user.id);
   });
 
@@ -57,6 +61,7 @@ describe('parseBackup', () => {
 describe('store — core workout flow', () => {
   beforeEach(() => {
     useStore.getState().resetAll();
+    useStore.getState().loadDemo();
   });
 
   it('starts a session with smart-prefilled weights from history', () => {

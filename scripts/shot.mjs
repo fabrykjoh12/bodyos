@@ -38,7 +38,17 @@ async function shot(name, path, { fullPage = false, before } = {}) {
   console.log('shot', name);
 }
 
-// Seeded demo data appears on first load (loadOrSeed) — onboarded seed user.
+// Fresh installs start EMPTY at onboarding; opt into demo data via the
+// explicit link (also exercises the real first-run flow).
+await page.goto(`http://localhost:${PORT}/bodyos/`, { waitUntil: 'networkidle' });
+await page.waitForTimeout(800);
+await page.screenshot({ path: `${OUT}/00-onboarding.png` });
+const demoLink = page.getByRole('button', { name: /explore with demo data/i });
+if (await demoLink.count()) {
+  await demoLink.click();
+  await page.waitForTimeout(600);
+}
+
 await shot('01-home', '/');
 await shot('01b-home-full', '/', { fullPage: true });
 await shot('02-workouts', '/workouts');

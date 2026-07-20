@@ -238,6 +238,46 @@ function seedPhotos(): ProgressPhoto[] {
 
 // --- Assemble the full initial dataset -------------------------------------
 
+/**
+ * A truly empty account: nothing logged, onboarding not yet done. This is
+ * what a fresh install starts from — demo data (createSeedData) is opt-in.
+ */
+export function createEmptyData(): AppData {
+  return {
+    version: APP_DATA_VERSION,
+    user: {
+      id: uid('user'),
+      name: '',
+      goal: 'hypertrophy',
+      experience: 'beginner',
+      daysPerWeek: 3,
+      split: 'custom',
+      equipment: ['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight'],
+      onboarded: false,
+      createdAt: daysAgoISO(0),
+      settings: {
+        unit: 'kg',
+        restTimerAutoStart: true,
+        defaultRestSec: 120,
+        showRir: false,
+        hapticFeedback: true,
+        reducedMotion: false,
+        restAlertSound: true,
+      },
+    },
+    templates: [],
+    sessions: [],
+    activeSession: null,
+    personalRecords: [],
+    photos: [],
+    measurements: [],
+    streakDates: [],
+    weeklyPlan: {},
+    exerciseNotes: {},
+    restTimer: { endsAt: null, durationSec: 120, exerciseId: null },
+  };
+}
+
 export function createSeedData(): AppData {
   const push = makeTemplate('Push', 'Chest · Shoulders · Triceps', PUSH);
   const pull = makeTemplate('Pull', 'Back · Biceps', PULL);
