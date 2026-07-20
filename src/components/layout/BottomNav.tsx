@@ -1,12 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { BarChart3, Camera, Dumbbell, Home, LibraryBig, User } from 'lucide-react';
+import { BarChart3, Dumbbell, Home, LibraryBig, User } from 'lucide-react';
 
 const items = [
   { to: '/', label: 'Home', icon: Home, end: true },
   { to: '/workouts', label: 'Workouts', icon: Dumbbell, end: false },
+  { to: '/progress', label: 'Progress', icon: BarChart3, end: false },
   { to: '/exercises', label: 'Exercises', icon: LibraryBig, end: false },
-  { to: '/stats', label: 'Stats', icon: BarChart3, end: false },
-  { to: '/progress', label: 'Progress', icon: Camera, end: false },
   { to: '/profile', label: 'Profile', icon: User, end: false },
 ];
 

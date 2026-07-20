@@ -4,7 +4,7 @@ import { BottomNav } from './BottomNav';
 import { useStore } from '@/store/useStore';
 
 // Routes that show the bottom tab bar.
-const NAV_ROUTES = ['/', '/workouts', '/exercises', '/stats', '/progress', '/profile', '/settings'];
+const NAV_ROUTES = ['/', '/workouts', '/exercises', '/progress', '/profile', '/settings'];
 
 // Focused sub-screens with their own fixed bottom action bar — the tab bar is
 // hidden so it doesn't overlap the primary CTA (Start Workout / Save).

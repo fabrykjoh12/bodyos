@@ -100,11 +100,15 @@ public/
 docs/superpowers/specs/   Design spec (2026-07-16-ui-redesign-roadmap-design.md)
 ```
 
-### Routing (5-tab nav + profile in header avatar)
-`/` Home · `/workouts` (+`/new`, `/routines`, `/:id`) · `/exercises` (+`/:id`) · `/stats` ·
-`/progress` (+`/photos`, `/measurements`) · `/profile` · `/account` (sign-in) · `/settings` ·
-`/session/:id` (Gym Mode) · `/session/:id/complete` · `/onboarding`. `/progress/strength` →
-redirects to `/stats`. Screens are `React.lazy`-loaded in `App.tsx` (except Dashboard + GymMode).
+### Routing (5-tab nav: Home · Workouts · Progress · Exercises · Profile)
+`/` Home · `/workouts` (+`/new`, `/routines`, `/:id`) · `/exercises` (+`/:id`) ·
+`/progress` (single analytics tab: stats grid, strength chart, muscle volume + map,
+consistency, PRs; +`/photos`, `/measurements`) · `/profile` · `/account` (sign-in) ·
+`/settings` · `/session/:id` (Gym Mode) · `/session/:id/complete` · `/onboarding`.
+`/stats` and `/progress/strength` redirect to `/progress` (Stats was merged 2026-07-20 —
+one analytics tab; Home is intentionally lean: masthead, hero, glance strip, weekly
+volume, recent sessions, nothing else). Screens are `React.lazy`-loaded in `App.tsx`
+(except Dashboard + GymMode).
 
 ## Design system ("precision instrument" — shipped 2026-07-19)
 

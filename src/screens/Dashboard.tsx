@@ -1,31 +1,16 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUp, Camera, ChevronRight, Cloud, Dumbbell, Flame, Moon, Play, Plus, Sparkles, Trophy } from 'lucide-react';
+import { ChevronRight, Cloud, Dumbbell, Flame, Moon, Play, Plus, Sparkles } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useSyncStore } from '@/store/cloudSync';
-import { exerciseName } from '@/data/exercises';
 import { computeStreak, diffInDays, relativeDay } from '@/lib/date';
 import { resolveTodayPlan, weekdayLabel } from '@/lib/plan';
-import { formatVolume, formatWeight } from '@/lib/format';
+import { formatVolume } from '@/lib/format';
 import { sessionSetCount, sessionTotalVolume } from '@/lib/prstats';
-import {
-  e1rmSeries,
-  last7DaysVolume,
-  muscleBalance,
-  muscleTrainingMap,
-  strengthTrends,
-  weeklyVolume,
-  type DayVolume,
-} from '@/lib/analytics';
+import { last7DaysVolume, weeklyVolume, type DayVolume } from '@/lib/analytics';
 import { Button } from '@/components/ui/Button';
 import { CountUp } from '@/components/ui/CountUp';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { MuscleMap } from '@/components/exercise/MuscleMap';
-
-const MUSCLE_LABELS: Record<string, string> = {
-  chest: 'Chest', back: 'Back', shoulders: 'Shoulders', quads: 'Legs', hamstrings: 'Hamstrings',
-  glutes: 'Glutes', biceps: 'Biceps', triceps: 'Triceps', calves: 'Calves', core: 'Core', forearms: 'Forearms',
-};
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -68,18 +53,6 @@ export function Dashboard() {
     (p) => p.type === 'weight' && diffInDays(new Date().toISOString(), p.achievedAt) < 7,
   ).length;
 
-  const trends = useMemo(() => strengthTrends(sessions), [sessions]);
-  const topTrend = trends[0];
-  const spark = useMemo(
-    () => (topTrend ? e1rmSeries(topTrend.exerciseId, sessions) : []),
-    [topTrend, sessions],
-  );
-  const balance = useMemo(() => muscleBalance(sessions), [sessions]);
-  const muscleHeat = useMemo(() => {
-    const map = muscleTrainingMap(sessions);
-    // Floor trained muscles so even light work reads clearly on the map.
-    return Object.fromEntries(Object.entries(map).map(([m, v]) => [m, 0.3 + 0.7 * v]));
-  }, [sessions]);
   const bars: DayVolume[] = useMemo(
     () =>
       range === 'Week'
@@ -90,7 +63,6 @@ export function Dashboard() {
   const barTotal = bars.reduce((t, b) => t + b.volume, 0);
   const barMax = Math.max(1, ...bars.map((b) => b.volume));
 
-  const recentPRs = personalRecords.filter((p) => p.type === 'weight').slice(-3).reverse();
   const recentSessions = completed.slice(0, 3);
 
   const initial = (user.name || 'A').slice(0, 1).toUpperCase();
@@ -277,69 +249,16 @@ export function Dashboard() {
         </section>
       )}
 
-      {/* Est 1RM sparkline */}
-      {topTrend && spark.length >= 2 && (
-        <button onClick={() => navigate(`/exercises/${topTrend.exerciseId}`)} className="card p-6 text-left">
-          <div className="mb-1 flex items-center justify-between">
-            <span className="label-tiny">Est. 1RM · {exerciseName(topTrend.exerciseId)}</span>
-            {topTrend.deltaPct > 0 && (
-              <span className="flex items-center gap-1 text-success">
-                <ArrowUp size={14} strokeWidth={2.6} />
-                <span className="tnum text-[13px] font-semibold">{topTrend.deltaPct}%</span>
-              </span>
-            )}
-          </div>
-          <p className="tnum mb-3 mt-1.5 text-stat text-content">
-            {formatWeight(topTrend.latest, unit, false)}<span className="text-[13px] text-content-faint"> {unit}</span>
-          </p>
-          <Sparkline values={spark.map((p) => p.value)} />
-        </button>
-      )}
-
-      {/* Muscle balance — weekly training heatmap */}
-      {balance.length > 0 && (
-        <section className="card p-6">
-          <p className="label-tiny mb-4">Muscle balance · this week</p>
-          <MuscleMap intensity={muscleHeat} legend="volume" />
-          {balance[0] && (
-            <p className="mt-4 text-center text-xs text-content-muted">
-              Most trained:{' '}
-              <span className="font-semibold text-content">{MUSCLE_LABELS[balance[0].muscle] ?? balance[0].muscle}</span>
-              {' · '}
-              <span className="tnum">{balance[0].sets} sets</span>
-            </p>
-          )}
-        </section>
-      )}
-
-      {/* Personal records — unboxed rows, the trophies speak */}
-      {recentPRs.length > 0 && (
-        <section>
-          <div className="mb-1 flex items-baseline justify-between">
-            <h3 className="label-tiny">Personal records</h3>
-            <button onClick={() => navigate('/stats')} className="text-[13px] font-semibold text-accent">See all</button>
-          </div>
-          <div className="row-list">
-            {recentPRs.map((pr) => (
-              <div key={pr.id} className="flex items-center gap-3.5 py-3.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-soft">
-                  <Trophy size={18} className="text-accent" />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[15px] font-bold text-content">{exerciseName(pr.exerciseId)}</p>
-                  <p className="tnum text-[13px] text-content-muted">{formatWeight(pr.value, unit)} × {pr.reps}</p>
-                </div>
-                <span className="shrink-0 text-xs text-content-faint">{relativeDay(pr.achievedAt)}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Recent sessions */}
+      {/* Recent sessions — the one history section; everything deeper lives
+          in Progress. */}
       {recentSessions.length > 0 && (
         <section>
-          <h3 className="label-tiny mb-1">Recent sessions</h3>
+          <div className="mb-1 flex items-baseline justify-between">
+            <h3 className="label-tiny">Recent sessions</h3>
+            <button onClick={() => navigate('/progress')} className="text-[13px] font-semibold text-accent">
+              All progress
+            </button>
+          </div>
           <div className="row-list">
             {recentSessions.map((s) => {
               const prCount = personalRecords.filter((p) => p.sessionId === s.id && p.type === 'weight').length;
@@ -371,18 +290,6 @@ export function Dashboard() {
         </section>
       )}
 
-      {/* Photo reminder */}
-      <button onClick={() => navigate('/progress')} className="card flex items-center gap-3 p-4 text-left">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-accent">
-          <Camera size={18} />
-        </span>
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-content">Progress photos</p>
-          <p className="text-xs text-content-muted">Private timeline & before/after</p>
-        </div>
-        <ChevronRight size={18} className="text-content-faint" />
-      </button>
-
       {completed.length === 0 && (
         <p className="pb-2 text-center text-xs text-content-faint">
           <Dumbbell size={12} className="mr-1 inline" /> Log your first session to unlock stats.
@@ -405,28 +312,3 @@ function StripCell({ label, value, suffix, icon }: { label: string; value: numbe
   );
 }
 
-function Sparkline({ values }: { values: number[] }) {
-  const min = Math.min(...values) - 4;
-  const max = Math.max(...values) + 2;
-  const span = max - min || 1;
-  const pts = values.map((v, i) => {
-    const x = (i / (values.length - 1)) * 300;
-    const y = 90 - ((v - min) / span) * 80;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
-  const last = pts[pts.length - 1]!.split(',');
-  const areaPts = `0,90 ${pts.join(' ')} 300,90`;
-  return (
-    <svg viewBox="0 0 300 90" preserveAspectRatio="none" style={{ width: '100%', height: 90, overflow: 'visible' }}>
-      <defs>
-        <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#CDFB45" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#CDFB45" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon fill="url(#sparkfill)" points={areaPts} />
-      <polyline fill="none" stroke="#CDFB45" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={pts.join(' ')} />
-      <circle cx={last[0]} cy={last[1]} r="4" fill="#CDFB45" stroke="#171B21" strokeWidth="2" />
-    </svg>
-  );
-}

@@ -15,7 +15,6 @@ const Progress = lazy(() => import('@/screens/Progress').then((m) => ({ default:
 const ProgressPhotos = lazy(() => import('@/screens/ProgressPhotos').then((m) => ({ default: m.ProgressPhotos })));
 const Measurements = lazy(() => import('@/screens/Measurements').then((m) => ({ default: m.Measurements })));
 const Routines = lazy(() => import('@/screens/Routines').then((m) => ({ default: m.Routines })));
-const Stats = lazy(() => import('@/screens/Stats').then((m) => ({ default: m.Stats })));
 const ExerciseLibrary = lazy(() => import('@/screens/ExerciseLibrary').then((m) => ({ default: m.ExerciseLibrary })));
 const ExerciseDetail = lazy(() => import('@/screens/ExerciseDetail').then((m) => ({ default: m.ExerciseDetail })));
 const Profile = lazy(() => import('@/screens/Profile').then((m) => ({ default: m.Profile })));
@@ -55,11 +54,12 @@ export default function App() {
           <Route path="/workouts/:id" element={<WorkoutDetail />} />
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/exercises/:id" element={<ExerciseDetail />} />
-          <Route path="/stats" element={<Stats />} />
+          {/* Stats merged into Progress — one analytics tab. */}
+          <Route path="/stats" element={<Navigate to="/progress" replace />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/progress/photos" element={<ProgressPhotos />} />
           <Route path="/progress/measurements" element={<Measurements />} />
-          <Route path="/progress/strength" element={<Navigate to="/stats" replace />} />
+          <Route path="/progress/strength" element={<Navigate to="/progress" replace />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/account" element={<Account />} />
           <Route path="/settings" element={<Settings />} />
