@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { BeforeAfterSlider } from '@/components/progress/BeforeAfterSlider';
+import { usePhotoUrl } from '@/hooks/usePhotoUrl';
 import { PoseGuide } from '@/components/progress/PoseGuide';
 
 const POSES: { value: PhotoPose; label: string }[] = [
@@ -77,6 +78,8 @@ export function ProgressPhotos() {
     compareSel.length === 2
       ? [...compareSel].sort((a, b) => new Date(a.takenAt).getTime() - new Date(b.takenAt).getTime())
       : [undefined, undefined];
+  const beforeUrl = usePhotoUrl(before);
+  const afterUrl = usePhotoUrl(after);
 
   return (
     <div className="flex flex-col gap-6 pb-4">
@@ -114,10 +117,10 @@ export function ProgressPhotos() {
         />
       ) : (
         <>
-          {compareMode && before && after && (
+          {compareMode && before && after && beforeUrl && afterUrl && (
             <BeforeAfterSlider
-              before={before.dataUrl}
-              after={after.dataUrl}
+              before={beforeUrl}
+              after={afterUrl}
               beforeLabel={before.weekLabel}
               afterLabel={after.weekLabel}
             />
@@ -144,7 +147,7 @@ export function ProgressPhotos() {
                     onClick={() => compareMode && toggleCompareSel(photo)}
                     className="block aspect-[3/4] w-full"
                   >
-                    <img src={photo.dataUrl} alt={`${photo.pose} ${photo.weekLabel}`} className="h-full w-full object-cover" />
+                    <PhotoImg photo={photo} />
                   </button>
                   {compareMode && selIndex >= 0 && (
                     <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-ink">
@@ -231,6 +234,12 @@ export function ProgressPhotos() {
       </Sheet>
     </div>
   );
+}
+
+function PhotoImg({ photo }: { photo: ProgressPhoto }) {
+  const url = usePhotoUrl(photo);
+  if (!url) return <div className="h-full w-full animate-pulse bg-surface-3" aria-hidden />;
+  return <img src={url} alt={`${photo.pose} ${photo.weekLabel}`} className="h-full w-full object-cover" />;
 }
 
 function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {

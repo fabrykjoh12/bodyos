@@ -24,6 +24,7 @@ import { recommendFromExerciseSession, rirToDifficulty } from '@/lib/progression
 import { buildActiveSession, countPriorStalls, prefillFor } from '@/lib/history';
 import { detectPersonalRecords } from '@/lib/prstats';
 import { loadOrCreate, repository } from './repository';
+import { clearPhotoData, deletePhotoData, putPhotoData } from './photoStore';
 import { createEmptyData, createSeedData } from '@/data/seed';
 import {
   initCloudSync,
@@ -123,7 +124,9 @@ function extractAppData(state: StoreState): AppData {
     sessions: state.sessions,
     activeSession: state.activeSession,
     personalRecords: state.personalRecords,
-    photos: state.photos,
+    // Photo PAYLOADS live in IndexedDB (photoStore) — the main document only
+    // carries metadata, so photos can never block a workout save.
+    photos: state.photos.map((p) => ({ ...p, dataUrl: '' })),
     measurements: state.measurements,
     weeklyPlan: state.weeklyPlan,
     exerciseNotes: state.exerciseNotes,
@@ -765,6 +768,7 @@ export const useStore = create<StoreState>((set, get) => ({
     }),
 
   resetAll: () => {
+    void clearPhotoData(repository.profile);
     repository.clear();
     const fresh = createEmptyData();
     repository.save(fresh);
@@ -775,12 +779,14 @@ export const useStore = create<StoreState>((set, get) => ({
 
   loadDemo: () => {
     const demo = createSeedData();
+    for (const p of demo.photos) void putPhotoData(repository.profile, p.id, p.dataUrl);
     repository.save(demo);
     set((s) => ({ ...s, ...demo, activeSession: null, undo: null, lastCompletedSessionId: null }));
     notifyLocalWrite(demo);
   },
 
-  clearHistory: () =>
+  clearHistory: () => {
+    void clearPhotoData(repository.profile);
     set((s) => {
       const next: StoreState = {
         ...s,
@@ -798,7 +804,8 @@ export const useStore = create<StoreState>((set, get) => ({
       };
       persist(next);
       return next;
-    }),
+    });
+  },
 
   replaceAll: (data) =>
     set((s) => {
@@ -811,19 +818,24 @@ export const useStore = create<StoreState>((set, get) => ({
 
   exportData: () => extractAppData(get()),
 
-  addPhoto: (photo) =>
+  addPhoto: (photo) => {
+    // Payload goes to the profile's IndexedDB store; metadata into AppData.
+    void putPhotoData(repository.profile, photo.id, photo.dataUrl);
     set((s) => {
       const next = { ...s, photos: [photo, ...s.photos] };
       persist(next);
       return next;
-    }),
+    });
+  },
 
-  deletePhoto: (id) =>
+  deletePhoto: (id) => {
+    void deletePhotoData(repository.profile, id);
     set((s) => {
       const next = { ...s, photos: s.photos.filter((p) => p.id !== id) };
       persist(next);
       return next;
-    }),
+    });
+  },
 
   addMeasurement: (m) =>
     set((s) => {
@@ -868,6 +880,16 @@ registerSync({
   switchProfile: switchActiveProfile,
 });
 initCloudSync();
+
+// One-time migration: older installs embedded photo payloads in AppData.
+// Move them into the profile's IndexedDB store, then re-persist (persist
+// strips payloads), shrinking the main document permanently.
+void (async () => {
+  const withPayload = useStore.getState().photos.filter((p) => p.dataUrl);
+  if (withPayload.length === 0) return;
+  await Promise.all(withPayload.map((p) => putPhotoData(repository.profile, p.id, p.dataUrl)));
+  repository.save(extractAppData(useStore.getState()));
+})();
 
 /** Shared helper for the active-set adjust actions. */
 function applyActive(
