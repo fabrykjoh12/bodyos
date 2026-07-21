@@ -12,6 +12,7 @@ import {
   signInWithGoogle,
   anonymousDataSummary,
   importDeviceData,
+  deleteAccount,
   type SyncStatus,
 } from '@/store/cloudSync';
 import { Button } from '@/components/ui/Button';
@@ -43,6 +44,10 @@ export function CloudSync({ heading = true }: { heading?: boolean }) {
   const [resendNote, setResendNote] = useState<string | null>(null);
   const [confirmImport, setConfirmImport] = useState(false);
   const [importNote, setImportNote] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteNote, setDeleteNote] = useState<string | null>(null);
+  const [needsPassword, setNeedsPassword] = useState(false);
 
   const signedIn = email !== null;
   // What the device's anonymous profile holds — offered as an EXPLICIT import
@@ -137,6 +142,63 @@ export function CloudSync({ heading = true }: { heading?: boolean }) {
           </Button>
         </div>
       )}
+      <button
+        onClick={() => {
+          setDeleteNote(null);
+          setDeletePassword('');
+          setNeedsPassword(false);
+          setDeleteOpen(true);
+        }}
+        className="self-start text-xs font-medium text-danger/70 hover:text-danger"
+      >
+        Delete account &amp; cloud data…
+      </button>
+
+      <Sheet open={deleteOpen} onClose={() => setDeleteOpen(false)} title="Delete this account?">
+        <p className="text-sm text-content-muted">
+          This permanently deletes the cloud copy of your training data <em>and</em> the account itself
+          ({email}). This device&rsquo;s local-only data is not touched. This cannot be undone —
+          export a backup first if you want to keep your log.
+        </p>
+        {needsPassword && (
+          <input
+            type="password"
+            autoComplete="current-password"
+            placeholder="Confirm your password"
+            value={deletePassword}
+            onChange={(e) => setDeletePassword(e.target.value)}
+            className={`${inputClass} mt-4`}
+          />
+        )}
+        {deleteNote && <p className="mt-3 text-xs text-danger">{deleteNote}</p>}
+        <div className="mt-5 flex flex-col gap-2">
+          <Button
+            variant="danger"
+            fullWidth
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              setDeleteNote(null);
+              const result = await deleteAccount(deletePassword || undefined);
+              setBusy(false);
+              if (result.ok) {
+                setDeleteOpen(false);
+                return; // auth listener switches to the anonymous profile
+              }
+              setNeedsPassword(result.requiresRecentLogin);
+              setDeleteNote(
+                result.cloudDeleted
+                  ? `Cloud data was deleted, but the account itself remains: ${result.error}`
+                  : result.error,
+              );
+            }}
+          >
+            {busy ? 'Deleting…' : 'Permanently delete account'}
+          </Button>
+          <Button variant="ghost" fullWidth onClick={() => setDeleteOpen(false)}>Cancel</Button>
+        </div>
+      </Sheet>
+
       <Sheet open={confirmImport} onClose={() => setConfirmImport(false)} title="Import this device's data?">
         <p className="text-sm text-content-muted">
           This copies the device&rsquo;s local training data ({anonData?.sessions ?? 0} sessions,{' '}

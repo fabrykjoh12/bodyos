@@ -41,9 +41,10 @@ are included in the app.
 - **Restore**: Settings → Data → "Import data" (validated before anything is replaced;
   the previous data is snapshotted and restorable via "Undo last restore").
 - **Delete local data**: Settings → "Reset all data" erases this device's copy.
-- **Delete cloud data**: currently requires deleting your account in Firebase or
-  contacting the maintainer; an in-app full account deletion is planned and tracked in
-  `docs/audit-2026-07-20.md`.
+- **Delete cloud data & account**: Account panel → "Delete account & cloud data" removes
+  the cloud copy of your training data and the account identity itself (a fresh sign-in
+  may be required to confirm). Partial failures are reported honestly — the app never
+  claims deletion succeeded while server data remains.
 
 ## What BodyOS is not
 

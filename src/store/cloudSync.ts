@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { AppData } from '@/types';
 import { loadFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { LocalStorageRepository, profileStorageKey } from './repository';
+import { clearPhotoData } from './photoStore';
 
 // ---------------------------------------------------------------------------
 // Optional cloud sync (Firebase Auth + Firestore).
@@ -424,6 +425,98 @@ export async function importDeviceData(): Promise<{ error: string | null }> {
   setMeta({ dirty: true, dirtyAt: Date.now() });
   await pushNow();
   return { error: null };
+}
+
+// --- deletion ----------------------------------------------------------------
+
+/** Remove every local trace of an account's namespace on this device. */
+export async function localAccountCleanup(uid: string): Promise<void> {
+  new LocalStorageRepository(profileStorageKey(uid)).clear();
+  try {
+    localStorage.removeItem(metaKey(uid));
+  } catch {
+    /* ignore */
+  }
+  await clearPhotoData(uid);
+}
+
+/** Delete the account's cloud training data (Firestore doc). Local + auth stay. */
+export async function deleteCloudData(): Promise<{ error: string | null }> {
+  const fb = await loadFirebase();
+  if (!fb || !authUserId) return { error: 'Sign in first.' };
+  try {
+    const { doc, deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(doc(fb.db, COLLECTION, authUserId));
+    setMeta({ dirty: false, dirtyAt: null, remoteUpdatedAt: null });
+    return { error: null };
+  } catch (e) {
+    return { error: messageOf(e) };
+  }
+}
+
+export type DeleteAccountResult =
+  | { ok: true }
+  | {
+      ok: false;
+      error: string;
+      /** Firebase demands a fresh sign-in for destructive auth operations. */
+      requiresRecentLogin: boolean;
+      /** True when cloud data was already removed before the failure —
+       *  reported honestly so the UI never claims full deletion. */
+      cloudDeleted: boolean;
+    };
+
+/**
+ * Delete the ENTIRE account: cloud training data, the Firebase identity, and
+ * this device's local namespace for that account. Retryable and idempotent —
+ * a partial failure reports exactly what was and wasn't removed.
+ */
+export async function deleteAccount(password?: string): Promise<DeleteAccountResult> {
+  const fb = await loadFirebase();
+  if (!fb || !authUserId || !fb.auth.currentUser) {
+    return { ok: false, error: 'Sign in first.', requiresRecentLogin: false, cloudDeleted: false };
+  }
+  const uid = authUserId;
+
+  // 1. Cloud data first, while auth is definitely valid.
+  const cloud = await deleteCloudData();
+  if (cloud.error) {
+    return { ok: false, error: cloud.error, requiresRecentLogin: false, cloudDeleted: false };
+  }
+
+  // 2. The auth identity — may demand recent login; reauthenticate and retry.
+  try {
+    const { deleteUser } = await import('firebase/auth');
+    try {
+      await deleteUser(fb.auth.currentUser);
+    } catch (e) {
+      if (codeOf(e) !== 'auth/requires-recent-login') throw e;
+      const user = fb.auth.currentUser;
+      const email = user.email;
+      const usesPassword = user.providerData.some((p) => p.providerId === 'password');
+      if (usesPassword && email && password) {
+        const { EmailAuthProvider, reauthenticateWithCredential } = await import('firebase/auth');
+        await reauthenticateWithCredential(user, EmailAuthProvider.credential(email, password));
+      } else if (!usesPassword) {
+        const { GoogleAuthProvider, reauthenticateWithPopup } = await import('firebase/auth');
+        await reauthenticateWithPopup(user, new GoogleAuthProvider());
+      } else {
+        return {
+          ok: false,
+          error: 'Confirm your password to finish deleting the account.',
+          requiresRecentLogin: true,
+          cloudDeleted: true,
+        };
+      }
+      await deleteUser(user);
+    }
+  } catch (e) {
+    return { ok: false, error: authMessage(e), requiresRecentLogin: false, cloudDeleted: true };
+  }
+
+  // 3. Local traces. The auth listener then switches to the anonymous profile.
+  await localAccountCleanup(uid);
+  return { ok: true };
 }
 
 // --- startup ---------------------------------------------------------------
