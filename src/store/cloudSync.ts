@@ -160,6 +160,13 @@ export function decidePull(args: {
 
 let authUserId: string | null = null;
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
+let retryTimer: ReturnType<typeof setTimeout> | null = null;
+let retryAttempt = 0;
+
+/** Exponential backoff for failed pushes: 2s, 4s, 8s … capped at 5 min. */
+export function backoffMs(attempt: number): number {
+  return Math.min(2000 * 2 ** Math.max(0, attempt), 5 * 60 * 1000);
+}
 
 export function isSignedIn(): boolean {
   return authUserId !== null;
@@ -220,9 +227,24 @@ async function pushNow(): Promise<void> {
     const snap = await getDoc(ref);
     const remoteUpdatedAt = tsToIso(snap.get('updatedAt')) ?? new Date().toISOString();
     setMeta({ dirty: false, dirtyAt: null, remoteUpdatedAt, userId: authUserId });
+    retryAttempt = 0;
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
     setSync({ status: 'synced', lastSyncedAt: Date.now(), error: null });
   } catch (e) {
+    // A failed push must never strand data: the dirty flag is persisted (so a
+    // restart re-pushes) and we retry automatically with backoff. The device
+    // copy is always safe — this only delays the cloud mirror.
     setSync({ status: 'error', error: messageOf(e) });
+    if (retryTimer) clearTimeout(retryTimer);
+    const delay = backoffMs(retryAttempt);
+    retryAttempt += 1;
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      if (authUserId && meta.dirty) void pushNow();
+    }, delay);
   }
 }
 
@@ -386,6 +408,11 @@ export async function signOut(): Promise<void> {
     clearTimeout(pushTimer);
     pushTimer = null;
   }
+  if (retryTimer) {
+    clearTimeout(retryTimer);
+    retryTimer = null;
+  }
+  retryAttempt = 0;
   if (meta.dirty && authUserId) {
     await pushNow();
   }
@@ -551,6 +578,11 @@ export function initCloudSync(): void {
           clearTimeout(pushTimer);
           pushTimer = null;
         }
+        if (retryTimer) {
+          clearTimeout(retryTimer);
+          retryTimer = null;
+        }
+        retryAttempt = 0;
         meta = { userId: null, dirty: false, dirtyAt: null, remoteUpdatedAt: null };
         // Unload the account's data immediately; show the device's own
         // anonymous profile instead.

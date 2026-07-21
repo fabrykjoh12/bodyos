@@ -365,7 +365,9 @@ function syncLabel(status: SyncStatus, lastSyncedAt: number | null, error: strin
     case 'syncing':
       return 'Syncing…';
     case 'error':
-      return error ? `Sync error: ${error}` : 'Sync error';
+      return error
+        ? `Sync delayed (retrying automatically) — your data is safe on this device. ${error}`
+        : 'Sync delayed — retrying automatically. Your data is safe on this device.';
     case 'synced':
       return lastSyncedAt
         ? `Synced at ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`

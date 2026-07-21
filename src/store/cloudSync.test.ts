@@ -86,3 +86,13 @@ describe('cloudSync reconciliation', () => {
     });
   });
 });
+
+describe('backoffMs', () => {
+  it('doubles from 2s and caps at 5 minutes', async () => {
+    const { backoffMs } = await import('./cloudSync');
+    expect(backoffMs(0)).toBe(2000);
+    expect(backoffMs(1)).toBe(4000);
+    expect(backoffMs(3)).toBe(16000);
+    expect(backoffMs(20)).toBe(5 * 60 * 1000);
+  });
+});
