@@ -21,14 +21,19 @@ import type { Firestore } from 'firebase/firestore';
 //     console: Project settings → General → Your apps → SDK setup → Config. <<<
 // ---------------------------------------------------------------------------
 
+// Environment overrides (VITE_FIREBASE_*) let a DEVELOPMENT project be used
+// without touching source — put them in `.env.development.local` (git-ignored)
+// so experiments and tests never touch production data. Production keeps the
+// committed defaults.
+const env = import.meta.env;
 const FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyC8HWzbReeW_vRoYKt8qNlJAy4WnYyI-PY',
-  authDomain: 'bodyos-e7372.firebaseapp.com',
-  projectId: 'bodyos-e7372',
-  appId: '1:596389728089:web:3e6fad1ff9d6645c470648',
+  apiKey: env.VITE_FIREBASE_API_KEY ?? 'AIzaSyC8HWzbReeW_vRoYKt8qNlJAy4WnYyI-PY',
+  authDomain: env.VITE_FIREBASE_AUTH_DOMAIN ?? 'bodyos-e7372.firebaseapp.com',
+  projectId: env.VITE_FIREBASE_PROJECT_ID ?? 'bodyos-e7372',
+  appId: env.VITE_FIREBASE_APP_ID ?? '1:596389728089:web:3e6fad1ff9d6645c470648',
   // storageBucket / messagingSenderId are optional for auth + Firestore.
-  storageBucket: 'bodyos-e7372.firebasestorage.app',
-  messagingSenderId: '596389728089',
+  storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET ?? 'bodyos-e7372.firebasestorage.app',
+  messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID ?? '596389728089',
 };
 
 export const isFirebaseConfigured =
