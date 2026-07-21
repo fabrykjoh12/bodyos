@@ -89,7 +89,10 @@ export function prefillFor(
 ): { weightKg: number; targetReps: number; previous?: PreviousPerformance } {
   const last = findLastExerciseSession(exerciseId, sessions);
   if (!last) {
-    return { weightKg: startWeightKg ?? 20, targetReps: repRange[1] };
+    // No history and no template weight → 0, an explicit "set your starting
+    // weight" state in Gym Mode. Never invent a load that could read as a
+    // recommendation.
+    return { weightKg: startWeightKg ?? 0, targetReps: repRange[1] };
   }
   const previous = toPreviousPerformance(last.session, last.exercise);
   const workingSets = last.exercise.sets

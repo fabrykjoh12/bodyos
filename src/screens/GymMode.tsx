@@ -135,7 +135,9 @@ export function GymMode() {
   }, [addQuery]);
 
   const objective = activeSet
-    ? `Complete ${formatRepRange(exercise.repRange)} reps at ${formatWeight(activeSet.weightKg, unit)}`
+    ? activeSet.weightKg <= 0
+      ? 'First time here — set your starting weight below'
+      : `Complete ${formatRepRange(exercise.repRange)} reps at ${formatWeight(activeSet.weightKg, unit)}`
     : 'All sets logged';
 
   // The number to beat: last time's performance on this same working set.

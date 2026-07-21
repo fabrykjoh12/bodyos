@@ -102,7 +102,7 @@ export function ActiveSetCard({
         <NumericStepper label="Reps" value={reps} step={1} onChange={onRepsChange} />
       </div>
 
-      {equipment === 'barbell' && <PlateBar weightKg={weightKg} unit={unit} />}
+      {equipment === 'barbell' && weightKg > 0 && <PlateBar weightKg={weightKg} unit={unit} />}
 
       {showRir && !isWarmup && (
         <div className="inset-panel mt-3 px-4 py-3">

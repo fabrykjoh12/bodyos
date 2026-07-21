@@ -88,14 +88,14 @@ export function Onboarding() {
 
       <div key={step} className="flex-1">
         {step === 0 && (
-          <Section title="What's your main goal?" subtitle="We tune progression and defaults around it.">
+          <Section title="What's your main goal?" subtitle="Saved to your profile — training programs will build on it.">
             {GOALS.map((g) => (
               <Option key={g.value} active={goal === g.value} onClick={() => setGoal(g.value)} title={g.label} desc={g.desc} />
             ))}
           </Section>
         )}
         {step === 1 && (
-          <Section title="How experienced are you?" subtitle="This sets sensible starting loads and increments.">
+          <Section title="How experienced are you?" subtitle="Saved to your profile — you set your own starting weights in the gym.">
             {LEVELS.map((l) => (
               <Option key={l.value} active={experience === l.value} onClick={() => setExperience(l.value)} title={l.label} />
             ))}
