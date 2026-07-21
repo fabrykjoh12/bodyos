@@ -14,3 +14,6 @@ vite.config.d.ts
 
 # local screenshot output from scripts/shot.mjs
 shots*/
+
+# E2E failure artifacts
+e2e-failure-*.png

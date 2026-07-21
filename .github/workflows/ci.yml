@@ -27,6 +27,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
       - run: git diff --check
       # Advisory for now — promote to blocking once the existing advisories
       # are triaged (see docs/audit-2026-07-20.md).

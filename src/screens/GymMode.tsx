@@ -430,6 +430,17 @@ export function GymMode() {
           Discarding removes this session entirely.
         </p>
         <div className="mt-5 flex flex-col gap-2">
+          {session.exercises.some((e) => e.sets.some((st) => st.completed && !st.isWarmup)) && (
+            <Button
+              fullWidth
+              onClick={() => {
+                setConfirmQuit(false);
+                handleFinish();
+              }}
+            >
+              Finish now &amp; save what I did
+            </Button>
+          )}
           <Button variant="secondary" fullWidth onClick={() => { setConfirmQuit(false); navigate('/'); }}>
             Keep it & leave
           </Button>
