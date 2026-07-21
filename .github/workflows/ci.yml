@@ -1,0 +1,33 @@
+# Validation for every pull request and every push to main.
+# Deployment lives separately in deploy.yml and is NOT a substitute for this.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+      - run: git diff --check
+      # Advisory for now — promote to blocking once the existing advisories
+      # are triaged (see docs/audit-2026-07-20.md).
+      - run: npm audit --audit-level=moderate || true
