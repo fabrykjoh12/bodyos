@@ -231,9 +231,11 @@ export const useStore = create<StoreState>((set, get) => ({
     if (!active) return null;
 
     // Attach a progression recommendation to every exercise that has work.
+    // Exercises with NO completed working sets are recorded as SKIPPED — a
+    // partial workout is an honest partial, never falsely "all done".
     const exercises = active.exercises.map((ex) => {
       const hasWork = ex.sets.some((s) => s.completed && !s.isWarmup);
-      if (!hasWork) return ex;
+      if (!hasWork) return { ...ex, status: 'skipped' as const, recommendation: undefined };
       const topWeight = Math.max(
         0,
         ...ex.sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.weightKg),

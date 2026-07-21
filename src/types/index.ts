@@ -147,7 +147,7 @@ export interface SetEntry {
   notes?: string;
 }
 
-export type ExerciseSessionStatus = 'pending' | 'active' | 'done';
+export type ExerciseSessionStatus = 'pending' | 'active' | 'done' | 'skipped';
 
 export interface ExerciseSession {
   id: ID;

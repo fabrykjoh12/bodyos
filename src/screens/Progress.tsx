@@ -95,7 +95,7 @@ export function Progress() {
               </button>
             ))}
           </div>
-          {selected && trend && (
+          {selected && trend && series.length >= 3 ? (
             <div className="card mt-1 p-6">
               <div className="mb-3 flex items-center justify-between">
                 <div>
@@ -108,7 +108,18 @@ export function Progress() {
               </div>
               <StrengthChart data={series.map((p) => ({ label: p.label, value: p.value }))} unit={unit} />
             </div>
-          )}
+          ) : selected && trend ? (
+            // A "trend" from one or two points is noise — say so instead of
+            // rendering fake precision.
+            <div className="card mt-1 p-6 text-center">
+              <p className="tnum text-stat text-content">{formatWeight(trend.latest, unit)}</p>
+              <p className="mt-2 text-sm text-content-muted">
+                Not enough data for a trend yet — log{' '}
+                <span className="tnum font-semibold text-content">{3 - series.length}</span> more session
+                {3 - series.length > 1 ? 's' : ''} with this lift.
+              </p>
+            </div>
+          ) : null}
         </section>
       )}
 

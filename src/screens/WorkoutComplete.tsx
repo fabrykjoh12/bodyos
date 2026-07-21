@@ -38,6 +38,8 @@ export function WorkoutComplete() {
   }
 
   const stats = summaryStats(session);
+  const skipped = session.exercises.filter((e) => !e.sets.some((s) => s.completed && !s.isWarmup));
+  const performed = session.exercises.length - skipped.length;
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-[var(--gutter)] pb-8 safe-top">
@@ -53,7 +55,11 @@ export function WorkoutComplete() {
             {session.isDeload ? 'Deload done' : 'Session complete'}
           </h1>
           <p className="mt-2 text-sm text-content-muted">
-            {session.isDeload ? 'Lighter on purpose — recover well.' : 'Every set is in the book.'}
+            {session.isDeload
+              ? 'Lighter on purpose — recover well.'
+              : skipped.length > 0
+                ? `${performed} of ${session.exercises.length} exercises done — logged exactly as performed.`
+                : 'Every set is in the book.'}
           </p>
         </div>
 
@@ -92,6 +98,12 @@ export function WorkoutComplete() {
               ))}
             </ul>
           </section>
+        )}
+
+        {skipped.length > 0 && (
+          <p className="text-center text-xs text-content-faint">
+            Skipped: {skipped.map((e) => exerciseName(e.exerciseId)).join(' · ')}
+          </p>
         )}
 
         <SessionRecap session={session} unit={unit} />
