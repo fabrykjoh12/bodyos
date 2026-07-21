@@ -168,6 +168,19 @@ export function Settings() {
         Reset all data
       </button>
 
+      <p className="pb-2 text-center text-xs text-content-faint">
+        BodyOS <span className="tnum">v{__APP_VERSION__}</span> · build <span className="tnum">{__BUILD_SHA__}</span>
+        {' · '}
+        <a
+          href="https://github.com/fabrykjoh12/bodyos/blob/main/docs/PRIVACY.md"
+          target="_blank"
+          rel="noreferrer"
+          className="underline underline-offset-2 hover:text-content-muted"
+        >
+          Privacy &amp; data
+        </a>
+      </p>
+
       <Sheet open={confirmClear} onClose={() => setConfirmClear(false)} title="Clear training history?">
         <p className="text-sm text-content-muted">
           This removes every logged session, personal record, streak, measurement and photo — including any demo

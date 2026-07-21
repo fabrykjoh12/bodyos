@@ -1,7 +1,29 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { AlertTriangle, Dumbbell } from 'lucide-react';
+import { AlertTriangle, Dumbbell, RefreshCw } from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { useStore } from '@/store/useStore';
+import { useSwUpdate } from '@/lib/swUpdate';
+
+/** Non-blocking "update ready" notice — applying is always user-initiated. */
+function UpdateToast() {
+  const needRefresh = useSwUpdate((s) => s.needRefresh);
+  const apply = useSwUpdate((s) => s.apply);
+  if (!needRefresh) return null;
+  return (
+    <div className="glass pointer-events-auto sticky bottom-[4.75rem] z-30 mb-2 flex items-center gap-3 rounded-2xl px-4 py-3 shadow-float animate-slide-up">
+      <RefreshCw size={16} className="shrink-0 text-accent" />
+      <p className="min-w-0 flex-1 text-xs text-content">
+        A new version of BodyOS is ready.
+      </p>
+      <button
+        onClick={apply}
+        className="shrink-0 rounded-full bg-accent px-3 py-1.5 text-xs font-bold text-ink"
+      >
+        Restart
+      </button>
+    </div>
+  );
+}
 
 /** Urgent, persistent warning while training data exists only in memory. */
 export function StorageFailureBanner() {
@@ -67,6 +89,7 @@ export function AppShell() {
         </button>
       )}
 
+      <UpdateToast />
       {showNav && <BottomNav />}
     </div>
   );

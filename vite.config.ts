@@ -9,8 +9,16 @@ import fs from 'node:fs';
 // so production assets must resolve under that sub-path. Dev stays at root.
 const BASE = '/bodyos/';
 
+const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf8')) as {
+  version: string;
+};
+
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? BASE : '/',
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_SHA__: JSON.stringify((process.env.GITHUB_SHA ?? 'local').slice(0, 7)),
+  },
   plugins: [
     react(),
     // Offline-first PWA: Workbox precaches the app shell + all hashed chunks,
@@ -18,9 +26,12 @@ export default defineConfig(({ command }) => ({
     // The hand-authored public/manifest.webmanifest + icon are kept as-is
     // (manifest: false), so the plugin only adds the service worker + registration.
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': a new version NEVER activates or reloads on its own — the
+      // user applies it from the update toast. An auto-reload mid-workout is
+      // unacceptable, even with state persistence.
+      registerType: 'prompt',
       manifest: false,
-      injectRegister: 'auto',
+      injectRegister: null,
       workbox: {
         // Precache every built asset. Fonts (woff2) and exercise photos (webp)
         // are included so the whole shell is available with no network.
