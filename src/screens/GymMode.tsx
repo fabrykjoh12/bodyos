@@ -65,6 +65,8 @@ export function GymMode() {
   const [editReps, setEditReps] = useState(0);
   const [addOpen, setAddOpen] = useState(false);
   const [addQuery, setAddQuery] = useState('');
+  // Screen-reader announcement for the just-logged set (visually hidden).
+  const [announcement, setAnnouncement] = useState('');
 
   // Auto-dismiss the PR celebration; a new PR replaces the object and restarts.
   useEffect(() => {
@@ -153,6 +155,9 @@ export function GymMode() {
     unlockAudio();
     if (hapticFeedback) haptics.success();
     const loggedIndex = exIndex;
+    if (activeSet) {
+      setAnnouncement(`Set ${activeSet.setNumber} logged — ${formatWeight(activeSet.weightKg, unit)} × ${activeSet.reps}`);
+    }
     logActiveSet();
     // Celebrate an all-time PR the moment it's logged (never on a deload).
     if (session && !session.isDeload) {
@@ -202,6 +207,11 @@ export function GymMode() {
   return (
     <div className="flex min-h-full flex-col bg-base px-[var(--gutter)] pb-4 safe-top">
       <StorageFailureBanner />
+      {/* Assistive announcements: set logged / advanced (PR + rest timer have
+          their own role=status live regions). */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {announcement}
+      </p>
       {/* Header: exercise position + quit, with live session progress */}
       <header className="bleed sticky top-0 z-20 bg-base/85 pt-1 backdrop-blur-md">
         <div className="flex items-center gap-2 py-2">
