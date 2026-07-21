@@ -263,7 +263,11 @@ export function Dashboard() {
             {recentSessions.map((s) => {
               const prCount = personalRecords.filter((p) => p.sessionId === s.id && p.type === 'weight').length;
               return (
-                <div key={s.id} className="flex items-center gap-3 py-3.5">
+                <button
+                  key={s.id}
+                  onClick={() => navigate(`/history/${s.id}`)}
+                  className="flex w-full items-center gap-3 py-3.5 text-left"
+                >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="truncate text-[14.5px] font-bold text-content">{s.name}</span>
@@ -283,7 +287,7 @@ export function Dashboard() {
                     <p className="tnum text-sm font-semibold text-content">{formatVolume(sessionTotalVolume(s), unit)}</p>
                     <p className="tnum text-[11.5px] text-content-faint">{sessionSetCount(s)} sets</p>
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>

@@ -23,6 +23,7 @@ import { generateWarmups, BAR_KG, BAR_LB } from '@/lib/plates';
 import { recommendFromExerciseSession, rirToDifficulty } from '@/lib/progression';
 import { buildActiveSession, countPriorStalls, prefillFor } from '@/lib/history';
 import { detectPersonalRecords } from '@/lib/prstats';
+import { recomputePersonalRecords, recomputeStreakDates } from '@/lib/recompute';
 import { loadOrCreate, repository } from './repository';
 import { clearPhotoData, deletePhotoData, putPhotoData } from './photoStore';
 import { createEmptyData, createSeedData } from '@/data/seed';
@@ -99,6 +100,18 @@ interface StoreState extends AppData {
   /** Wipe logged history (sessions, PRs, streaks, measurements, photos)
    *  while keeping the user, settings, workouts and weekly plan. */
   clearHistory: () => void;
+
+  // --- historical corrections (derived data always recomputed)
+  /** Edit a completed session's set (weight/reps). */
+  updateHistoricalSet: (
+    sessionId: string,
+    setId: string,
+    patch: Partial<Pick<SetEntry, 'weightKg' | 'reps'>>,
+  ) => void;
+  /** Rename a completed session. */
+  renameSession: (sessionId: string, name: string) => void;
+  /** Delete a completed session entirely. */
+  deleteSession: (sessionId: string) => void;
 
   // --- sync
   /** Replace the whole AppData slice (used when cloud sync pulls remote). */
@@ -806,6 +819,57 @@ export const useStore = create<StoreState>((set, get) => ({
       return next;
     });
   },
+
+  updateHistoricalSet: (sessionId, setId, patch) =>
+    set((s) => {
+      const sessions = s.sessions.map((session) => {
+        if (session.id !== sessionId) return session;
+        return {
+          ...session,
+          exercises: session.exercises.map((ex) => ({
+            ...ex,
+            sets: ex.sets.map((st) => (st.id === setId ? { ...st, ...patch } : st)),
+            // The stored recommendation described the ORIGINAL result; after an
+            // edit it may no longer follow from the data, so drop it rather
+            // than display stale advice.
+            recommendation: ex.sets.some((st) => st.id === setId) ? undefined : ex.recommendation,
+          })),
+        };
+      });
+      const next = {
+        ...s,
+        sessions,
+        personalRecords: recomputePersonalRecords(sessions),
+        streakDates: recomputeStreakDates(sessions),
+      };
+      persist(next);
+      return next;
+    }),
+
+  renameSession: (sessionId, name) =>
+    set((s) => {
+      const sessions = s.sessions.map((session) =>
+        session.id === sessionId ? { ...session, name: name.trim() || session.name } : session,
+      );
+      const next = { ...s, sessions };
+      persist(next);
+      return next;
+    }),
+
+  deleteSession: (sessionId) =>
+    set((s) => {
+      const sessions = s.sessions.filter((session) => session.id !== sessionId);
+      const next = {
+        ...s,
+        sessions,
+        personalRecords: recomputePersonalRecords(sessions),
+        streakDates: recomputeStreakDates(sessions),
+        lastCompletedSessionId:
+          s.lastCompletedSessionId === sessionId ? null : s.lastCompletedSessionId,
+      };
+      persist(next);
+      return next;
+    }),
 
   replaceAll: (data) =>
     set((s) => {

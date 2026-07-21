@@ -21,6 +21,7 @@ const ExerciseDetail = lazy(() => import('@/screens/ExerciseDetail').then((m) =>
 const Profile = lazy(() => import('@/screens/Profile').then((m) => ({ default: m.Profile })));
 const Settings = lazy(() => import('@/screens/Settings').then((m) => ({ default: m.Settings })));
 const Account = lazy(() => import('@/screens/Account').then((m) => ({ default: m.Account })));
+const SessionDetail = lazy(() => import('@/screens/SessionDetail').then((m) => ({ default: m.SessionDetail })));
 const Onboarding = lazy(() => import('@/screens/Onboarding').then((m) => ({ default: m.Onboarding })));
 const NotFound = lazy(() => import('@/screens/NotFound').then((m) => ({ default: m.NotFound })));
 
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/progress/photos" element={<ProgressPhotos />} />
           <Route path="/progress/measurements" element={<Measurements />} />
           <Route path="/progress/strength" element={<Navigate to="/progress" replace />} />
+          <Route path="/history/:id" element={<SessionDetail />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/account" element={<Account />} />
           <Route path="/settings" element={<Settings />} />
