@@ -4,7 +4,12 @@ import { Download, Upload } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { AppData } from '@/types';
 import { useStore } from '@/store/useStore';
-import { parseBackup } from '@/store/repository';
+import {
+  parseBackup,
+  savePreRestoreSnapshot,
+  loadPreRestoreSnapshot,
+  clearPreRestoreSnapshot,
+} from '@/store/repository';
 import { CloudSync } from '@/components/account/CloudSync';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
@@ -55,8 +60,20 @@ export function Settings() {
 
   function confirmImport() {
     if (!pendingImport) return;
+    // Safety net: snapshot the current data so a restore can be undone.
+    savePreRestoreSnapshot(exportData());
     replaceAll(pendingImport);
     setPendingImport(null);
+    navigate('/', { replace: true });
+  }
+
+  const preRestore = loadPreRestoreSnapshot();
+
+  function undoRestore() {
+    const snap = loadPreRestoreSnapshot();
+    if (!snap) return;
+    replaceAll(snap.data);
+    clearPreRestoreSnapshot();
     navigate('/', { replace: true });
   }
 
@@ -129,6 +146,16 @@ export function Settings() {
           className="hidden"
           onChange={onFilePicked}
         />
+        {preRestore && (
+          <button onClick={undoRestore} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left">
+            <div className="min-w-0">
+              <p className="text-sm text-content">Undo last restore</p>
+              <p className="text-xs text-content-faint">
+                Bring back the data from before the last import ({new Date(preRestore.savedAt).toLocaleString()})
+              </p>
+            </div>
+          </button>
+        )}
         <button onClick={() => setConfirmClear(true)} className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left">
           <div className="min-w-0">
             <p className="text-sm text-content">Clear training history</p>
