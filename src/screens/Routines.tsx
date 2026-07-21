@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarDays, Check } from 'lucide-react';
+import { CalendarDays, Check, Wrench } from 'lucide-react';
 import type { Routine } from '@/data/routines';
 import { ROUTINES } from '@/data/routines';
 import { useStore } from '@/store/useStore';
+import { countAdaptations } from '@/lib/equipment';
 import { weekdayName } from '@/lib/date';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +14,7 @@ import { Sheet } from '@/components/ui/Sheet';
 export function Routines() {
   const navigate = useNavigate();
   const applyRoutine = useStore((s) => s.applyRoutine);
+  const equipment = useStore((s) => s.user.equipment);
   const [pending, setPending] = useState<Routine | null>(null);
 
   const apply = (r: Routine) => {
@@ -48,6 +50,31 @@ export function Routines() {
               <CalendarDays size={13} />
               {r.schedule.map((sc) => weekdayName(sc.weekday)).join(' · ')}
             </div>
+
+            {(() => {
+              const adapt = countAdaptations(r.days, equipment);
+              if (adapt.substitutions === 0 && adapt.dropped === 0) return null;
+              return (
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-content-muted">
+                  <Wrench size={13} className="shrink-0 text-caution" />
+                  <span>
+                    Adapted to your equipment:{' '}
+                    {adapt.substitutions > 0 && (
+                      <>
+                        <span className="tnum font-semibold text-content">{adapt.substitutions}</span> exercise
+                        {adapt.substitutions > 1 ? 's' : ''} swapped
+                      </>
+                    )}
+                    {adapt.substitutions > 0 && adapt.dropped > 0 && ' · '}
+                    {adapt.dropped > 0 && (
+                      <>
+                        <span className="tnum font-semibold text-content">{adapt.dropped}</span> removed
+                      </>
+                    )}
+                  </span>
+                </div>
+              );
+            })()}
 
             <Button variant="secondary" fullWidth className="mt-4" onClick={() => setPending(r)}>
               Use this routine

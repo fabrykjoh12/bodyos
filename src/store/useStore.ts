@@ -15,6 +15,7 @@ import type {
 import { requireExercise } from '@/data/exercises';
 import type { Routine } from '@/data/routines';
 import { uid } from '@/lib/id';
+import { adaptDay } from '@/lib/equipment';
 import { now } from '@/lib/date';
 import { round1 } from '@/lib/volume';
 import { lbToKg } from '@/lib/format';
@@ -650,11 +651,14 @@ export const useStore = create<StoreState>((set, get) => ({
       const newTemplates: WorkoutTemplate[] = routine.days.map((d) => {
         const templateId = uid('tpl');
         dayTemplateIds.push(templateId);
-        const exercises = d.exercises.map((exId, i) => {
-          const ex = requireExercise(exId);
+        // Adapt each day to the user's equipment: compatible substitutions
+        // instead of movements they can't perform.
+        const adapted = adaptDay(d.exercises, s.user.equipment);
+        const exercises = adapted.exercises.map((res, i) => {
+          const ex = requireExercise(res.id);
           return {
             id: uid('we'),
-            exerciseId: exId,
+            exerciseId: res.id,
             order: i,
             repRange: ex.defaultRepRange,
             restSec: ex.kind === 'compound' ? 150 : 90,
