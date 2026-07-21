@@ -40,6 +40,9 @@ interface StoreState extends AppData {
   // ephemeral
   undo: UndoState | null;
   lastCompletedSessionId: string | null;
+  /** True when the last local save failed — training data exists ONLY in
+   *  memory. Surfaced as a persistent warning; never silently swallowed. */
+  storageFailing: boolean;
 
   // --- session lifecycle
   startSession: (templateId: string, deload?: boolean) => void;
@@ -132,7 +135,14 @@ function extractAppData(state: StoreState): AppData {
 /** Persist the AppData slice after every mutation (local + optional cloud). */
 function persist(state: StoreState): void {
   const data: AppData = extractAppData(state);
-  repository.save(data);
+  const saved = repository.save(data);
+  // Report save health honestly — the UI shows a persistent warning while
+  // training data exists only in memory. (setTimeout: persist() runs inside
+  // set() reducers; flag state must not be dropped by the surrounding merge.)
+  const prev = useStore.getState().storageFailing;
+  if (prev !== !saved) {
+    setTimeout(() => useStore.setState({ storageFailing: !saved }), 0);
+  }
   // Fire-and-forget cloud sync; a no-op unless the user is signed in.
   notifyLocalWrite(data);
 }
@@ -172,6 +182,7 @@ export const useStore = create<StoreState>((set, get) => ({
   ...initial,
   undo: null,
   lastCompletedSessionId: null,
+  storageFailing: false,
 
   startSession: (templateId, deload = false) => {
     const template = get().templates.find((t) => t.id === templateId);
@@ -825,11 +836,32 @@ export const useStore = create<StoreState>((set, get) => ({
     }),
 }));
 
+/**
+ * Switch the active local profile (anonymous ⇄ authenticated account).
+ * Loads the target namespace's data — creating an empty account if none —
+ * and replaces the in-memory state wholesale. The previous profile's data
+ * stays untouched in its own namespace; nothing is merged, uploaded, or
+ * carried across the boundary.
+ */
+export function switchActiveProfile(uid: string | null): void {
+  if (repository.profile === uid) return;
+  repository.setProfile(uid);
+  const data = loadOrCreate(repository);
+  useStore.setState((s) => ({
+    ...s,
+    ...data,
+    activeSession: data.activeSession ?? null,
+    undo: null,
+    lastCompletedSessionId: null,
+  }));
+}
+
 // Wire cloud sync to the store: it reads the current AppData and applies pulled
 // remote state, without either module importing the other's internals.
 registerSync({
   getLocalData: () => extractAppData(useStore.getState()),
   applyRemote: (data) => useStore.getState().replaceAll(data),
+  switchProfile: switchActiveProfile,
 });
 initCloudSync();
 

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { AppData } from '@/types';
 import { loadFirebase, isFirebaseConfigured } from '@/lib/firebase';
+import { LocalStorageRepository, profileStorageKey } from './repository';
 
 // ---------------------------------------------------------------------------
 // Optional cloud sync (Firebase Auth + Firestore).
@@ -10,7 +11,15 @@ import { loadFirebase, isFirebaseConfigured } from '@/lib/firebase';
 // single per-user Firestore document (`bodyos_app_state/{uid}`) — pushed on
 // local writes (debounced) and pulled/reconciled on sign-in. Conflicts are
 // resolved last-write-wins at whole-blob granularity: simple and predictable
-// for a single-user app; no field-level merge.
+// for a single-user app; no field-level merge. (Known limitation: entity-
+// level sync is the planned replacement — see docs/audit.)
+//
+// ACCOUNT ISOLATION: every account has its own local namespace
+// (`profileStorageKey(uid)`), plus one anonymous local-only profile. Auth
+// changes switch the namespace BEFORE any reconciliation, so data never
+// crosses accounts. Signing out flushes any pending write, then unloads the
+// account and shows the anonymous profile. The only path across the boundary
+// is the explicit, user-initiated `importDeviceData()`.
 //
 // Two fields are deliberately NOT synced and stay device-local:
 //   • photos    — private by design ("never uploaded without explicit action")
@@ -18,7 +27,7 @@ import { loadFirebase, isFirebaseConfigured } from '@/lib/firebase';
 // ---------------------------------------------------------------------------
 
 const COLLECTION = 'bodyos_app_state';
-const META_KEY = 'bodyos.sync.meta.v1';
+const META_KEY_BASE = 'bodyos.sync.meta.v1';
 const PUSH_DEBOUNCE_MS = 1500;
 
 type SyncedData = Omit<AppData, 'photos' | 'restTimer'>;
@@ -59,22 +68,29 @@ interface SyncMeta {
   remoteUpdatedAt: string | null;
 }
 
-function loadMeta(): SyncMeta {
+/** Sync bookkeeping is stored PER ACCOUNT so metadata can never be
+ *  associated with the wrong Firebase UID after an account switch. */
+function metaKey(uid: string): string {
+  return `${META_KEY_BASE}.${uid}`;
+}
+
+function loadMeta(uid: string): SyncMeta {
   try {
-    const raw = localStorage.getItem(META_KEY);
+    const raw = localStorage.getItem(metaKey(uid));
     if (raw) return JSON.parse(raw) as SyncMeta;
   } catch {
     /* ignore */
   }
-  return { userId: null, dirty: false, dirtyAt: null, remoteUpdatedAt: null };
+  return { userId: uid, dirty: false, dirtyAt: null, remoteUpdatedAt: null };
 }
 
-let meta: SyncMeta = loadMeta();
+let meta: SyncMeta = { userId: null, dirty: false, dirtyAt: null, remoteUpdatedAt: null };
 
 function setMeta(patch: Partial<SyncMeta>): void {
   meta = { ...meta, ...patch };
+  if (!meta.userId) return;
   try {
-    localStorage.setItem(META_KEY, JSON.stringify(meta));
+    localStorage.setItem(metaKey(meta.userId), JSON.stringify(meta));
   } catch {
     /* ignore */
   }
@@ -84,14 +100,18 @@ function setMeta(patch: Partial<SyncMeta>): void {
 
 let getLocalData: (() => AppData) | null = null;
 let applyRemote: ((data: AppData) => void) | null = null;
+let switchProfile: ((uid: string | null) => void) | null = null;
 let applyingRemote = false;
 
 export function registerSync(hooks: {
   getLocalData: () => AppData;
   applyRemote: (data: AppData) => void;
+  /** Swap the local storage namespace to the given account (null = anonymous). */
+  switchProfile: (uid: string | null) => void;
 }): void {
   getLocalData = hooks.getLocalData;
   applyRemote = hooks.applyRemote;
+  switchProfile = hooks.switchProfile;
 }
 
 // --- pure helpers (unit-tested) --------------------------------------------
@@ -360,9 +380,13 @@ export async function resendConfirmation(_email: string): Promise<{ error: strin
 export async function signOut(): Promise<void> {
   const fb = await loadFirebase();
   if (!fb) return;
+  // Flush — never drop — a pending debounced write before leaving the account.
   if (pushTimer) {
     clearTimeout(pushTimer);
     pushTimer = null;
+  }
+  if (meta.dirty && authUserId) {
+    await pushNow();
   }
   const { signOut: fbSignOut } = await import('firebase/auth');
   await fbSignOut(fb.auth);
@@ -371,6 +395,35 @@ export async function signOut(): Promise<void> {
 /** Manual "Sync now" for the UI. */
 export async function syncNow(): Promise<void> {
   await pullAndReconcile();
+}
+
+// --- explicit device-data import (never automatic) --------------------------
+
+/** What the device's anonymous local profile contains — lets the UI offer an
+ *  explicit import without ever reading that data into the signed-in state. */
+export function anonymousDataSummary(): { sessions: number; templates: number } | null {
+  const anon = new LocalStorageRepository(profileStorageKey(null)).load();
+  if (!anon) return null;
+  const sessions = anon.sessions.length;
+  const templates = anon.templates.length;
+  if (sessions === 0 && templates === 0) return null;
+  return { sessions, templates };
+}
+
+/**
+ * User-initiated ONLY: copy this device's anonymous local data into the
+ * currently signed-in account, replacing the account's current data, then
+ * push. This is the single sanctioned path across the profile boundary —
+ * nothing ever crosses it automatically.
+ */
+export async function importDeviceData(): Promise<{ error: string | null }> {
+  if (!authUserId || !applyRemote) return { error: 'Sign in first.' };
+  const anon = new LocalStorageRepository(profileStorageKey(null)).load();
+  if (!anon) return { error: 'No local data found on this device.' };
+  applyRemote(anon);
+  setMeta({ dirty: true, dirtyAt: Date.now() });
+  await pushNow();
+  return { error: null };
 }
 
 // --- startup ---------------------------------------------------------------
@@ -391,12 +444,12 @@ export function initCloudSync(): void {
     onAuthStateChanged(fb.auth, (user) => {
       if (user) {
         authUserId = user.uid;
+        // ORDER MATTERS: switch the local namespace to this account BEFORE
+        // any sync so the previous profile's data (anonymous or another
+        // account) can never be read, displayed, merged, or uploaded here.
+        switchProfile?.(user.uid);
+        meta = loadMeta(user.uid);
         setSync({ status: 'syncing', email: user.email ?? null, error: null });
-        // A different account than we last synced on this device → reset the
-        // bookkeeping so reconciliation adopts the account's remote data.
-        if (meta.userId !== user.uid) {
-          setMeta({ userId: user.uid, dirty: false, dirtyAt: null, remoteUpdatedAt: null });
-        }
         // Firebase fires this on init and on sign-in; reconcile either way.
         void pullAndReconcile();
       } else {
@@ -405,6 +458,10 @@ export function initCloudSync(): void {
           clearTimeout(pushTimer);
           pushTimer = null;
         }
+        meta = { userId: null, dirty: false, dirtyAt: null, remoteUpdatedAt: null };
+        // Unload the account's data immediately; show the device's own
+        // anonymous profile instead.
+        switchProfile?.(null);
         setSync({ status: 'signedOut', email: null });
       }
     });

@@ -1,7 +1,25 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Dumbbell } from 'lucide-react';
+import { AlertTriangle, Dumbbell } from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { useStore } from '@/store/useStore';
+
+/** Urgent, persistent warning while training data exists only in memory. */
+export function StorageFailureBanner() {
+  const failing = useStore((s) => s.storageFailing);
+  if (!failing) return null;
+  return (
+    <div
+      role="alert"
+      className="sticky top-0 z-40 -mx-[var(--gutter)] flex items-start gap-2.5 border-b border-danger/40 bg-danger/15 px-[var(--gutter)] py-2.5 backdrop-blur-md"
+    >
+      <AlertTriangle size={16} className="mt-0.5 shrink-0 text-danger" />
+      <p className="text-xs leading-snug text-content">
+        <span className="font-bold text-danger">Storage is failing.</span> Your training is currently only in
+        memory and will be lost if you close the app. Free up space or export a backup from Settings now.
+      </p>
+    </div>
+  );
+}
 
 // Routes that show the bottom tab bar.
 const NAV_ROUTES = ['/', '/workouts', '/exercises', '/progress', '/profile', '/settings'];
@@ -24,6 +42,7 @@ export function AppShell() {
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-base px-[var(--gutter)] safe-top">
+      <StorageFailureBanner />
       <main className="flex flex-1 flex-col pb-4">
         {/* Keyed by route so each screen gets a subtle enter transition. */}
         <div key={location.pathname} className="flex flex-1 flex-col animate-page-in">

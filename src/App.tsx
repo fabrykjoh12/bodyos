@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { useStore } from '@/store/useStore';
+import { useSyncStore } from '@/store/cloudSync';
 import { Dashboard } from '@/screens/Dashboard';
 import { GymMode } from '@/screens/GymMode';
 
@@ -33,9 +34,13 @@ function Loading() {
 
 export default function App() {
   const onboarded = useStore((s) => s.user.onboarded);
+  const syncStatus = useSyncStore((s) => s.status);
   const location = useLocation();
 
-  if (!onboarded && location.pathname !== '/onboarding') {
+  // Fresh profiles onboard first. While an account switch is still pulling its
+  // remote data ('syncing'), hold off — an existing account's data arrives in
+  // a moment and must not be bounced through onboarding.
+  if (!onboarded && syncStatus !== 'syncing' && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 

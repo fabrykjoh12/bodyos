@@ -11,11 +11,21 @@ import { APP_DATA_VERSION, createEmptyData } from '@/data/seed';
 
 export interface Repository {
   load(): AppData | null;
-  save(data: AppData): void;
+  /** Returns true only when the write durably succeeded. */
+  save(data: AppData): boolean;
   clear(): void;
 }
 
 const STORAGE_KEY = 'bodyos.appdata.v1';
+
+/**
+ * Storage key for a profile's data. Each authenticated account gets its own
+ * namespace so one account's data can never appear under, merge into, or be
+ * uploaded from another account. `null` = the anonymous local-only profile.
+ */
+export function profileStorageKey(uid: string | null): string {
+  return uid ? `${STORAGE_KEY}.u.${uid}` : STORAGE_KEY;
+}
 
 export class LocalStorageRepository implements Repository {
   constructor(private readonly key: string = STORAGE_KEY) {}
@@ -31,11 +41,16 @@ export class LocalStorageRepository implements Repository {
     }
   }
 
-  save(data: AppData): void {
+  save(data: AppData): boolean {
     try {
-      safeStorage()?.setItem(this.key, JSON.stringify(data));
+      const storage = safeStorage();
+      if (!storage) return false;
+      storage.setItem(this.key, JSON.stringify(data));
+      return true;
     } catch {
-      /* quota or privacy mode — data stays in memory for this session */
+      // Quota exhaustion or privacy mode — the caller must surface this;
+      // the data currently exists only in memory.
+      return false;
     }
   }
 
@@ -48,14 +63,44 @@ export class LocalStorageRepository implements Repository {
   }
 }
 
+/**
+ * The app-wide repository: delegates to the active profile's namespace.
+ * `setProfile` is called on auth changes (see cloudSync) BEFORE any
+ * reconciliation, so reads and writes can never cross account boundaries.
+ */
+export class ProfileRepository implements Repository {
+  private target: Repository = new LocalStorageRepository(profileStorageKey(null));
+  private uid: string | null = null;
+
+  setProfile(uid: string | null): void {
+    this.uid = uid;
+    this.target = new LocalStorageRepository(profileStorageKey(uid));
+  }
+
+  get profile(): string | null {
+    return this.uid;
+  }
+
+  load(): AppData | null {
+    return this.target.load();
+  }
+  save(data: AppData): boolean {
+    return this.target.save(data);
+  }
+  clear(): void {
+    this.target.clear();
+  }
+}
+
 /** In-memory implementation for tests and SSR. */
 export class MemoryRepository implements Repository {
   private data: AppData | null = null;
   load(): AppData | null {
     return this.data;
   }
-  save(data: AppData): void {
+  save(data: AppData): boolean {
     this.data = data;
+    return true;
   }
   clear(): void {
     this.data = null;
@@ -129,7 +174,7 @@ export function parseBackup(text: string): ParseBackupResult {
   return { ok: true, data: normalizeAppData(d as AppData) };
 }
 
-export const repository: Repository = new LocalStorageRepository();
+export const repository = new ProfileRepository();
 
 /**
  * Load persisted data, or create a truly EMPTY account for a fresh install.

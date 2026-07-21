@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Eye, EyeOff, MailCheck } from 'lucide-react';
 import {
@@ -10,9 +10,12 @@ import {
   resendConfirmation,
   resetPassword,
   signInWithGoogle,
+  anonymousDataSummary,
+  importDeviceData,
   type SyncStatus,
 } from '@/store/cloudSync';
 import { Button } from '@/components/ui/Button';
+import { Sheet } from '@/components/ui/Sheet';
 
 const inputClass =
   'w-full rounded-lg border border-line bg-surface-3 px-3 py-2.5 text-sm text-content placeholder:text-content-faint focus:border-accent focus:outline-none';
@@ -38,10 +41,15 @@ export function CloudSync({ heading = true }: { heading?: boolean }) {
   // Set once a sign-up needs email confirmation — switches to the pending panel.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [resendNote, setResendNote] = useState<string | null>(null);
-
-  if (status === 'unconfigured') return null;
+  const [confirmImport, setConfirmImport] = useState(false);
+  const [importNote, setImportNote] = useState<string | null>(null);
 
   const signedIn = email !== null;
+  // What the device's anonymous profile holds — offered as an EXPLICIT import
+  // only; account switches never merge data automatically.
+  const anonData = useMemo(() => (signedIn ? anonymousDataSummary() : null), [signedIn]);
+
+  if (status === 'unconfigured') return null;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -116,6 +124,40 @@ export function CloudSync({ heading = true }: { heading?: boolean }) {
         </Button>
         <Button variant="ghost" onClick={() => void signOut()}>Sign out</Button>
       </div>
+      {anonData && (
+        <div className="mt-1 rounded-xl border border-line bg-surface-2 p-3">
+          <p className="text-xs text-content-muted">
+            This device also has local training data not linked to any account
+            (<span className="tnum">{anonData.sessions}</span> sessions,{' '}
+            <span className="tnum">{anonData.templates}</span> workouts).
+          </p>
+          {importNote && <p className="mt-1.5 text-xs text-content-faint">{importNote}</p>}
+          <Button size="sm" variant="secondary" className="mt-2" onClick={() => setConfirmImport(true)}>
+            Import it into this account
+          </Button>
+        </div>
+      )}
+      <Sheet open={confirmImport} onClose={() => setConfirmImport(false)} title="Import this device's data?">
+        <p className="text-sm text-content-muted">
+          This copies the device&rsquo;s local training data ({anonData?.sessions ?? 0} sessions,{' '}
+          {anonData?.templates ?? 0} workouts) into <span className="font-semibold text-content">{email}</span>,{' '}
+          <span className="font-semibold text-content">replacing</span> what the account currently holds, and syncs it
+          to the cloud. The device copy is kept.
+        </p>
+        <div className="mt-5 flex flex-col gap-2">
+          <Button
+            fullWidth
+            onClick={async () => {
+              setConfirmImport(false);
+              const { error } = await importDeviceData();
+              setImportNote(error ?? 'Imported and synced.');
+            }}
+          >
+            Import &amp; replace
+          </Button>
+          <Button variant="ghost" fullWidth onClick={() => setConfirmImport(false)}>Cancel</Button>
+        </div>
+      </Sheet>
     </div>
   ) : pendingEmail ? (
     <div className="flex flex-col gap-3">

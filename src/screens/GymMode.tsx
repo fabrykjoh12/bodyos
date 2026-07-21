@@ -10,6 +10,7 @@ import { liveSetPr } from '@/lib/prstats';
 import { haptics } from '@/lib/haptics';
 import { unlockAudio } from '@/lib/sound';
 import { useWakeLock } from '@/hooks/useWakeLock';
+import { StorageFailureBanner } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { Sheet } from '@/components/ui/Sheet';
@@ -200,6 +201,7 @@ export function GymMode() {
 
   return (
     <div className="flex min-h-full flex-col bg-base px-[var(--gutter)] pb-4 safe-top">
+      <StorageFailureBanner />
       {/* Header: exercise position + quit, with live session progress */}
       <header className="bleed sticky top-0 z-20 bg-base/85 pt-1 backdrop-blur-md">
         <div className="flex items-center gap-2 py-2">
