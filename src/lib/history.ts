@@ -69,7 +69,12 @@ export function countPriorStalls(
     const working = ex.sets.filter((set) => set.completed && !set.isWarmup);
     if (working.length === 0) continue;
     const top = Math.max(...working.map((w) => w.weightKg));
-    const hitTop = working.some((w) => w.weightKg >= top - 1e-9 && w.reps >= repTop);
+    // Progression requires EVERY top-weight set to break the top of the range
+    // (recommendProgression's allHitTop) — the stall ledger must judge by the
+    // same rule, or a lifter with one good set never progresses AND never
+    // accrues stalls, stuck in limbo forever.
+    const topSets = working.filter((w) => w.weightKg >= top - 1e-9);
+    const hitTop = topSets.every((w) => w.reps >= repTop);
     if (Math.abs(top - currentTopWeight) < 1e-9 && !hitTop) {
       stalls += 1;
     } else {
@@ -105,7 +110,14 @@ export function prefillFor(
     incrementKg,
     kind: ex.kind,
     workingSets,
-    priorStalls: countPriorStalls(exerciseId, previous.topWeightKg, repRange[1], sessions),
+    // The judged session's own result must not also count as a PRIOR stall —
+    // exclude it, or one missed session triggers the second-miss backoff.
+    priorStalls: countPriorStalls(
+      exerciseId,
+      previous.topWeightKg,
+      repRange[1],
+      sessions.filter((s) => s.id !== last.session.id),
+    ),
   });
   return {
     weightKg: rec.nextWeightKg > 0 ? rec.nextWeightKg : previous.topWeightKg,
