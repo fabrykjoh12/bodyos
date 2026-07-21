@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// BodyOS Firestore security rules — the AUTHORITATIVE copy, version-controlled.
+// Deploy with: npx firebase-tools deploy --only firestore:rules
+// (These rules must match what is active in the Firebase console; the console
+// is never the source of truth.)
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // One app-state document per user. Owner-only, authenticated access.
+    match /bodyos_app_state/{userId} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        // The document must look like a BodyOS state payload...
+        && request.resource.data.keys().hasAll(['data', 'appVersion', 'updatedAt'])
+        // ...with a sane schema version...
+        && request.resource.data.appVersion is number
+        && request.resource.data.appVersion >= 1
+        && request.resource.data.appVersion < 100
+        // ...and a server-set timestamp (no client clock spoofing).
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // Everything else is denied by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
