@@ -109,6 +109,7 @@ export function prefillFor(
     repRange,
     incrementKg,
     kind: ex.kind,
+    metric: ex.metric,
     workingSets,
     // The judged session's own result must not also count as a PRIOR stall —
     // exclude it, or one missed session triggers the second-miss backoff.

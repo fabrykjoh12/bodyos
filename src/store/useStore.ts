@@ -241,11 +241,16 @@ export const useStore = create<StoreState>((set, get) => ({
         ...ex.sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.weightKg),
       );
       const priorStalls = countPriorStalls(ex.exerciseId, topWeight, ex.repRange[1], state.sessions);
-      const kind = requireExercise(ex.exerciseId).kind;
+      const meta = requireExercise(ex.exerciseId);
       return {
         ...ex,
         status: 'done' as const,
-        recommendation: recommendFromExerciseSession({ ...ex, status: 'done' }, kind, priorStalls),
+        recommendation: recommendFromExerciseSession(
+          { ...ex, status: 'done' },
+          meta.kind,
+          priorStalls,
+          meta.metric ?? 'load-reps',
+        ),
       };
     });
 

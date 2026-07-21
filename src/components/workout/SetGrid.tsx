@@ -1,6 +1,7 @@
 import { Check, Pencil, TrendingUp } from 'lucide-react';
 import type { ExerciseSession, SetEntry, Unit } from '@/types';
 import { formatWeight } from '@/lib/format';
+import { metricOf, repsUnit } from '@/lib/metrics';
 
 interface SetGridProps {
   exercise: ExerciseSession;
@@ -23,6 +24,7 @@ function beatsPrevious(set: SetEntry, prev?: { weightKg: number; reps: number })
 
 /** Compact ledger of every set: completed, active, and upcoming. */
 export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false, onEditSet }: SetGridProps) {
+  const metric = metricOf(exercise.exerciseId);
   let workingIdx = -1;
   return (
     <ol className="flex flex-col gap-1.5" aria-label="Sets">
@@ -69,13 +71,19 @@ export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false
                 <TrendingUp size={11} strokeWidth={2.5} /> Beat
               </span>
             )}
-            <span className="tnum ml-auto font-semibold text-content">
-              {formatWeight(set.weightKg, unit, false)}
-              <span className="ml-1 text-xs font-normal text-content-faint">{unit}</span>
-            </span>
-            <span className="tnum w-14 text-right font-semibold">
+            {metric === 'duration' ? (
+              <span className="tnum ml-auto font-semibold text-content" aria-hidden />
+            ) : (
+              <span className="tnum ml-auto font-semibold text-content">
+                {metric === 'bodyweight-reps' && set.weightKg === 0 ? 'BW' : formatWeight(set.weightKg, unit, false)}
+                {!(metric === 'bodyweight-reps' && set.weightKg === 0) && (
+                  <span className="ml-1 text-xs font-normal text-content-faint">{unit}</span>
+                )}
+              </span>
+            )}
+            <span className={`tnum ${metric === 'duration' ? 'ml-auto' : 'w-14'} text-right font-semibold`}>
               {set.reps}
-              <span className="ml-1 text-xs font-normal text-content-faint">reps</span>
+              <span className="ml-1 text-xs font-normal text-content-faint">{repsUnit(metric)}</span>
             </span>
             {editable && <Pencil size={13} className="ml-1.5 shrink-0 text-content-faint" aria-hidden />}
           </>

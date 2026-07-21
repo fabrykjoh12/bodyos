@@ -1,6 +1,7 @@
 import type {
   Difficulty,
   ExerciseKind,
+  ExerciseMetric,
   ExerciseSession,
   ProgressionAction,
   ProgressionRecommendation,
@@ -40,6 +41,8 @@ export interface ProgressionInput {
    * reduce / deload path. 0 means "no history of stalling".
    */
   priorStalls?: number;
+  /** Measurement mode — duration exercises are judged in seconds, never kg. */
+  metric?: ExerciseMetric;
 }
 
 /** Snap a weight to the nearest increment on a grid anchored at zero. */
@@ -115,6 +118,43 @@ export function recommendProgression(
       'No sets logged',
       'Nothing was logged for this exercise — keep the same plan next session.',
       false,
+    );
+  }
+
+  // --- Duration exercises: judged purely in seconds; load never mentioned ---
+  if (input.metric === 'duration') {
+    const minSec = Math.min(...completed.map((s) => s.reps));
+    const maxSec = Math.max(...completed.map((s) => s.reps));
+    if (minSec >= hi) {
+      return build(
+        input,
+        'add-reps',
+        0,
+        input.repRange,
+        'Target completed',
+        `Every hold reached ${hi} s. Aim for ${hi + 5} s+ next time, or move to a harder variation.`,
+        true,
+      );
+    }
+    if (maxSec < lo) {
+      return build(
+        input,
+        'maintain',
+        0,
+        input.repRange,
+        'Build the hold',
+        `Work back up to ${lo} s holds before extending further.`,
+        false,
+      );
+    }
+    return build(
+      input,
+      'add-reps',
+      0,
+      input.repRange,
+      'On track',
+      `You're holding ${minSec}–${maxSec} s. Extend each hold toward ${hi} s.`,
+      true,
     );
   }
 
@@ -223,6 +263,7 @@ export function recommendFromExerciseSession(
   session: ExerciseSession,
   kind: ExerciseKind,
   priorStalls = 0,
+  metric: ExerciseMetric = 'load-reps',
 ): ProgressionRecommendation {
   const workingSets: WorkingSetResult[] = session.sets
     .filter((s) => s.completed && !s.isWarmup)
@@ -244,6 +285,7 @@ export function recommendFromExerciseSession(
     repRange: session.repRange,
     incrementKg: session.incrementKg,
     kind,
+    metric,
     workingSets: withOverride,
     priorStalls,
   });

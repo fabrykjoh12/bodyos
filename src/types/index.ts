@@ -75,6 +75,14 @@ export type PhotoPose =
 
 // --- Exercise library ------------------------------------------------------
 
+/**
+ * How an exercise is measured. 'load-reps' (default): external load × reps.
+ * 'bodyweight-reps': reps of bodyweight work; `weightKg` means ADDED load
+ * (0 = plain bodyweight, e.g. weighted pull-ups). 'duration': `reps` holds
+ * SECONDS; load is not tracked (planks, holds).
+ */
+export type ExerciseMetric = 'load-reps' | 'bodyweight-reps' | 'duration';
+
 export interface Exercise {
   id: ID;
   name: string;
@@ -83,6 +91,8 @@ export interface Exercise {
   equipment: Equipment;
   pattern: MovementPattern;
   kind: ExerciseKind;
+  /** Measurement mode; omitted = 'load-reps'. */
+  metric?: ExerciseMetric;
   /** Default double-progression rep window, e.g. [8, 12]. */
   defaultRepRange: [number, number];
   /** Smallest sensible load change for this exercise, in kg. */

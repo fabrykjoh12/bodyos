@@ -1,8 +1,9 @@
 import { Repeat2 } from 'lucide-react';
-import type { Equipment, Unit } from '@/types';
+import type { Equipment, ExerciseMetric, Unit } from '@/types';
 import { NumericStepper } from '@/components/ui/NumericStepper';
 import { PlateBar } from '@/components/workout/PlateBar';
 import { formatRepRange, formatWeightValue } from '@/lib/format';
+import { describeSet, repsLabel, repsStep, repsUnit, weightLabel } from '@/lib/metrics';
 
 interface ActiveSetCardProps {
   exerciseName: string;
@@ -14,6 +15,8 @@ interface ActiveSetCardProps {
   unit: Unit;
   incrementKg: number;
   equipment: Equipment;
+  /** Measurement mode — controls which steppers show and their labels. */
+  metric?: ExerciseMetric;
   isWarmup: boolean;
   objective: string;
   /** Last time's performance on this same working set — the number to beat. */
@@ -41,6 +44,7 @@ export function ActiveSetCard({
   unit,
   incrementKg,
   equipment,
+  metric = 'load-reps',
   isWarmup,
   objective,
   beat,
@@ -65,7 +69,7 @@ export function ActiveSetCard({
             {isWarmup ? (
               <span className="font-semibold text-caution">Warmup</span>
             ) : (
-              <span className="tnum">{formatRepRange(repRange)} reps</span>
+              <span className="tnum">{formatRepRange(repRange)} {repsUnit(metric)}</span>
             )}
           </p>
         </div>
@@ -85,21 +89,29 @@ export function ActiveSetCard({
         <p className="mt-1 text-sm font-medium text-content">{objective}</p>
         {beat && !isWarmup && (
           <p className="tnum mt-1.5 text-xs font-semibold text-ice">
-            Beat last time · {formatWeightValue(beat.weightKg, unit)} {unit} × {beat.reps}
+            Beat last time · {describeSet(metric, beat.weightKg, beat.reps, unit)}
           </p>
         )}
       </div>
 
       <div className="mt-7 flex flex-col gap-5">
+        {weightLabel(metric) !== null && (
+          <NumericStepper
+            label={weightLabel(metric)!}
+            value={weightKg}
+            unit={unit}
+            step={weightStep}
+            onChange={onWeightChange}
+            format={(v) => formatWeightValue(v, unit)}
+          />
+        )}
         <NumericStepper
-          label="Weight"
-          value={weightKg}
-          unit={unit}
-          step={weightStep}
-          onChange={onWeightChange}
-          format={(v) => formatWeightValue(v, unit)}
+          label={repsLabel(metric)}
+          value={reps}
+          unit={metric === 'duration' ? 's' : undefined}
+          step={repsStep(metric)}
+          onChange={onRepsChange}
         />
-        <NumericStepper label="Reps" value={reps} step={1} onChange={onRepsChange} />
       </div>
 
       {equipment === 'barbell' && weightKg > 0 && <PlateBar weightKg={weightKg} unit={unit} />}

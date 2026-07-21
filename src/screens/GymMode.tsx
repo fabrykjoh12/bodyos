@@ -134,10 +134,15 @@ export function GymMode() {
     return pool.slice(0, 40);
   }, [addQuery]);
 
+  const metric = meta.metric ?? 'load-reps';
   const objective = activeSet
-    ? activeSet.weightKg <= 0
-      ? 'First time here — set your starting weight below'
-      : `Complete ${formatRepRange(exercise.repRange)} reps at ${formatWeight(activeSet.weightKg, unit)}`
+    ? metric === 'duration'
+      ? `Hold for ${formatRepRange(exercise.repRange)} s`
+      : metric === 'bodyweight-reps'
+        ? `Complete ${formatRepRange(exercise.repRange)} reps${activeSet.weightKg > 0 ? ` with +${formatWeight(activeSet.weightKg, unit)}` : ''}`
+        : activeSet.weightKg <= 0
+          ? 'First time here — set your starting weight below'
+          : `Complete ${formatRepRange(exercise.repRange)} reps at ${formatWeight(activeSet.weightKg, unit)}`
     : 'All sets logged';
 
   // The number to beat: last time's performance on this same working set.
@@ -158,7 +163,11 @@ export function GymMode() {
     if (hapticFeedback) haptics.success();
     const loggedIndex = exIndex;
     if (activeSet) {
-      setAnnouncement(`Set ${activeSet.setNumber} logged — ${formatWeight(activeSet.weightKg, unit)} × ${activeSet.reps}`);
+      setAnnouncement(
+        metric === 'duration'
+          ? `Set ${activeSet.setNumber} logged — ${activeSet.reps} seconds`
+          : `Set ${activeSet.setNumber} logged — ${formatWeight(activeSet.weightKg, unit)} × ${activeSet.reps}`,
+      );
     }
     logActiveSet();
     // Celebrate an all-time PR the moment it's logged (never on a deload).
@@ -308,6 +317,7 @@ export function GymMode() {
             unit={unit}
             incrementKg={exercise.incrementKg}
             equipment={meta.equipment}
+            metric={metric}
             isWarmup={activeSet.isWarmup}
             objective={objective}
             beat={beat}
