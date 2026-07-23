@@ -6,19 +6,78 @@ rules_version = '2';
 // is never the source of truth.)
 service cloud.firestore {
   match /databases/{database}/documents {
-    // One app-state document per user. Owner-only, authenticated access.
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Every normalized entity doc looks like { payload, rev, updatedAt }.
+    // rev is a client-maintained per-entity counter (conflict comparison);
+    // updatedAt must be the server clock, never a client-supplied value.
+    function isValidEntity() {
+      return request.resource.data.keys().hasAll(['payload', 'rev', 'updatedAt'])
+        && request.resource.data.rev is int
+        && request.resource.data.rev >= 0
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // --- LEGACY whole-blob doc -------------------------------------------
+    // Superseded by the normalized collections below (audit finding #8).
+    // Kept read/write for the one-time migration + a rollback window —
+    // see docs/superpowers/specs/2026-07-20-normalized-sync-design.md.
     match /bodyos_app_state/{userId} {
-      allow read, delete: if request.auth != null && request.auth.uid == userId;
-      allow create, update: if request.auth != null
-        && request.auth.uid == userId
-        // The document must look like a BodyOS state payload...
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId)
         && request.resource.data.keys().hasAll(['data', 'appVersion', 'updatedAt'])
-        // ...with a sane schema version...
         && request.resource.data.appVersion is number
         && request.resource.data.appVersion >= 1
         && request.resource.data.appVersion < 100
-        // ...and a server-set timestamp (no client clock spoofing).
         && request.resource.data.updatedAt == request.time;
+    }
+
+    // --- Normalized per-entity collections --------------------------------
+    match /users/{userId}/templates/{id} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidEntity();
+    }
+    match /users/{userId}/sessions/{id} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidEntity();
+    }
+    match /users/{userId}/measurements/{id} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidEntity();
+    }
+    match /users/{userId}/meta/{id} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidEntity();
+    }
+    match /users/{userId}/active/{id} {
+      allow read, delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidEntity();
+    }
+
+    // Deletion tombstones: write-once (create only — no update, so a
+    // tombstone can never be edited or un-deleted from a client).
+    match /users/{userId}/tombstones/{id} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasAll(['entity', 'entityId', 'deletedAt'])
+        && request.resource.data.deletedAt == request.time;
+    }
+
+    // Conflict shelf: the loser of a rev conflict is written here instead of
+    // being silently discarded. Users can read and dismiss (delete) entries;
+    // nothing else may modify one after it's created.
+    match /users/{userId}/conflicts/{id} {
+      allow read, delete: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.keys().hasAll(['entity', 'entityId', 'payload', 'shelvedAt'])
+        && request.resource.data.shelvedAt == request.time;
+    }
+
+    // --- Migration marker --------------------------------------------------
+    match /users/{userId}/migration/{id} {
+      allow read, write: if isOwner(userId);
     }
 
     // Everything else is denied by default.
