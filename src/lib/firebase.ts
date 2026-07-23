@@ -47,18 +47,33 @@ export interface FirebaseClient {
 
 let clientPromise: Promise<FirebaseClient | null> | null = null;
 
-/** Lazily import + memoize the Firebase client. Resolves null if unconfigured. */
+/** Lazily import + memoize the Firebase client. Resolves null if unconfigured.
+ *  `__FIREBASE_EMULATOR__` is set ONLY by vitest.emulator.config.ts (`define`)
+ *  — never true in a real build — and points the client at the local
+ *  Firestore/Auth emulators instead of the real project, so emulator tests
+ *  can exercise the real sync engine code paths (pushMutation/drainQueue)
+ *  without touching production data. */
 export function loadFirebase(): Promise<FirebaseClient | null> {
   if (!isFirebaseConfigured) return Promise.resolve(null);
   if (!clientPromise) {
     clientPromise = (async () => {
-      const [{ initializeApp }, { getAuth }, { getFirestore }] = await Promise.all([
+      const [
+        { initializeApp },
+        { getAuth, connectAuthEmulator },
+        { getFirestore, connectFirestoreEmulator },
+      ] = await Promise.all([
         import('firebase/app'),
         import('firebase/auth'),
         import('firebase/firestore'),
       ]);
       const app = initializeApp(FIREBASE_CONFIG);
-      return { app, auth: getAuth(app), db: getFirestore(app) };
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      if (typeof __FIREBASE_EMULATOR__ !== 'undefined' && __FIREBASE_EMULATOR__ === 'true') {
+        connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+        connectFirestoreEmulator(db, '127.0.0.1', 8080);
+      }
+      return { app, auth, db };
     })();
   }
   return clientPromise;

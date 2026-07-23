@@ -2,9 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   clearQueue,
   enqueueMutations,
+  getEntityRev,
   listQueuedMutations,
   markAttempt,
   removeMutation,
+  setEntityRev,
 } from './syncQueue';
 
 describe('syncQueue (offline mutation queue)', () => {
@@ -82,5 +84,41 @@ describe('syncQueue (offline mutation queue)', () => {
     const queued = await listQueuedMutations(null);
     expect(queued).toHaveLength(1);
     expect(queued[0]!.op).toBe('delete');
+  });
+
+  it('starts a fresh entity at revision 0 — enqueueing a local edit never touches it', async () => {
+    expect(await getEntityRev(null, 'template', 't1')).toBe(0);
+    await enqueueMutations(null, [
+      { entity: 'template', entityId: 't1', op: 'upsert', payload: {} },
+    ]);
+    // Only a confirmed round-trip with Firestore (syncEngine) advances this —
+    // NOT the act of queueing a local change. Otherwise every entity's very
+    // first push would look like a conflict (remote 0 vs. an already-bumped
+    // local baseline of 1) instead of the fresh write it actually is.
+    expect(await getEntityRev(null, 'template', 't1')).toBe(0);
+  });
+
+  it('tracks revisions independently per entity', async () => {
+    await setEntityRev(null, 'template', 't1', 3);
+    await setEntityRev(null, 'template', 't2', 7);
+    expect(await getEntityRev(null, 'template', 't1')).toBe(3);
+    expect(await getEntityRev(null, 'template', 't2')).toBe(7);
+  });
+
+  it('lets the sync engine (or migration) seed/advance a revision baseline', async () => {
+    await setEntityRev(null, 'session', 's1', 5);
+    expect(await getEntityRev(null, 'session', 's1')).toBe(5);
+    await setEntityRev(null, 'session', 's1', 6);
+    expect(await getEntityRev(null, 'session', 's1')).toBe(6);
+  });
+
+  it('clearQueue also resets revision counters', async () => {
+    await enqueueMutations(null, [
+      { entity: 'template', entityId: 't1', op: 'upsert', payload: {} },
+    ]);
+    await setEntityRev(null, 'template', 't1', 4);
+    await clearQueue(null);
+    expect(await getEntityRev(null, 'template', 't1')).toBe(0);
+    expect(await listQueuedMutations(null)).toHaveLength(0);
   });
 });
