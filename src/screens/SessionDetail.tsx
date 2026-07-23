@@ -58,7 +58,11 @@ export function SessionDetail() {
     <div className="flex flex-col gap-6 pb-4">
       <ScreenHeader
         title={session.name}
-        subtitle={date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+        subtitle={date.toLocaleDateString(undefined, {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+        })}
         back
         right={
           <button
@@ -92,7 +96,9 @@ export function SessionDetail() {
           if (done.length === 0) return null;
           return (
             <section key={ex.id} className="card p-4">
-              <p className="mb-2 text-[15px] font-bold text-content">{exerciseName(ex.exerciseId)}</p>
+              <p className="mb-2 text-[15px] font-bold text-content">
+                {exerciseName(ex.exerciseId)}
+              </p>
               <ol className="flex flex-col gap-1.5">
                 {done.map((st) => (
                   <li key={st.id}>
@@ -157,7 +163,11 @@ export function SessionDetail() {
           <Button
             fullWidth
             onClick={() => {
-              if (editing) updateHistoricalSet(session.id, editing.id, { weightKg: editWeight, reps: editReps });
+              if (editing)
+                updateHistoricalSet(session.id, editing.id, {
+                  weightKg: editWeight,
+                  reps: editReps,
+                });
               setEditing(null);
             }}
           >
@@ -185,7 +195,11 @@ export function SessionDetail() {
         </div>
       </Sheet>
 
-      <Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete this session?">
+      <Sheet
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        title="Delete this session?"
+      >
         <p className="text-sm text-content-muted">
           The session is removed from your log, and records and streaks are recalculated without it.
           This cannot be undone.
@@ -201,7 +215,9 @@ export function SessionDetail() {
           >
             Delete session
           </Button>
-          <Button variant="ghost" fullWidth onClick={() => setConfirmDelete(false)}>Cancel</Button>
+          <Button variant="ghost" fullWidth onClick={() => setConfirmDelete(false)}>
+            Cancel
+          </Button>
         </div>
       </Sheet>
     </div>
@@ -211,7 +227,9 @@ export function SessionDetail() {
 function Cell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex-1 px-3 py-4 text-center">
-      <p className="tnum text-[20px] font-semibold leading-none tracking-[-0.02em] text-content">{value}</p>
+      <p className="tnum text-[20px] font-semibold leading-none tracking-[-0.02em] text-content">
+        {value}
+      </p>
       <p className="label-tiny mt-2">{label}</p>
     </div>
   );

@@ -7,7 +7,10 @@ const browser = await chromium.launch({ executablePath: process.env.BODYOS_CHROM
 const sizes = [180, 192, 512];
 
 for (const size of sizes) {
-  const page = await browser.newPage({ viewport: { width: size, height: size }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({
+    viewport: { width: size, height: size },
+    deviceScaleFactor: 1,
+  });
   await page.setContent(
     `<style>*{margin:0}body{background:transparent}svg{display:block;width:${size}px;height:${size}px}</style>${svg}`,
   );

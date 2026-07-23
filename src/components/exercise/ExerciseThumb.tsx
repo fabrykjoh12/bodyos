@@ -35,7 +35,12 @@ interface ExerciseThumbProps {
  * equipment glyph. Uniform across the whole library — no photo dependency.
  * (When curated photos exist, prefer them here.)
  */
-export function ExerciseThumb({ id, muscle, size = 44, rounded = 'rounded-xl' }: ExerciseThumbProps) {
+export function ExerciseThumb({
+  id,
+  muscle,
+  size = 44,
+  rounded = 'rounded-xl',
+}: ExerciseThumbProps) {
   const tint = MUSCLE_TINT[muscle] ?? '#CDFB45';
   const equipment = getExercise(id)?.equipment ?? 'dumbbell';
   const [photoFailed, setPhotoFailed] = useState(false);
@@ -66,7 +71,11 @@ export function ExerciseThumb({ id, muscle, size = 44, rounded = 'rounded-xl' }:
       aria-hidden
     >
       <div className="absolute inset-0 flex items-center justify-center">
-        <ExerciseGlyph equipment={equipment} size={Math.round(size * 0.46)} style={{ color: tint }} />
+        <ExerciseGlyph
+          equipment={equipment}
+          size={Math.round(size * 0.46)}
+          style={{ color: tint }}
+        />
       </div>
     </div>
   );

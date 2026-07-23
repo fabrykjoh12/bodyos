@@ -22,7 +22,12 @@ export function PrCelebration({
   weight: boolean;
   e1rm: boolean;
 }) {
-  const label = weight && e1rm ? 'Heaviest set & best est. 1RM' : weight ? 'New heaviest set' : 'New best est. 1RM';
+  const label =
+    weight && e1rm
+      ? 'Heaviest set & best est. 1RM'
+      : weight
+        ? 'New heaviest set'
+        : 'New best est. 1RM';
   return (
     <div
       role="status"
@@ -36,7 +41,10 @@ export function PrCelebration({
       <div className="min-w-0">
         <p className="label-tiny text-accent">New personal record</p>
         <p className="truncate text-sm font-bold text-content">
-          {exerciseName} · <span className="tnum">{formatWeight(weightKg, unit)} × {reps}</span>
+          {exerciseName} ·{' '}
+          <span className="tnum">
+            {formatWeight(weightKg, unit)} × {reps}
+          </span>
         </p>
         <p className="text-xs text-content-muted">{label}</p>
       </div>

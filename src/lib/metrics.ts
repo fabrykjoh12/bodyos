@@ -39,7 +39,9 @@ export function describeSet(
 ): string {
   if (metric === 'duration') return `${reps} s`;
   if (metric === 'bodyweight-reps') {
-    return weightKg > 0 ? `BW +${formatWeightValue(weightKg, unit)} ${unit} × ${reps}` : `BW × ${reps}`;
+    return weightKg > 0
+      ? `BW +${formatWeightValue(weightKg, unit)} ${unit} × ${reps}`
+      : `BW × ${reps}`;
   }
   return `${formatWeightValue(weightKg, unit)} ${unit} × ${reps}`;
 }

@@ -80,12 +80,31 @@ export function GymMode() {
 
   const exIndex = session?.currentExerciseIndex ?? 0;
   const exercise = session?.exercises[exIndex];
+  const meta = exercise ? requireExercise(exercise.exerciseId) : null;
   const activeSetIndex = useMemo(
     () => exercise?.sets.findIndex((s) => !s.completed) ?? -1,
     [exercise],
   );
+  // These must stay above the early return below — every hook in this component
+  // has to run on every render, or React throws when the guard's result flips.
+  const swapOptions = useMemo(() => {
+    if (!meta) return [];
+    const ids = meta.substitutions.length
+      ? meta.substitutions
+      : EXERCISES.filter((e) => e.primaryMuscle === meta.primaryMuscle && e.id !== meta.id)
+          .map((e) => e.id)
+          .slice(0, 6);
+    return ids.map((id) => requireExercise(id));
+  }, [meta]);
+  const addResults = useMemo(() => {
+    const q = addQuery.trim().toLowerCase();
+    const pool = q
+      ? EXERCISES.filter((e) => e.name.toLowerCase().includes(q) || e.primaryMuscle.includes(q))
+      : EXERCISES;
+    return pool.slice(0, 40);
+  }, [addQuery]);
 
-  if (!session || session.id !== id || !exercise) {
+  if (!session || session.id !== id || !exercise || !meta) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center">
         <p className="text-content-muted">This workout is no longer active.</p>
@@ -94,7 +113,6 @@ export function GymMode() {
     );
   }
 
-  const meta = requireExercise(exercise.exerciseId);
   const activeSet = activeSetIndex >= 0 ? exercise.sets[activeSetIndex] : null;
   const exerciseDone = activeSetIndex < 0;
   const isLastExercise = exIndex === session.exercises.length - 1;
@@ -117,22 +135,6 @@ export function GymMode() {
     : [];
 
   const canSwap = !exercise.sets.some((s) => s.completed);
-  const swapOptions = useMemo(() => {
-    const ids = meta.substitutions.length
-      ? meta.substitutions
-      : EXERCISES.filter((e) => e.primaryMuscle === meta.primaryMuscle && e.id !== meta.id)
-          .map((e) => e.id)
-          .slice(0, 6);
-    return ids.map((id) => requireExercise(id));
-  }, [meta]);
-
-  const addResults = useMemo(() => {
-    const q = addQuery.trim().toLowerCase();
-    const pool = q
-      ? EXERCISES.filter((e) => e.name.toLowerCase().includes(q) || e.primaryMuscle.includes(q))
-      : EXERCISES;
-    return pool.slice(0, 40);
-  }, [addQuery]);
 
   const metric = meta.metric ?? 'load-reps';
   const objective = activeSet
@@ -249,7 +251,10 @@ export function GymMode() {
         <div className="h-[3px] w-full bg-surface-2">
           <div
             className="h-full rounded-r-full bg-accent transition-[width] duration-500 ease-spring"
-            style={{ width: `${sessionProgress * 100}%`, boxShadow: '0 0 12px rgba(205,251,69,0.5)' }}
+            style={{
+              width: `${sessionProgress * 100}%`,
+              boxShadow: '0 0 12px rgba(205,251,69,0.5)',
+            }}
           />
         </div>
       </header>
@@ -348,7 +353,8 @@ export function GymMode() {
 
         {exerciseNotes[exercise.exerciseId] && (
           <p className="rounded-xl border border-line bg-surface px-3.5 py-2 text-sm text-content-muted">
-            <span className="font-semibold text-accent">Note</span> · {exerciseNotes[exercise.exerciseId]}
+            <span className="font-semibold text-accent">Note</span> ·{' '}
+            {exerciseNotes[exercise.exerciseId]}
           </p>
         )}
 
@@ -385,7 +391,13 @@ export function GymMode() {
               </button>
             </div>
           </div>
-          <SetGrid exercise={exercise} unit={unit} activeSetIndex={activeSetIndex} highlightBeats={!session.isDeload} onEditSet={openEdit} />
+          <SetGrid
+            exercise={exercise}
+            unit={unit}
+            activeSetIndex={activeSetIndex}
+            highlightBeats={!session.isDeload}
+            onEditSet={openEdit}
+          />
         </div>
 
         <ExerciseHistory exercise={exercise} unit={unit} />
@@ -451,7 +463,14 @@ export function GymMode() {
               Finish now &amp; save what I did
             </Button>
           )}
-          <Button variant="secondary" fullWidth onClick={() => { setConfirmQuit(false); navigate('/'); }}>
+          <Button
+            variant="secondary"
+            fullWidth
+            onClick={() => {
+              setConfirmQuit(false);
+              navigate('/');
+            }}
+          >
             Keep it & leave
           </Button>
           <Button
@@ -480,14 +499,23 @@ export function GymMode() {
           <NumericStepper label="Reps" value={editReps} step={1} onChange={setEditReps} />
         </div>
         <div className="mt-5 flex flex-col gap-2">
-          <Button fullWidth onClick={saveEdit}>Save changes</Button>
+          <Button fullWidth onClick={saveEdit}>
+            Save changes
+          </Button>
           <Button variant="ghost" fullWidth onClick={removeEdit}>
             <span className="text-danger">Remove this set</span>
           </Button>
         </div>
       </Sheet>
 
-      <Sheet open={addOpen} onClose={() => { setAddOpen(false); setAddQuery(''); }} title="Add exercise">
+      <Sheet
+        open={addOpen}
+        onClose={() => {
+          setAddOpen(false);
+          setAddQuery('');
+        }}
+        title="Add exercise"
+      >
         <input
           type="text"
           autoFocus
@@ -508,7 +536,9 @@ export function GymMode() {
             </button>
           ))}
           {addResults.length === 0 && (
-            <p className="px-1 py-4 text-center text-sm text-content-faint">No exercises match “{addQuery}”.</p>
+            <p className="px-1 py-4 text-center text-sm text-content-faint">
+              No exercises match “{addQuery}”.
+            </p>
           )}
         </div>
       </Sheet>

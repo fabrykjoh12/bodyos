@@ -8,7 +8,12 @@ interface BeforeAfterSliderProps {
 }
 
 /** Draggable before/after comparison slider. */
-export function BeforeAfterSlider({ before, after, beforeLabel, afterLabel }: BeforeAfterSliderProps) {
+export function BeforeAfterSlider({
+  before,
+  after,
+  beforeLabel,
+  afterLabel,
+}: BeforeAfterSliderProps) {
   const [pos, setPos] = useState(50);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -26,9 +31,20 @@ export function BeforeAfterSlider({ before, after, beforeLabel, afterLabel }: Be
       onPointerMove={(e) => e.buttons === 1 && updateFromClientX(e.clientX)}
       onPointerDown={(e) => updateFromClientX(e.clientX)}
     >
-      <img src={after} alt="After" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+      <img
+        src={after}
+        alt="After"
+        className="absolute inset-0 h-full w-full object-cover"
+        draggable={false}
+      />
       <div className="absolute inset-0 overflow-hidden" style={{ width: `${pos}%` }}>
-        <img src={before} alt="Before" className="absolute inset-0 h-full w-full max-w-none object-cover" style={{ width: ref.current?.clientWidth }} draggable={false} />
+        <img
+          src={before}
+          alt="Before"
+          className="absolute inset-0 h-full w-full max-w-none object-cover"
+          style={{ width: ref.current?.clientWidth }}
+          draggable={false}
+        />
       </div>
 
       {beforeLabel && (
@@ -42,7 +58,11 @@ export function BeforeAfterSlider({ before, after, beforeLabel, afterLabel }: Be
         </span>
       )}
 
-      <div className="absolute inset-y-0 w-0.5 bg-white/80" style={{ left: `${pos}%` }} aria-hidden />
+      <div
+        className="absolute inset-y-0 w-0.5 bg-white/80"
+        style={{ left: `${pos}%` }}
+        aria-hidden
+      />
       <input
         type="range"
         min={0}

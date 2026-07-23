@@ -46,13 +46,17 @@ const e1rmPr = (value: number): PersonalRecord => ({
 
 describe('liveSetPr', () => {
   it('flags a new all-time heaviest set', () => {
-    const sets = [set({ id: 's1', weightKg: 105, reps: 3, completedAt: '2026-07-17T10:00:00.000Z' })];
+    const sets = [
+      set({ id: 's1', weightKg: 105, reps: 3, completedAt: '2026-07-17T10:00:00.000Z' }),
+    ];
     const pr = liveSetPr(ex(sets), [weightPr(100), e1rmPr(200)]);
     expect(pr?.weight).toBe(true);
   });
 
   it('does not flag a set below prior bests', () => {
-    const sets = [set({ id: 's1', weightKg: 90, reps: 5, completedAt: '2026-07-17T10:00:00.000Z' })];
+    const sets = [
+      set({ id: 's1', weightKg: 90, reps: 5, completedAt: '2026-07-17T10:00:00.000Z' }),
+    ];
     // e1rm of 90x5 ≈ 105, well below the 200 e1rm PR and 100 weight PR.
     expect(liveSetPr(ex(sets), [weightPr(100), e1rmPr(200)])).toBeNull();
   });
@@ -69,7 +73,9 @@ describe('liveSetPr', () => {
 
   it('flags an e1RM PR even when weight is not a record', () => {
     // 100 kg × 8 → e1RM ≈ 126.7, beating a 120 e1rm PR, but weight (100) ties the weight PR.
-    const sets = [set({ id: 's1', weightKg: 100, reps: 8, completedAt: '2026-07-17T10:00:00.000Z' })];
+    const sets = [
+      set({ id: 's1', weightKg: 100, reps: 8, completedAt: '2026-07-17T10:00:00.000Z' }),
+    ];
     const pr = liveSetPr(ex(sets), [weightPr(100), e1rmPr(120)]);
     expect(pr?.weight).toBe(false);
     expect(pr?.e1rm).toBe(true);
@@ -77,7 +83,15 @@ describe('liveSetPr', () => {
   });
 
   it('ignores warm-ups and returns null with no completed working sets', () => {
-    const sets = [set({ id: 'w', weightKg: 200, reps: 5, isWarmup: true, completedAt: '2026-07-17T10:00:00.000Z' })];
+    const sets = [
+      set({
+        id: 'w',
+        weightKg: 200,
+        reps: 5,
+        isWarmup: true,
+        completedAt: '2026-07-17T10:00:00.000Z',
+      }),
+    ];
     expect(liveSetPr(ex(sets), [])).toBeNull();
   });
 });

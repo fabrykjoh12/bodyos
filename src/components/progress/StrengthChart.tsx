@@ -27,8 +27,21 @@ export function StrengthChart({ data, unit }: { data: StrengthPoint[]; unit: str
               <stop offset="100%" stopColor="#4C8DFF" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis dataKey="label" tick={{ fill: '#666C77', fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={20} />
-          <YAxis domain={[min, max]} tick={{ fill: '#666C77', fontSize: 11 }} axisLine={false} tickLine={false} width={46} tickCount={5} />
+          <XAxis
+            dataKey="label"
+            tick={{ fill: '#666C77', fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            minTickGap={20}
+          />
+          <YAxis
+            domain={[min, max]}
+            tick={{ fill: '#666C77', fontSize: 11 }}
+            axisLine={false}
+            tickLine={false}
+            width={46}
+            tickCount={5}
+          />
           <Tooltip
             contentStyle={{
               background: '#1B1E24',

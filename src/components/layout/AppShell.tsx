@@ -12,9 +12,7 @@ function UpdateToast() {
   return (
     <div className="glass pointer-events-auto sticky bottom-[4.75rem] z-30 mb-2 flex items-center gap-3 rounded-2xl px-4 py-3 shadow-float animate-slide-up">
       <RefreshCw size={16} className="shrink-0 text-accent" />
-      <p className="min-w-0 flex-1 text-xs text-content">
-        A new version of BodyOS is ready.
-      </p>
+      <p className="min-w-0 flex-1 text-xs text-content">A new version of BodyOS is ready.</p>
       <button
         onClick={apply}
         className="shrink-0 rounded-full bg-accent px-3 py-1.5 text-xs font-bold text-ink"
@@ -36,8 +34,9 @@ export function StorageFailureBanner() {
     >
       <AlertTriangle size={16} className="mt-0.5 shrink-0 text-danger" />
       <p className="text-xs leading-snug text-content">
-        <span className="font-bold text-danger">Storage is failing.</span> Your training is currently only in
-        memory and will be lost if you close the app. Free up space or export a backup from Settings now.
+        <span className="font-bold text-danger">Storage is failing.</span> Your training is
+        currently only in memory and will be lost if you close the app. Free up space or export a
+        backup from Settings now.
       </p>
     </div>
   );
@@ -83,7 +82,9 @@ export function AppShell() {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-bold text-content">Workout in progress</span>
-            <span className="block truncate text-xs text-content-muted">{activeSession.name} · tap to resume</span>
+            <span className="block truncate text-xs text-content-muted">
+              {activeSession.name} · tap to resume
+            </span>
           </span>
           <span className="text-sm font-bold text-accent">Resume</span>
         </button>

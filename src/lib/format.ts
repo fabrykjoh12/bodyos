@@ -81,5 +81,5 @@ export function formatRepRange(range: [number, number]): string {
 }
 
 export function pluralize(n: number, word: string, plural?: string): string {
-  return n === 1 ? word : plural ?? `${word}s`;
+  return n === 1 ? word : (plural ?? `${word}s`);
 }

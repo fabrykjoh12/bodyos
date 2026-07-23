@@ -90,7 +90,9 @@ export function liveSetPr(ex: ExerciseSession, existing: PersonalRecord[]): Live
   if (working.length === 0) return null;
 
   // The set logged last (latest completedAt) is the candidate.
-  const candidate = working.reduce((a, b) => ((b.completedAt ?? '') >= (a.completedAt ?? '') ? b : a));
+  const candidate = working.reduce((a, b) =>
+    (b.completedAt ?? '') >= (a.completedAt ?? '') ? b : a,
+  );
   const others = working.filter((s) => s.id !== candidate.id);
 
   let bestWeight = 0;

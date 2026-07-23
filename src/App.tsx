@@ -9,20 +9,38 @@ import { GymMode } from '@/screens/GymMode';
 // Heavier / less-frequent screens are code-split so the initial bundle stays
 // small (Recharts only loads when Stats or an exercise chart is opened).
 const Workouts = lazy(() => import('@/screens/Workouts').then((m) => ({ default: m.Workouts })));
-const WorkoutDetail = lazy(() => import('@/screens/WorkoutDetail').then((m) => ({ default: m.WorkoutDetail })));
-const WorkoutNew = lazy(() => import('@/screens/WorkoutNew').then((m) => ({ default: m.WorkoutNew })));
-const WorkoutComplete = lazy(() => import('@/screens/WorkoutComplete').then((m) => ({ default: m.WorkoutComplete })));
+const WorkoutDetail = lazy(() =>
+  import('@/screens/WorkoutDetail').then((m) => ({ default: m.WorkoutDetail })),
+);
+const WorkoutNew = lazy(() =>
+  import('@/screens/WorkoutNew').then((m) => ({ default: m.WorkoutNew })),
+);
+const WorkoutComplete = lazy(() =>
+  import('@/screens/WorkoutComplete').then((m) => ({ default: m.WorkoutComplete })),
+);
 const Progress = lazy(() => import('@/screens/Progress').then((m) => ({ default: m.Progress })));
-const ProgressPhotos = lazy(() => import('@/screens/ProgressPhotos').then((m) => ({ default: m.ProgressPhotos })));
-const Measurements = lazy(() => import('@/screens/Measurements').then((m) => ({ default: m.Measurements })));
+const ProgressPhotos = lazy(() =>
+  import('@/screens/ProgressPhotos').then((m) => ({ default: m.ProgressPhotos })),
+);
+const Measurements = lazy(() =>
+  import('@/screens/Measurements').then((m) => ({ default: m.Measurements })),
+);
 const Routines = lazy(() => import('@/screens/Routines').then((m) => ({ default: m.Routines })));
-const ExerciseLibrary = lazy(() => import('@/screens/ExerciseLibrary').then((m) => ({ default: m.ExerciseLibrary })));
-const ExerciseDetail = lazy(() => import('@/screens/ExerciseDetail').then((m) => ({ default: m.ExerciseDetail })));
+const ExerciseLibrary = lazy(() =>
+  import('@/screens/ExerciseLibrary').then((m) => ({ default: m.ExerciseLibrary })),
+);
+const ExerciseDetail = lazy(() =>
+  import('@/screens/ExerciseDetail').then((m) => ({ default: m.ExerciseDetail })),
+);
 const Profile = lazy(() => import('@/screens/Profile').then((m) => ({ default: m.Profile })));
 const Settings = lazy(() => import('@/screens/Settings').then((m) => ({ default: m.Settings })));
 const Account = lazy(() => import('@/screens/Account').then((m) => ({ default: m.Account })));
-const SessionDetail = lazy(() => import('@/screens/SessionDetail').then((m) => ({ default: m.SessionDetail })));
-const Onboarding = lazy(() => import('@/screens/Onboarding').then((m) => ({ default: m.Onboarding })));
+const SessionDetail = lazy(() =>
+  import('@/screens/SessionDetail').then((m) => ({ default: m.SessionDetail })),
+);
+const Onboarding = lazy(() =>
+  import('@/screens/Onboarding').then((m) => ({ default: m.Onboarding })),
+);
 const NotFound = lazy(() => import('@/screens/NotFound').then((m) => ({ default: m.NotFound })));
 
 function Loading() {

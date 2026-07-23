@@ -76,7 +76,9 @@ export function ProgressPhotos() {
 
   const [before, after] =
     compareSel.length === 2
-      ? [...compareSel].sort((a, b) => new Date(a.takenAt).getTime() - new Date(b.takenAt).getTime())
+      ? [...compareSel].sort(
+          (a, b) => new Date(a.takenAt).getTime() - new Date(b.takenAt).getTime(),
+        )
       : [undefined, undefined];
   const beforeUrl = usePhotoUrl(before);
   const afterUrl = usePhotoUrl(after);
@@ -113,7 +115,11 @@ export function ProgressPhotos() {
           icon={<Camera size={24} />}
           title="No progress photos"
           description="Take your first standardized photo to begin your private body timeline."
-          action={<Button onClick={() => setCaptureOpen(true)}><Plus size={16} /> Add photo</Button>}
+          action={
+            <Button onClick={() => setCaptureOpen(true)}>
+              <Plus size={16} /> Add photo
+            </Button>
+          }
         />
       ) : (
         <>
@@ -127,14 +133,24 @@ export function ProgressPhotos() {
           )}
           {compareMode && (
             <p className="text-center text-xs text-content-faint">
-              {compareSel.length < 2 ? `Select ${2 - compareSel.length} more photo${2 - compareSel.length > 1 ? 's' : ''} to compare` : 'Drag the slider to compare'}
+              {compareSel.length < 2
+                ? `Select ${2 - compareSel.length} more photo${2 - compareSel.length > 1 ? 's' : ''} to compare`
+                : 'Drag the slider to compare'}
             </p>
           )}
 
           <div className="no-scrollbar bleed flex gap-2 overflow-x-auto">
-            <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>All</FilterChip>
+            <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
+              All
+            </FilterChip>
             {POSES.map((p) => (
-              <FilterChip key={p.value} active={filter === p.value} onClick={() => setFilter(p.value)}>{p.label}</FilterChip>
+              <FilterChip
+                key={p.value}
+                active={filter === p.value}
+                onClick={() => setFilter(p.value)}
+              >
+                {p.label}
+              </FilterChip>
             ))}
           </div>
 
@@ -142,7 +158,10 @@ export function ProgressPhotos() {
             {shown.map((photo) => {
               const selIndex = compareSel.findIndex((p) => p.id === photo.id);
               return (
-                <div key={photo.id} className="group relative overflow-hidden rounded-2xl border border-line bg-surface-2">
+                <div
+                  key={photo.id}
+                  className="group relative overflow-hidden rounded-2xl border border-line bg-surface-2"
+                >
                   <button
                     onClick={() => compareMode && toggleCompareSel(photo)}
                     className="block aspect-[3/4] w-full"
@@ -157,10 +176,17 @@ export function ProgressPhotos() {
                   <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent px-2.5 py-2">
                     <div>
                       <p className="text-xs font-semibold text-white">{photo.weekLabel}</p>
-                      <p className="text-[0.6rem] text-white/70">{shortDate(photo.takenAt)}{photo.bodyWeightKg ? ` · ${photo.bodyWeightKg}kg` : ''}</p>
+                      <p className="text-[0.6rem] text-white/70">
+                        {shortDate(photo.takenAt)}
+                        {photo.bodyWeightKg ? ` · ${photo.bodyWeightKg}kg` : ''}
+                      </p>
                     </div>
                     {!compareMode && (
-                      <button aria-label="Delete photo" onClick={() => deletePhoto(photo.id)} className="text-white/70 hover:text-danger">
+                      <button
+                        aria-label="Delete photo"
+                        onClick={() => deletePhoto(photo.id)}
+                        className="text-white/70 hover:text-danger"
+                      >
                         <Trash2 size={14} />
                       </button>
                     )}
@@ -183,7 +209,11 @@ export function ProgressPhotos() {
             {preview ? (
               <>
                 <img src={preview} alt="Preview" className="h-full w-full object-cover" />
-                <button aria-label="Clear" onClick={() => setPreview(null)} className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white">
+                <button
+                  aria-label="Clear"
+                  onClick={() => setPreview(null)}
+                  className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white"
+                >
                   <X size={14} />
                 </button>
               </>
@@ -208,7 +238,13 @@ export function ProgressPhotos() {
             <span className="label-tiny">Pose</span>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {POSES.map((p) => (
-                <FilterChip key={p.value} active={pose === p.value} onClick={() => setPose(p.value)}>{p.label}</FilterChip>
+                <FilterChip
+                  key={p.value}
+                  active={pose === p.value}
+                  onClick={() => setPose(p.value)}
+                >
+                  {p.label}
+                </FilterChip>
               ))}
             </div>
           </div>
@@ -239,10 +275,24 @@ export function ProgressPhotos() {
 function PhotoImg({ photo }: { photo: ProgressPhoto }) {
   const url = usePhotoUrl(photo);
   if (!url) return <div className="h-full w-full animate-pulse bg-surface-3" aria-hidden />;
-  return <img src={url} alt={`${photo.pose} ${photo.weekLabel}`} className="h-full w-full object-cover" />;
+  return (
+    <img
+      src={url}
+      alt={`${photo.pose} ${photo.weekLabel}`}
+      className="h-full w-full object-cover"
+    />
+  );
 }
 
-function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}

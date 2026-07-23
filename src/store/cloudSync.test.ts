@@ -20,7 +20,9 @@ describe('cloudSync reconciliation', () => {
   describe('mergeRemote', () => {
     it('adopts synced fields from remote but keeps local photos and restTimer', () => {
       const local = createSeedData();
-      local.photos = [{ id: 'p1', pose: 'front-relaxed', dataUrl: 'x', takenAt: 'now', weekLabel: 'Week 1' }];
+      local.photos = [
+        { id: 'p1', pose: 'front-relaxed', dataUrl: 'x', takenAt: 'now', weekLabel: 'Week 1' },
+      ];
       local.restTimer = { endsAt: 12345, durationSec: 90, exerciseId: 'squat' };
 
       const remote = toSynced({ ...createSeedData(), streakDates: ['2026-01-01'] });
@@ -52,13 +54,15 @@ describe('cloudSync reconciliation', () => {
     });
 
     it('pushes local edits when remote is unchanged since last sync', () => {
-      expect(decidePull({ ...base, localDirty: true, localDirtyAt: Date.now() }).action).toBe('push');
+      expect(decidePull({ ...base, localDirty: true, localDirtyAt: Date.now() }).action).toBe(
+        'push',
+      );
     });
 
     it('adopts remote when another device wrote and we have no local edits', () => {
-      expect(
-        decidePull({ ...base, remoteUpdatedAt: '2026-07-16T11:00:00.000Z' }).action,
-      ).toBe('adopt');
+      expect(decidePull({ ...base, remoteUpdatedAt: '2026-07-16T11:00:00.000Z' }).action).toBe(
+        'adopt',
+      );
     });
 
     it('adopts remote on a true conflict when the remote write is newer', () => {

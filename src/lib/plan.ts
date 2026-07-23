@@ -44,7 +44,15 @@ export function resolveTodayPlan(
   return { kind: 'suggested', template: templates[0]! };
 }
 
-const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const WEEKDAY_NAMES = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
 
 /** "Tomorrow" when adjacent, otherwise the weekday name. */
 export function weekdayLabel(target: number, today: number): string {

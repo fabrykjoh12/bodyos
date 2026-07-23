@@ -116,10 +116,17 @@ export function NumericStepper({
             className="flex min-w-0 flex-1 flex-col items-center rounded-xl px-1 py-1 transition-colors hover:bg-surface-2"
           >
             {/* Keyed by value: each change re-pops the numeral for tactile feedback. */}
-            <span key={display} className={`${bigText} tnum animate-pop-in font-bold leading-none tracking-[-0.03em] text-content`}>
+            <span
+              key={display}
+              className={`${bigText} tnum animate-pop-in font-bold leading-none tracking-[-0.03em] text-content`}
+            >
               {display}
             </span>
-            {unit && <span className="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-content-faint">{unit}</span>}
+            {unit && (
+              <span className="mt-1 text-xs font-semibold uppercase tracking-[0.1em] text-content-faint">
+                {unit}
+              </span>
+            )}
           </button>
         )}
 

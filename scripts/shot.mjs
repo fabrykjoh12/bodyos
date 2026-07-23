@@ -8,7 +8,16 @@ import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 
 const OUT = process.argv[2] ?? 'shots';
 const PORT = 4173;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.woff2': 'font/woff2' };
+const MIME = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
+  '.woff2': 'font/woff2',
+};
 
 const server = http.createServer(async (req, res) => {
   let path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
@@ -27,7 +36,9 @@ const server = http.createServer(async (req, res) => {
 });
 await new Promise((r) => server.listen(PORT, r));
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const browser = await chromium.launch({
+  executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
+});
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 });
 
 async function shot(name, path, { fullPage = false, before } = {}) {

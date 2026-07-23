@@ -20,7 +20,8 @@ describe('parseBackup — deep validation', () => {
 
   it('rejects a session with a corrupted nested set and names the location', () => {
     const data = createSeedData();
-    (data.sessions[0]!.exercises[0]!.sets[1] as unknown as { weightKg: unknown }).weightKg = 'heavy';
+    (data.sessions[0]!.exercises[0]!.sets[1] as unknown as { weightKg: unknown }).weightKg =
+      'heavy';
     const result = parseBackup(JSON.stringify(data));
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toContain('sessions[0].exercises[0].sets[1].weightKg');
@@ -63,7 +64,9 @@ describe('parseBackup — deep validation', () => {
     expect(parseBackup('[]').ok).toBe(false);
     expect(parseBackup('"hi"').ok).toBe(false);
     expect(parseBackup('42').ok).toBe(false);
-    expect(parseBackup(JSON.stringify({ version: 1, user: 'nope', templates: [], sessions: [] })).ok).toBe(false);
+    expect(
+      parseBackup(JSON.stringify({ version: 1, user: 'nope', templates: [], sessions: [] })).ok,
+    ).toBe(false);
   });
 
   it('rejects absurdly large payloads without parsing them', () => {

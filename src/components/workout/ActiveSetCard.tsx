@@ -69,7 +69,9 @@ export function ActiveSetCard({
             {isWarmup ? (
               <span className="font-semibold text-caution">Warmup</span>
             ) : (
-              <span className="tnum">{formatRepRange(repRange)} {repsUnit(metric)}</span>
+              <span className="tnum">
+                {formatRepRange(repRange)} {repsUnit(metric)}
+              </span>
             )}
           </p>
         </div>

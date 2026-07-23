@@ -1,14 +1,19 @@
 import { ArrowUp, CheckCircle2, Minus, RotateCcw, TrendingDown } from 'lucide-react';
 import type { ProgressionAction, ProgressionRecommendation as Rec } from '@/types';
 
-const CONFIG: Record<
-  ProgressionAction,
-  { icon: typeof ArrowUp; tone: string; ring: string }
-> = {
-  'increase-weight': { icon: ArrowUp, tone: 'text-success', ring: 'border-success/30 bg-success-soft' },
+const CONFIG: Record<ProgressionAction, { icon: typeof ArrowUp; tone: string; ring: string }> = {
+  'increase-weight': {
+    icon: ArrowUp,
+    tone: 'text-success',
+    ring: 'border-success/30 bg-success-soft',
+  },
   'add-reps': { icon: CheckCircle2, tone: 'text-accent', ring: 'border-accent/30 bg-accent-soft' },
   maintain: { icon: Minus, tone: 'text-caution', ring: 'border-caution/30 bg-caution-soft' },
-  'reduce-load': { icon: TrendingDown, tone: 'text-caution', ring: 'border-caution/30 bg-caution-soft' },
+  'reduce-load': {
+    icon: TrendingDown,
+    tone: 'text-caution',
+    ring: 'border-caution/30 bg-caution-soft',
+  },
   deload: { icon: RotateCcw, tone: 'text-danger', ring: 'border-danger/30 bg-danger-soft' },
 };
 

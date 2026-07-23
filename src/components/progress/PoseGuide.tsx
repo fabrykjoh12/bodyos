@@ -16,7 +16,15 @@ export function PoseGuide({ className = '' }: { className?: string }) {
         <path d="M78 72 Q100 64 122 72 L120 168 Q100 176 80 168 Z" />
         <path d="M84 168 L80 262 M116 168 L120 262" />
       </g>
-      <line x1="100" y1="8" x2="100" y2="272" stroke="rgba(76,141,255,0.25)" strokeWidth="1" strokeDasharray="3 6" />
+      <line
+        x1="100"
+        y1="8"
+        x2="100"
+        y2="272"
+        stroke="rgba(76,141,255,0.25)"
+        strokeWidth="1"
+        strokeDasharray="3 6"
+      />
     </svg>
   );
 }

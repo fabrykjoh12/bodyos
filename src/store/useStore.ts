@@ -27,11 +27,7 @@ import { recomputePersonalRecords, recomputeStreakDates } from '@/lib/recompute'
 import { loadOrCreate, repository } from './repository';
 import { clearPhotoData, deletePhotoData, putPhotoData } from './photoStore';
 import { createEmptyData, createSeedData } from '@/data/seed';
-import {
-  initCloudSync,
-  notifyLocalWrite,
-  registerSync,
-} from './cloudSync';
+import { initCloudSync, notifyLocalWrite, registerSync } from './cloudSync';
 
 interface UndoState {
   exerciseIndex: number;
@@ -61,7 +57,11 @@ interface StoreState extends AppData {
   setRir: (rir: number | undefined) => void;
   logActiveSet: () => void;
   undoLastSet: () => void;
-  editSet: (exerciseIndex: number, setId: string, patch: Partial<Pick<SetEntry, 'weightKg' | 'reps'>>) => void;
+  editSet: (
+    exerciseIndex: number,
+    setId: string,
+    patch: Partial<Pick<SetEntry, 'weightKg' | 'reps'>>,
+  ) => void;
   addSet: (exerciseIndex: number) => void;
   removeSet: (exerciseIndex: number, setId: string) => void;
   /** Prepend generated ramping warm-up sets before the working sets. */
@@ -179,10 +179,7 @@ function locateActive(session: WorkoutSession): {
   return { exIndex, exercise, setIndex, set: exercise.sets[setIndex]! };
 }
 
-function mutateActiveSet(
-  session: WorkoutSession,
-  fn: (set: SetEntry) => SetEntry,
-): WorkoutSession {
+function mutateActiveSet(session: WorkoutSession, fn: (set: SetEntry) => SetEntry): WorkoutSession {
   const loc = locateActive(session);
   if (!loc) return session;
   const exercises = session.exercises.map((ex, i) => {
@@ -240,7 +237,12 @@ export const useStore = create<StoreState>((set, get) => ({
         0,
         ...ex.sets.filter((s) => s.completed && !s.isWarmup).map((s) => s.weightKg),
       );
-      const priorStalls = countPriorStalls(ex.exerciseId, topWeight, ex.repRange[1], state.sessions);
+      const priorStalls = countPriorStalls(
+        ex.exerciseId,
+        topWeight,
+        ex.repRange[1],
+        state.sessions,
+      );
       const meta = requireExercise(ex.exerciseId);
       return {
         ...ex,
@@ -284,7 +286,9 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   adjustWeight: (delta) =>
-    set((s) => applyActive(s, (set2) => ({ ...set2, weightKg: Math.max(0, round1(set2.weightKg + delta)) }))),
+    set((s) =>
+      applyActive(s, (set2) => ({ ...set2, weightKg: Math.max(0, round1(set2.weightKg + delta)) })),
+    ),
 
   adjustReps: (delta) =>
     set((s) => applyActive(s, (set2) => ({ ...set2, reps: Math.max(0, set2.reps + delta) }))),
@@ -393,7 +397,9 @@ export const useStore = create<StoreState>((set, get) => ({
       return {
         ...ex,
         status: 'active' as const,
-        sets: ex.sets.map((s) => (s.id === undo.setId ? { ...undo.prevSet, completed: false, completedAt: undefined } : s)),
+        sets: ex.sets.map((s) =>
+          s.id === undo.setId ? { ...undo.prevSet, completed: false, completedAt: undefined } : s,
+        ),
       };
     });
     set((s) => {
@@ -419,8 +425,12 @@ export const useStore = create<StoreState>((set, get) => ({
             set2.id === setId
               ? {
                   ...set2,
-                  ...(patch.weightKg !== undefined ? { weightKg: Math.max(0, round1(patch.weightKg)) } : {}),
-                  ...(patch.reps !== undefined ? { reps: Math.max(0, Math.round(patch.reps)) } : {}),
+                  ...(patch.weightKg !== undefined
+                    ? { weightKg: Math.max(0, round1(patch.weightKg)) }
+                    : {}),
+                  ...(patch.reps !== undefined
+                    ? { reps: Math.max(0, Math.round(patch.reps)) }
+                    : {}),
                 }
               : set2,
           ),
@@ -479,18 +489,16 @@ export const useStore = create<StoreState>((set, get) => ({
         if (ex.sets.some((st) => st.isWarmup)) return ex;
         const firstWorking = ex.sets.find((st) => !st.isWarmup);
         if (!firstWorking) return ex;
-        const warmups = generateWarmups(firstWorking.weightKg, { barKg }).map(
-          (w): SetEntry => ({
-            id: uid('set'),
-            exerciseId: ex.exerciseId,
-            setNumber: 0, // renumbered below
-            type: 'warmup',
-            weightKg: w.weightKg,
-            reps: w.reps,
-            completed: false,
-            isWarmup: true,
-          }),
-        );
+        const warmups = generateWarmups(firstWorking.weightKg, { barKg }).map((w): SetEntry => ({
+          id: uid('set'),
+          exerciseId: ex.exerciseId,
+          setNumber: 0, // renumbered below
+          type: 'warmup',
+          weightKg: w.weightKg,
+          reps: w.reps,
+          completed: false,
+          isWarmup: true,
+        }));
         if (warmups.length === 0) return ex;
         const sets = [...warmups, ...ex.sets].map((st, idx) => ({ ...st, setNumber: idx + 1 }));
         return { ...ex, status: 'active' as const, sets };
@@ -531,7 +539,8 @@ export const useStore = create<StoreState>((set, get) => ({
       const cur = s.activeSession.currentExerciseIndex;
       const nextIdx = Math.min(cur + 1, s.activeSession.exercises.length - 1);
       const exercises = s.activeSession.exercises.map((ex, i) => {
-        if (i === cur && ex.sets.every((set2) => set2.completed)) return { ...ex, status: 'done' as const };
+        if (i === cur && ex.sets.every((set2) => set2.completed))
+          return { ...ex, status: 'done' as const };
         if (i === nextIdx && ex.status === 'pending') return { ...ex, status: 'active' as const };
         return ex;
       });
@@ -619,7 +628,10 @@ export const useStore = create<StoreState>((set, get) => ({
       if (!s.activeSession) return s;
       const next = {
         ...s,
-        activeSession: { ...s.activeSession, exercises: [...s.activeSession.exercises, newExercise] },
+        activeSession: {
+          ...s.activeSession,
+          exercises: [...s.activeSession.exercises, newExercise],
+        },
       };
       persist(next);
       return next;
@@ -963,10 +975,7 @@ void (async () => {
 })();
 
 /** Shared helper for the active-set adjust actions. */
-function applyActive(
-  s: StoreState,
-  fn: (set: SetEntry) => SetEntry,
-): StoreState {
+function applyActive(s: StoreState, fn: (set: SetEntry) => SetEntry): StoreState {
   if (!s.activeSession) return s;
   const nextSession = mutateActiveSet(s.activeSession, fn);
   const next = { ...s, activeSession: nextSession };

@@ -68,9 +68,7 @@ export function rirToDifficulty(rir: number): Difficulty {
 }
 
 /** Worst-biased aggregate difficulty across sets ("easy" only if all easy). */
-export function aggregateDifficulty(
-  sets: WorkingSetResult[],
-): Difficulty | undefined {
+export function aggregateDifficulty(sets: WorkingSetResult[]): Difficulty | undefined {
   const rated = sets.map((s) => s.difficulty).filter(Boolean) as Difficulty[];
   if (rated.length === 0) return undefined;
   if (rated.includes('failed')) return 'failed';
@@ -102,9 +100,7 @@ function build(
   };
 }
 
-export function recommendProgression(
-  input: ProgressionInput,
-): ProgressionRecommendation {
+export function recommendProgression(input: ProgressionInput): ProgressionRecommendation {
   const [lo, hi] = input.repRange;
   const priorStalls = input.priorStalls ?? 0;
   const completed = input.workingSets.filter((s) => s.reps > 0 && s.weightKg >= 0);
@@ -216,9 +212,7 @@ export function recommendProgression(
   if (allHitTop) {
     // Easy compound lifts can take a double jump; otherwise one increment.
     const jump =
-      diff === 'easy' && input.kind === 'compound'
-        ? input.incrementKg * 2
-        : input.incrementKg;
+      diff === 'easy' && input.kind === 'compound' ? input.incrementKg * 2 : input.incrementKg;
     const next = topWeight + jump;
     const easyNote =
       diff === 'easy'

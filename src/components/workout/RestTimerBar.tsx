@@ -30,14 +30,27 @@ export function RestTimerBar() {
     <div className="card overflow-hidden animate-slide-up">
       <div className="flex items-center gap-3 px-4 py-3">
         <span className="label-tiny shrink-0">Rest</span>
-        <span className="tnum text-[1.75rem] font-bold tabular-nums tracking-[-0.02em] text-content" aria-live="polite">
+        <span
+          className="tnum text-[1.75rem] font-bold tabular-nums tracking-[-0.02em] text-content"
+          aria-live="polite"
+        >
           {formatDuration(remainingSec)}
         </span>
         <div className="ml-auto flex items-center gap-1.5">
-          <button type="button" onClick={() => addRestTime(-15)} aria-label="Subtract 15 seconds" className={chipBtn}>
+          <button
+            type="button"
+            onClick={() => addRestTime(-15)}
+            aria-label="Subtract 15 seconds"
+            className={chipBtn}
+          >
             <Minus size={13} /> 15s
           </button>
-          <button type="button" onClick={() => addRestTime(15)} aria-label="Add 15 seconds" className={chipBtn}>
+          <button
+            type="button"
+            onClick={() => addRestTime(15)}
+            aria-label="Add 15 seconds"
+            className={chipBtn}
+          >
             <Plus size={13} /> 15s
           </button>
           <button type="button" onClick={skipRest} className={chipBtn}>

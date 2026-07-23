@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  cmToIn,
-  inToCm,
-  toDisplayLength,
-  fromDisplayLength,
-  lengthUnit,
-} from './format';
+import { cmToIn, inToCm, toDisplayLength, fromDisplayLength, lengthUnit } from './format';
 
 describe('length conversion', () => {
   it('converts cm to inches and back', () => {

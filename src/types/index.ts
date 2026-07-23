@@ -28,13 +28,7 @@ export type MuscleGroup =
   | 'forearms';
 
 export type Equipment =
-  | 'barbell'
-  | 'dumbbell'
-  | 'machine'
-  | 'cable'
-  | 'bodyweight'
-  | 'kettlebell'
-  | 'band';
+  'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'kettlebell' | 'band';
 
 export type MovementPattern =
   | 'horizontal-push'
@@ -59,19 +53,10 @@ export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
 
 export type TrainingGoal = 'strength' | 'hypertrophy' | 'general' | 'endurance';
 
-export type WorkoutSplit =
-  | 'full-body'
-  | 'upper-lower'
-  | 'push-pull-legs'
-  | 'custom';
+export type WorkoutSplit = 'full-body' | 'upper-lower' | 'push-pull-legs' | 'custom';
 
 export type PhotoPose =
-  | 'front-relaxed'
-  | 'side-relaxed'
-  | 'back-relaxed'
-  | 'front-flex'
-  | 'back-flex'
-  | 'custom';
+  'front-relaxed' | 'side-relaxed' | 'back-relaxed' | 'front-flex' | 'back-flex' | 'custom';
 
 // --- Exercise library ------------------------------------------------------
 
@@ -207,11 +192,7 @@ export interface WorkoutSession {
 // --- Progression engine ----------------------------------------------------
 
 export type ProgressionAction =
-  | 'increase-weight'
-  | 'add-reps'
-  | 'maintain'
-  | 'reduce-load'
-  | 'deload';
+  'increase-weight' | 'add-reps' | 'maintain' | 'reduce-load' | 'deload';
 
 export interface ProgressionRecommendation {
   exerciseId: ID;

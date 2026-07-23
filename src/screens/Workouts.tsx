@@ -23,10 +23,15 @@ export function Workouts() {
   const editPlanId = editDay !== null ? (weeklyPlan[editDay] ?? null) : null;
 
   // Honest "today" line, sharing the home hero's plan resolver.
-  const plan = useMemo(() => resolveTodayPlan(weeklyPlan, templates, today), [weeklyPlan, templates, today]);
+  const plan = useMemo(
+    () => resolveTodayPlan(weeklyPlan, templates, today),
+    [weeklyPlan, templates, today],
+  );
   const todayLine =
     plan.kind === 'today' ? (
-      <>Today · <span className="font-semibold text-accent">{plan.template.name}</span></>
+      <>
+        Today · <span className="font-semibold text-accent">{plan.template.name}</span>
+      </>
     ) : plan.kind === 'rest' ? (
       <>
         Today · <span className="font-semibold text-content">Rest day</span>
@@ -74,13 +79,17 @@ export function Workouts() {
                 className="flex flex-col items-center gap-1"
                 aria-label={`Plan ${weekdayName(day)} — ${tpl?.name ?? 'Rest'}`}
               >
-                <span className={`text-[0.6rem] font-medium ${isToday ? 'text-accent' : 'text-content-faint'}`}>
+                <span
+                  className={`text-[0.6rem] font-medium ${isToday ? 'text-accent' : 'text-content-faint'}`}
+                >
                   {weekdayName(day).slice(0, 1)}
                 </span>
                 <div
                   className={[
                     'flex h-10 w-full items-center justify-center rounded-lg px-0.5 text-center text-[0.6rem] font-bold transition-colors',
-                    tpl ? 'bg-accent-soft text-accent' : 'bg-surface-2 text-content-faint hover:bg-surface-3',
+                    tpl
+                      ? 'bg-accent-soft text-accent'
+                      : 'bg-surface-2 text-content-faint hover:bg-surface-3',
                     isToday ? 'ring-1 ring-accent' : '',
                   ].join(' ')}
                   title={tpl?.name ?? 'Rest'}
@@ -92,7 +101,9 @@ export function Workouts() {
           })}
         </div>
         {todayLine && (
-          <p className="mt-3 border-t border-line/60 pt-3 text-xs text-content-muted">{todayLine}</p>
+          <p className="mt-3 border-t border-line/60 pt-3 text-xs text-content-muted">
+            {todayLine}
+          </p>
         )}
       </section>
 
@@ -107,7 +118,9 @@ export function Workouts() {
           </span>
           <div>
             <p className="text-sm font-bold text-content">Proven split</p>
-            <p className="mt-0.5 text-xs leading-snug text-content-muted">Built &amp; scheduled in one tap</p>
+            <p className="mt-0.5 text-xs leading-snug text-content-muted">
+              Built &amp; scheduled in one tap
+            </p>
           </div>
         </button>
         <button
@@ -184,7 +197,9 @@ export function Workouts() {
             onClick={() => assign(null)}
             className={[
               'flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors',
-              editPlanId === null ? 'border-accent bg-accent-soft' : 'border-line hover:bg-surface-2',
+              editPlanId === null
+                ? 'border-accent bg-accent-soft'
+                : 'border-line hover:bg-surface-2',
             ].join(' ')}
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-surface-2 text-content-muted">

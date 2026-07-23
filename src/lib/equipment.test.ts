@@ -4,7 +4,15 @@ import { adaptDay, isCompatible, resolveForEquipment } from './equipment';
 import { ROUTINES } from '@/data/routines';
 import { requireExercise } from '@/data/exercises';
 
-const FULL: Equipment[] = ['barbell', 'dumbbell', 'machine', 'cable', 'bodyweight', 'kettlebell', 'band'];
+const FULL: Equipment[] = [
+  'barbell',
+  'dumbbell',
+  'machine',
+  'cable',
+  'bodyweight',
+  'kettlebell',
+  'band',
+];
 const NO_BARBELL: Equipment[] = ['dumbbell', 'machine', 'cable', 'bodyweight'];
 const HOME_DUMBBELL: Equipment[] = ['dumbbell', 'bodyweight'];
 const BODYWEIGHT_ONLY: Equipment[] = ['bodyweight'];

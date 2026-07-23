@@ -103,10 +103,7 @@ function toLoadableKg(kg: number): number {
  * the working weight isn't meaningfully above the bar (nothing to ramp).
  * Weights are de-duplicated and never reach the working weight itself.
  */
-export function generateWarmups(
-  workingKg: number,
-  opts?: { barKg?: number },
-): WarmupSet[] {
+export function generateWarmups(workingKg: number, opts?: { barKg?: number }): WarmupSet[] {
   const bar = opts?.barKg ?? BAR_KG;
   // Not enough range above the bar to bother warming up.
   if (workingKg <= bar + 2.5) return [];

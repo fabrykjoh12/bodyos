@@ -10,7 +10,11 @@ const INC = 2.5;
 const EX = 'bench-press';
 
 let clock = 0;
-function session(weightKg: number, reps: number[], opts: { deload?: boolean } = {}): WorkoutSession {
+function session(
+  weightKg: number,
+  reps: number[],
+  opts: { deload?: boolean } = {},
+): WorkoutSession {
   clock += 1;
   const day = String(clock).padStart(2, '0');
   return {
@@ -80,11 +84,7 @@ describe('progression sequences (prefill = what the lifter is told next)', () =>
   });
 
   it('deloads ~10% after a third session stuck at the same load', () => {
-    const r = prefill([
-      session(100, [5, 5, 5]),
-      session(100, [5, 4, 4]),
-      session(100, [4, 4, 4]),
-    ]);
+    const r = prefill([session(100, [5, 5, 5]), session(100, [5, 4, 4]), session(100, [4, 4, 4])]);
     expect(r.weightKg).toBeLessThanOrEqual(90);
   });
 

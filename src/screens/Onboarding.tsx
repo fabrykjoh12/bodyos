@@ -37,7 +37,12 @@ export function Onboarding() {
   const [experience, setExperience] = useState<ExperienceLevel>('intermediate');
   const [days, setDays] = useState(3);
   const [routineId, setRoutineId] = useState<string | null>(null);
-  const [equipment, setEquipment] = useState<Equipment[]>(['barbell', 'dumbbell', 'machine', 'cable']);
+  const [equipment, setEquipment] = useState<Equipment[]>([
+    'barbell',
+    'dumbbell',
+    'machine',
+    'cable',
+  ]);
   const [unit, setUnit] = useState<Unit>('kg');
 
   const steps = ['Goal', 'Experience', 'Schedule', 'Routine', 'Setup'];
@@ -76,28 +81,50 @@ export function Onboarding() {
           <Dumbbell size={18} />
         </span>
         <span className="text-lg font-bold text-content">BodyOS</span>
-        <button onClick={finish} className="ml-auto text-sm text-content-faint">Skip</button>
+        <button onClick={finish} className="ml-auto text-sm text-content-faint">
+          Skip
+        </button>
       </div>
 
       {/* progress */}
       <div className="mb-6 flex gap-1.5">
         {steps.map((_, i) => (
-          <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-accent' : 'bg-surface-3'}`} />
+          <div
+            key={i}
+            className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-accent' : 'bg-surface-3'}`}
+          />
         ))}
       </div>
 
       <div key={step} className="flex-1">
         {step === 0 && (
-          <Section title="What's your main goal?" subtitle="Saved to your profile — training programs will build on it.">
+          <Section
+            title="What's your main goal?"
+            subtitle="Saved to your profile — training programs will build on it."
+          >
             {GOALS.map((g) => (
-              <Option key={g.value} active={goal === g.value} onClick={() => setGoal(g.value)} title={g.label} desc={g.desc} />
+              <Option
+                key={g.value}
+                active={goal === g.value}
+                onClick={() => setGoal(g.value)}
+                title={g.label}
+                desc={g.desc}
+              />
             ))}
           </Section>
         )}
         {step === 1 && (
-          <Section title="How experienced are you?" subtitle="Saved to your profile — you set your own starting weights in the gym.">
+          <Section
+            title="How experienced are you?"
+            subtitle="Saved to your profile — you set your own starting weights in the gym."
+          >
             {LEVELS.map((l) => (
-              <Option key={l.value} active={experience === l.value} onClick={() => setExperience(l.value)} title={l.label} />
+              <Option
+                key={l.value}
+                active={experience === l.value}
+                onClick={() => setExperience(l.value)}
+                title={l.label}
+              />
             ))}
           </Section>
         )}
@@ -118,7 +145,10 @@ export function Onboarding() {
           </Section>
         )}
         {step === 3 && (
-          <Section title="Pick a starter split" subtitle="We'll build the workouts and schedule your week. You can change everything later.">
+          <Section
+            title="Pick a starter split"
+            subtitle="We'll build the workouts and schedule your week. You can change everything later."
+          >
             {ROUTINES.map((r) => {
               const active = routineId === r.id;
               const recommended = r.id === suggestedRoutine(days);
@@ -130,14 +160,18 @@ export function Onboarding() {
                   className={`flex flex-col rounded-2xl border p-4 text-left transition-colors ${active ? 'border-accent bg-accent-soft' : 'border-line bg-surface'}`}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`font-semibold ${active ? 'text-accent' : 'text-content'}`}>{r.name}</span>
+                    <span className={`font-semibold ${active ? 'text-accent' : 'text-content'}`}>
+                      {r.name}
+                    </span>
                     {recommended && (
                       <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent">
                         Recommended
                       </span>
                     )}
                   </div>
-                  <span className="mt-1 text-xs text-content-muted">{r.days.map((d) => d.name).join(' · ')}</span>
+                  <span className="mt-1 text-xs text-content-muted">
+                    {r.days.map((d) => d.name).join(' · ')}
+                  </span>
                 </button>
               );
             })}
@@ -151,9 +185,14 @@ export function Onboarding() {
           </Section>
         )}
         {step === 4 && (
-          <Section title="Final setup" subtitle="Your name, equipment and units. You can change these later.">
+          <Section
+            title="Final setup"
+            subtitle="Your name, equipment and units. You can change these later."
+          >
             <div>
-              <label htmlFor="ob-name" className="label-tiny">Your name</label>
+              <label htmlFor="ob-name" className="label-tiny">
+                Your name
+              </label>
               <input
                 id="ob-name"
                 type="text"
@@ -210,7 +249,10 @@ export function Onboarding() {
           </Button>
         )}
         {step > 0 ? (
-          <button onClick={() => setStep((s) => s - 1)} className="mt-3 w-full text-center text-sm text-content-faint">
+          <button
+            onClick={() => setStep((s) => s - 1)}
+            className="mt-3 w-full text-center text-sm text-content-faint"
+          >
             Back
           </button>
         ) : (
@@ -229,7 +271,15 @@ export function Onboarding() {
   );
 }
 
-function Section({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+function Section({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="animate-slide-up">
       <h1 className="text-title text-content">{title}</h1>
@@ -239,7 +289,17 @@ function Section({ title, subtitle, children }: { title: string; subtitle: strin
   );
 }
 
-function Option({ active, onClick, title, desc }: { active: boolean; onClick: () => void; title: string; desc?: string }) {
+function Option({
+  active,
+  onClick,
+  title,
+  desc,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  desc?: string;
+}) {
   return (
     <button
       onClick={onClick}
@@ -250,7 +310,9 @@ function Option({ active, onClick, title, desc }: { active: boolean; onClick: ()
         <p className={`font-semibold ${active ? 'text-accent' : 'text-content'}`}>{title}</p>
         {desc && <p className="text-xs text-content-muted">{desc}</p>}
       </div>
-      <span className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${active ? 'border-accent bg-accent text-ink' : 'border-line'}`}>
+      <span
+        className={`flex h-6 w-6 items-center justify-center rounded-full border-2 ${active ? 'border-accent bg-accent text-ink' : 'border-line'}`}
+      >
         {active && <Check size={14} strokeWidth={3} />}
       </span>
     </button>

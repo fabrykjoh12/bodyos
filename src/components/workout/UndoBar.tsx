@@ -17,7 +17,8 @@ export function UndoBar() {
       className="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface-2 py-2.5 text-sm font-medium text-content-muted transition-colors hover:text-content animate-fade-in"
     >
       <RotateCcw size={15} />
-      Logged {formatWeight(undo.prevSet.weightKg, unit, false)} {unit} × {undo.prevSet.reps} — tap to undo
+      Logged {formatWeight(undo.prevSet.weightKg, unit, false)} {unit} × {undo.prevSet.reps} — tap
+      to undo
     </button>
   );
 }

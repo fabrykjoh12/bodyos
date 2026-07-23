@@ -22,9 +22,36 @@ describe('volume', () => {
   });
   it('ignores warmups and incomplete sets', () => {
     const sets: SetEntry[] = [
-      { id: '1', exerciseId: 'e', setNumber: 1, type: 'warmup', weightKg: 40, reps: 10, completed: true, isWarmup: true },
-      { id: '2', exerciseId: 'e', setNumber: 2, type: 'working', weightKg: 60, reps: 8, completed: true, isWarmup: false },
-      { id: '3', exerciseId: 'e', setNumber: 3, type: 'working', weightKg: 60, reps: 8, completed: false, isWarmup: false },
+      {
+        id: '1',
+        exerciseId: 'e',
+        setNumber: 1,
+        type: 'warmup',
+        weightKg: 40,
+        reps: 10,
+        completed: true,
+        isWarmup: true,
+      },
+      {
+        id: '2',
+        exerciseId: 'e',
+        setNumber: 2,
+        type: 'working',
+        weightKg: 60,
+        reps: 8,
+        completed: true,
+        isWarmup: false,
+      },
+      {
+        id: '3',
+        exerciseId: 'e',
+        setNumber: 3,
+        type: 'working',
+        weightKg: 60,
+        reps: 8,
+        completed: false,
+        isWarmup: false,
+      },
     ];
     expect(sessionVolume(sets)).toBe(480);
   });

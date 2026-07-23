@@ -18,8 +18,24 @@ function supersetTemplate(): WorkoutTemplate {
     createdAt: now(),
     updatedAt: now(),
     exercises: [
-      { id: 'we1', exerciseId: 'bicep-curl', order: 0, repRange: [10, 15], restSec: 60, supersetGroup: 'g', sets: [set(), set()] },
-      { id: 'we2', exerciseId: 'triceps-pushdown', order: 1, repRange: [10, 15], restSec: 60, supersetGroup: 'g', sets: [set(), set()] },
+      {
+        id: 'we1',
+        exerciseId: 'bicep-curl',
+        order: 0,
+        repRange: [10, 15],
+        restSec: 60,
+        supersetGroup: 'g',
+        sets: [set(), set()],
+      },
+      {
+        id: 'we2',
+        exerciseId: 'triceps-pushdown',
+        order: 1,
+        repRange: [10, 15],
+        restSec: 60,
+        supersetGroup: 'g',
+        sets: [set(), set()],
+      },
     ],
   };
 }
@@ -106,7 +122,10 @@ describe('gym flow — warm-ups, swap, RIR', () => {
 });
 
 describe('deload sessions', () => {
-  beforeEach(() => { S().resetAll(); S().loadDemo(); });
+  beforeEach(() => {
+    S().resetAll();
+    S().loadDemo();
+  });
 
   it('starts lighter, with fewer sets, and is flagged', () => {
     const tplId = S().templates[0]!.id;
@@ -145,9 +164,12 @@ describe('deload sessions', () => {
 });
 
 describe('starter routines', () => {
-  beforeEach(() => { S().resetAll(); S().loadDemo(); });
+  beforeEach(() => {
+    S().resetAll();
+    S().loadDemo();
+  });
 
-  it('adds a routine\'s templates and schedules them on the weekly plan', () => {
+  it("adds a routine's templates and schedules them on the weekly plan", () => {
     const ppl = ROUTINES.find((r) => r.id === 'ppl-6')!;
     const before = S().templates.length;
     S().applyRoutine(ppl);
@@ -163,7 +185,10 @@ describe('starter routines', () => {
 });
 
 describe('addExerciseToSession', () => {
-  beforeEach(() => { S().resetAll(); S().loadDemo(); });
+  beforeEach(() => {
+    S().resetAll();
+    S().loadDemo();
+  });
 
   it('appends a prefilled exercise to the active session and returns its index', () => {
     const templateId = S().templates[0]!.id;
@@ -187,7 +212,10 @@ describe('addExerciseToSession', () => {
 });
 
 describe('exercise notes', () => {
-  beforeEach(() => { S().resetAll(); S().loadDemo(); });
+  beforeEach(() => {
+    S().resetAll();
+    S().loadDemo();
+  });
 
   it('sets and clears a durable per-exercise note', () => {
     S().setExerciseNote('deadlift', '  mixed grip over 180  ');

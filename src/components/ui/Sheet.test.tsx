@@ -37,7 +37,9 @@ describe('Sheet accessibility', () => {
     opener.focus();
     fireEvent.click(opener);
     // Initial focus lands on the first focusable control inside the sheet.
-    expect(screen.getByRole('dialog', { name: 'Test sheet' }).contains(document.activeElement)).toBe(true);
+    expect(
+      screen.getByRole('dialog', { name: 'Test sheet' }).contains(document.activeElement),
+    ).toBe(true);
 
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

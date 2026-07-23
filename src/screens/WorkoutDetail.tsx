@@ -82,13 +82,21 @@ export function WorkoutDetail() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-content">{ex.name}</p>
-                    <p className="text-xs text-content-muted">{ex.primaryMuscle} · {ex.equipment}</p>
+                    <p className="text-xs text-content-muted">
+                      {ex.primaryMuscle} · {ex.equipment}
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
-                      <Chip>{we.sets.length} × {formatRepRange(we.repRange)}</Chip>
-                      {we.startWeightKg !== undefined && <Chip>{formatWeight(we.startWeightKg, unit)}</Chip>}
+                      <Chip>
+                        {we.sets.length} × {formatRepRange(we.repRange)}
+                      </Chip>
+                      {we.startWeightKg !== undefined && (
+                        <Chip>{formatWeight(we.startWeightKg, unit)}</Chip>
+                      )}
                       <Chip tone="muted">Rest {formatDuration(we.restSec)}</Chip>
                     </div>
-                    {we.notes && <p className="mt-2 text-xs italic text-content-faint">{we.notes}</p>}
+                    {we.notes && (
+                      <p className="mt-2 text-xs italic text-content-faint">{we.notes}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -119,7 +127,11 @@ export function WorkoutDetail() {
         </Button>
       </div>
 
-      <Sheet open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete this workout?">
+      <Sheet
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        title="Delete this workout?"
+      >
         <p className="text-sm text-content-muted">
           The template will be removed. Your completed session history stays intact.
         </p>

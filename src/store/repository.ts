@@ -141,9 +141,7 @@ function migrate(data: AppData): AppData {
   return normalizeAppData(data);
 }
 
-export type ParseBackupResult =
-  | { ok: true; data: AppData }
-  | { ok: false; error: string };
+export type ParseBackupResult = { ok: true; data: AppData } | { ok: false; error: string };
 
 /** Restores must never destroy more data than a file is worth. */
 const MAX_BACKUP_BYTES = 25 * 1024 * 1024;
@@ -169,7 +167,8 @@ function checkSet(s: unknown, where: string): Check {
   if (!isStr(s.id)) return fail(`${where}.id`);
   if (!isFiniteNum(s.weightKg) || (s.weightKg as number) < 0) return fail(`${where}.weightKg`);
   if (!isFiniteNum(s.reps) || (s.reps as number) < 0) return fail(`${where}.reps`);
-  if (typeof s.completed !== 'boolean' && s.completed !== undefined) return fail(`${where}.completed`);
+  if (typeof s.completed !== 'boolean' && s.completed !== undefined)
+    return fail(`${where}.completed`);
   return OK;
 }
 
@@ -276,7 +275,10 @@ export function parseBackup(text: string): ParseBackupResult {
   }
   const deep = checkBackupDeep(d);
   if (!deep.ok) {
-    return { ok: false, error: `Backup is damaged at "${deep.where}" — restore cancelled; nothing was changed.` };
+    return {
+      ok: false,
+      error: `Backup is damaged at "${deep.where}" — restore cancelled; nothing was changed.`,
+    };
   }
   return { ok: true, data: normalizeAppData(d as AppData) };
 }

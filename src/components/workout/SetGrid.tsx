@@ -19,11 +19,20 @@ interface SetGridProps {
 function beatsPrevious(set: SetEntry, prev?: { weightKg: number; reps: number }): boolean {
   if (!prev) return false;
   const EPS = 1e-6;
-  return set.weightKg > prev.weightKg + EPS || (Math.abs(set.weightKg - prev.weightKg) < EPS && set.reps > prev.reps);
+  return (
+    set.weightKg > prev.weightKg + EPS ||
+    (Math.abs(set.weightKg - prev.weightKg) < EPS && set.reps > prev.reps)
+  );
 }
 
 /** Compact ledger of every set: completed, active, and upcoming. */
-export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false, onEditSet }: SetGridProps) {
+export function SetGrid({
+  exercise,
+  unit,
+  activeSetIndex,
+  highlightBeats = false,
+  onEditSet,
+}: SetGridProps) {
   const metric = metricOf(exercise.exerciseId);
   let workingIdx = -1;
   return (
@@ -48,7 +57,11 @@ export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false
             <span
               className={[
                 'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold',
-                set.completed ? 'bg-success text-ink' : isActive ? 'bg-accent text-ink' : 'bg-surface-3 text-content-faint',
+                set.completed
+                  ? 'bg-success text-ink'
+                  : isActive
+                    ? 'bg-accent text-ink'
+                    : 'bg-surface-3 text-content-faint',
               ].join(' ')}
             >
               {set.completed ? <Check size={13} strokeWidth={3} /> : set.setNumber}
@@ -75,17 +88,25 @@ export function SetGrid({ exercise, unit, activeSetIndex, highlightBeats = false
               <span className="tnum ml-auto font-semibold text-content" aria-hidden />
             ) : (
               <span className="tnum ml-auto font-semibold text-content">
-                {metric === 'bodyweight-reps' && set.weightKg === 0 ? 'BW' : formatWeight(set.weightKg, unit, false)}
+                {metric === 'bodyweight-reps' && set.weightKg === 0
+                  ? 'BW'
+                  : formatWeight(set.weightKg, unit, false)}
                 {!(metric === 'bodyweight-reps' && set.weightKg === 0) && (
                   <span className="ml-1 text-xs font-normal text-content-faint">{unit}</span>
                 )}
               </span>
             )}
-            <span className={`tnum ${metric === 'duration' ? 'ml-auto' : 'w-14'} text-right font-semibold`}>
+            <span
+              className={`tnum ${metric === 'duration' ? 'ml-auto' : 'w-14'} text-right font-semibold`}
+            >
               {set.reps}
-              <span className="ml-1 text-xs font-normal text-content-faint">{repsUnit(metric)}</span>
+              <span className="ml-1 text-xs font-normal text-content-faint">
+                {repsUnit(metric)}
+              </span>
             </span>
-            {editable && <Pencil size={13} className="ml-1.5 shrink-0 text-content-faint" aria-hidden />}
+            {editable && (
+              <Pencil size={13} className="ml-1.5 shrink-0 text-content-faint" aria-hidden />
+            )}
           </>
         );
         return (

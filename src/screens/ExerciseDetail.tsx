@@ -20,7 +20,7 @@ export function ExerciseDetail() {
   const ex = id ? getExercise(id) : undefined;
   const sessions = useStore((s) => s.sessions);
   const unit = useStore((s) => s.user.settings.unit);
-  const savedNote = useStore((s) => (id ? s.exerciseNotes[id] ?? '' : ''));
+  const savedNote = useStore((s) => (id ? (s.exerciseNotes[id] ?? '') : ''));
   const setExerciseNote = useStore((s) => s.setExerciseNote);
   const [note, setNote] = useState(savedNote);
   // Reset the draft when navigating between exercises (same component instance).
@@ -57,11 +57,17 @@ export function ExerciseDetail() {
       </div>
 
       <div className="flex flex-wrap gap-1.5">
-        <Chip tone="accent" className="capitalize">{ex.kind}</Chip>
+        <Chip tone="accent" className="capitalize">
+          {ex.kind}
+        </Chip>
         <Chip className="capitalize">{ex.pattern.replace(/-/g, ' ')}</Chip>
-        <Chip tone="muted">{ex.defaultRepRange[0]}–{ex.defaultRepRange[1]} reps</Chip>
+        <Chip tone="muted">
+          {ex.defaultRepRange[0]}–{ex.defaultRepRange[1]} reps
+        </Chip>
         {ex.secondaryMuscles.map((m) => (
-          <Chip key={m} tone="muted" className="capitalize">{m}</Chip>
+          <Chip key={m} tone="muted" className="capitalize">
+            {m}
+          </Chip>
         ))}
       </div>
 
@@ -80,7 +86,10 @@ export function ExerciseDetail() {
       {series.length >= 2 && (
         <div className="card p-4">
           <p className="label-tiny mb-2">Estimated 1RM</p>
-          <StrengthChart data={series.map((p) => ({ label: p.label, value: p.value }))} unit={unit} />
+          <StrengthChart
+            data={series.map((p) => ({ label: p.label, value: p.value }))}
+            unit={unit}
+          />
         </div>
       )}
 

@@ -16,19 +16,28 @@ export interface ShareModel {
   prLines: string[];
 }
 
-export function buildShareModel(session: WorkoutSession, prs: PersonalRecord[], unit: Unit): ShareModel {
+export function buildShareModel(
+  session: WorkoutSession,
+  prs: PersonalRecord[],
+  unit: Unit,
+): ShareModel {
   const start = new Date(session.startedAt).getTime();
   const end = new Date(session.completedAt ?? session.startedAt).getTime();
   const minutes = Math.max(1, Math.round((end - start) / 60000));
   const date = new Date(session.completedAt ?? session.startedAt);
   return {
     title: session.name,
-    dateLine: date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }),
+    dateLine: date.toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    }),
     isDeload: Boolean(session.isDeload),
     volumeText: formatVolume(sessionTotalVolume(session), unit),
     sets: sessionSetCount(session),
     durationText: formatMinutes(minutes),
-    exercises: session.exercises.filter((e) => e.sets.some((s) => s.completed && !s.isWarmup)).length,
+    exercises: session.exercises.filter((e) => e.sets.some((s) => s.completed && !s.isWarmup))
+      .length,
     prLines: prs.map((pr) =>
       pr.type === 'weight'
         ? `${exerciseName(pr.exerciseId)} · ${formatWeight(pr.value, unit)} × ${pr.reps}`
@@ -117,7 +126,13 @@ export function renderShareCard(model: ShareModel): HTMLCanvasElement {
     y += 190;
     ctx.fillStyle = VOLT;
     ctx.font = `600 28px ${SANS}`;
-    drawTracked(ctx, `${model.prLines.length} PERSONAL RECORD${model.prLines.length > 1 ? 'S' : ''}`, M, y, 6);
+    drawTracked(
+      ctx,
+      `${model.prLines.length} PERSONAL RECORD${model.prLines.length > 1 ? 'S' : ''}`,
+      M,
+      y,
+      6,
+    );
     ctx.font = `500 40px ${SANS}`;
     for (const line of model.prLines.slice(0, 4)) {
       y += 68;
@@ -142,7 +157,13 @@ export function renderShareCard(model: ShareModel): HTMLCanvasElement {
 }
 
 /** Manual letter-spacing (canvas has no tracking control across browsers). */
-function drawTracked(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, spacing: number) {
+function drawTracked(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  spacing: number,
+) {
   let cx = x;
   for (const ch of text) {
     ctx.fillText(ch, cx, y);

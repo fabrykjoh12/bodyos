@@ -71,7 +71,11 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <div className="absolute inset-0 animate-fade-in bg-black/65 backdrop-blur-sm" onClick={onClose} aria-hidden />
+      <div
+        className="absolute inset-0 animate-fade-in bg-black/65 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden
+      />
       <div
         ref={panelRef}
         role="dialog"

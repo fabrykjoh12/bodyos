@@ -10,7 +10,9 @@ export function RepMaxTable({ oneRepMax, unit }: { oneRepMax: number; unit: Unit
     <div className="grid grid-cols-3 gap-2">
       {rows.map((r) => (
         <div key={r.reps} className="rounded-lg bg-surface-2 px-2 py-2.5 text-center">
-          <p className="tnum text-[15px] font-semibold text-content">{formatWeightValue(r.weightKg, unit)}</p>
+          <p className="tnum text-[15px] font-semibold text-content">
+            {formatWeightValue(r.weightKg, unit)}
+          </p>
           <p className="text-[11px] text-content-faint">
             {r.reps} rep{r.reps > 1 ? 's' : ''}
           </p>

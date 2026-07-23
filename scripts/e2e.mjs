@@ -9,12 +9,19 @@ import { chromium } from 'playwright';
 
 const PORT = Number(process.env.E2E_PORT ?? 4300);
 const MIME = {
-  '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml',
-  '.webp': 'image/webp', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json',
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.woff2': 'font/woff2',
+  '.webmanifest': 'application/manifest+json',
 };
 
 const server = http.createServer(async (req, res) => {
-  let file = decodeURIComponent(new URL(req.url, 'http://x').pathname).replace('/bodyos', '') || '/index.html';
+  let file =
+    decodeURIComponent(new URL(req.url, 'http://x').pathname).replace('/bodyos', '') ||
+    '/index.html';
   if (file === '/' || file === '') file = '/index.html';
   try {
     const data = await readFile(join('dist', file));
@@ -78,7 +85,10 @@ await flow('log a partial workout offline -> honest completion', async (page) =>
   await page.waitForTimeout(600);
   // Whole workout runs with the network cut — Gym Mode must not care.
   await page.context().setOffline(true);
-  await page.getByRole('button', { name: /start session|train anyway/i }).first().click();
+  await page
+    .getByRole('button', { name: /start session|train anyway/i })
+    .first()
+    .click();
   await page.waitForTimeout(600);
   // First-session honesty: weight starts at 0 with the set-your-weight hint.
   const objective = await page.locator('body').innerText();
@@ -111,7 +121,10 @@ await flow('history: open a session and correct a set', async (page) => {
   }
   await page.locator('section:has-text("Recent sessions") .row-list button').first().click();
   await page.waitForTimeout(700);
-  await page.getByRole('button', { name: /edit set 1/i }).first().click();
+  await page
+    .getByRole('button', { name: /edit set 1/i })
+    .first()
+    .click();
   await page.waitForTimeout(300);
   await page.getByRole('button', { name: 'Increase Reps' }).click();
   await page.getByRole('button', { name: /save correction/i }).click();

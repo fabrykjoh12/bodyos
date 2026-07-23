@@ -43,5 +43,9 @@ export function CountUp({ value, duration = 900, delay = 0, format, className }:
     };
   }, [value, duration, delay]);
 
-  return <span className={`tnum ${className ?? ''}`}>{format ? format(display) : String(Math.round(display))}</span>;
+  return (
+    <span className={`tnum ${className ?? ''}`}>
+      {format ? format(display) : String(Math.round(display))}
+    </span>
+  );
 }

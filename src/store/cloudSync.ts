@@ -137,13 +137,8 @@ export function decidePull(args: {
   localDirty: boolean;
   localDirtyAt: number | null;
 }): PullDecision {
-  const {
-    remoteExists,
-    remoteUpdatedAt,
-    lastSyncedRemoteUpdatedAt,
-    localDirty,
-    localDirtyAt,
-  } = args;
+  const { remoteExists, remoteUpdatedAt, lastSyncedRemoteUpdatedAt, localDirty, localDirtyAt } =
+    args;
 
   if (!remoteExists) return { action: 'push' }; // seed cloud from this device
   if (remoteUpdatedAt === lastSyncedRemoteUpdatedAt) {
@@ -208,7 +203,12 @@ function messageOf(e: unknown): string {
 
 /** Firestore Timestamp → ISO string (the reconcile clock we compare on). */
 function tsToIso(value: unknown): string | null {
-  if (value && typeof value === 'object' && 'toDate' in value && typeof (value as { toDate: unknown }).toDate === 'function') {
+  if (
+    value &&
+    typeof value === 'object' &&
+    'toDate' in value &&
+    typeof (value as { toDate: unknown }).toDate === 'function'
+  ) {
     return (value as { toDate: () => Date }).toDate().toISOString();
   }
   return null;
@@ -222,7 +222,11 @@ async function pushNow(): Promise<void> {
   try {
     const { doc, setDoc, getDoc, serverTimestamp } = await import('firebase/firestore');
     const ref = doc(fb.db, COLLECTION, authUserId);
-    await setDoc(ref, { data: toSynced(local), appVersion: local.version, updatedAt: serverTimestamp() });
+    await setDoc(ref, {
+      data: toSynced(local),
+      appVersion: local.version,
+      updatedAt: serverTimestamp(),
+    });
     // Read back the resolved server timestamp so both devices compare the same clock.
     const snap = await getDoc(ref);
     const remoteUpdatedAt = tsToIso(snap.get('updatedAt')) ?? new Date().toISOString();
@@ -312,10 +316,7 @@ async function pullAndReconcile(): Promise<void> {
 
 // --- public auth API (called from the Account UI) --------------------------
 
-export async function signIn(
-  email: string,
-  password: string,
-): Promise<{ error: string | null }> {
+export async function signIn(email: string, password: string): Promise<{ error: string | null }> {
   const fb = await loadFirebase();
   if (!fb) return { error: 'Cloud sync is not configured.' };
   try {
@@ -349,7 +350,8 @@ export async function signInWithGoogle(): Promise<{ error: string | null }> {
   const fb = await loadFirebase();
   if (!fb) return { error: 'Cloud sync is not configured.' };
   try {
-    const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } = await import('firebase/auth');
+    const { GoogleAuthProvider, signInWithPopup, signInWithRedirect } =
+      await import('firebase/auth');
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(fb.auth, provider);
@@ -361,7 +363,10 @@ export async function signInWithGoogle(): Promise<{ error: string | null }> {
         return { error: null };
       }
       // Popup blocked/unsupported → redirect (navigates away; completes on load).
-      if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+      if (
+        code === 'auth/popup-blocked' ||
+        code === 'auth/operation-not-supported-in-this-environment'
+      ) {
         await signInWithRedirect(fb.auth, provider);
         return { error: null };
       }

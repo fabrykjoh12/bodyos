@@ -58,47 +58,118 @@ const SILHOUETTE_HALF = [
 // Heat regions tile the groove-bounded muscle masses.
 const FRONT_PLATES: Plate[] = [
   // Deltoid cap
-  { m: 'shoulders', mirror: true, d: 'M37.2,34.8 Q30,33.4 26.2,37 Q23.2,40.4 23.2,46.5 Q23.6,50 25.4,51.5 Q28.2,48 31.8,45.6 Q35,43.4 37,41.2 Q37.8,37.6 37.2,34.8 Z' },
+  {
+    m: 'shoulders',
+    mirror: true,
+    d: 'M37.2,34.8 Q30,33.4 26.2,37 Q23.2,40.4 23.2,46.5 Q23.6,50 25.4,51.5 Q28.2,48 31.8,45.6 Q35,43.4 37,41.2 Q37.8,37.6 37.2,34.8 Z',
+  },
   // Pec — clavicle to the pec-line groove
-  { m: 'chest', mirror: true, d: 'M49.4,35.2 Q42,35.8 38,38.8 Q36,44 36.8,49 Q38.2,55.2 43.4,57 Q47,58 49.4,56.6 Z' },
+  {
+    m: 'chest',
+    mirror: true,
+    d: 'M49.4,35.2 Q42,35.8 38,38.8 Q36,44 36.8,49 Q38.2,55.2 43.4,57 Q47,58 49.4,56.6 Z',
+  },
   // Biceps
-  { m: 'biceps', mirror: true, d: 'M24.4,51.5 Q27.8,53.6 30.4,52.4 Q31.8,58 30.6,64.8 Q29.6,70 27,71.6 Q24,70.4 22.6,64.8 Q21.8,57 24.4,51.5 Z' },
+  {
+    m: 'biceps',
+    mirror: true,
+    d: 'M24.4,51.5 Q27.8,53.6 30.4,52.4 Q31.8,58 30.6,64.8 Q29.6,70 27,71.6 Q24,70.4 22.6,64.8 Q21.8,57 24.4,51.5 Z',
+  },
   // Forearm
-  { m: 'forearms', mirror: true, d: 'M26.8,74 Q28.8,73.4 29.8,75.6 Q28.8,84 25.6,95.8 Q24.2,100.4 21.8,99.8 Q19.8,98.8 20.4,94 Q22.4,82 26.8,74 Z' },
+  {
+    m: 'forearms',
+    mirror: true,
+    d: 'M26.8,74 Q28.8,73.4 29.8,75.6 Q28.8,84 25.6,95.8 Q24.2,100.4 21.8,99.8 Q19.8,98.8 20.4,94 Q22.4,82 26.8,74 Z',
+  },
   // Abs column (segment grooves drawn separately)
-  { m: 'core', d: 'M44.4,59.5 Q50,58.6 55.6,59.5 Q56.8,74 55.2,90.5 Q52.8,95 50,95 Q47.2,95 44.8,90.5 Q43.2,74 44.4,59.5 Z' },
+  {
+    m: 'core',
+    d: 'M44.4,59.5 Q50,58.6 55.6,59.5 Q56.8,74 55.2,90.5 Q52.8,95 50,95 Q47.2,95 44.8,90.5 Q43.2,74 44.4,59.5 Z',
+  },
   // Obliques
-  { m: 'core', mirror: true, d: 'M42.8,60.5 Q40.2,67 40.4,76.5 Q40.8,84.5 42.8,89.8 Q43.8,80 43.4,70 Q43.2,64.5 42.8,60.5 Z' },
+  {
+    m: 'core',
+    mirror: true,
+    d: 'M42.8,60.5 Q40.2,67 40.4,76.5 Q40.8,84.5 42.8,89.8 Q43.8,80 43.4,70 Q43.2,64.5 42.8,60.5 Z',
+  },
   // Quad — outer sweep + rectus, bounded by the sartorius groove
-  { m: 'quads', mirror: true, d: 'M39.6,106.5 Q44,104.5 47.2,108.5 Q48.4,124 46.8,143 Q45.6,154.5 42.4,157 Q39,155 37.8,142 Q36.8,122 39.6,106.5 Z' },
+  {
+    m: 'quads',
+    mirror: true,
+    d: 'M39.6,106.5 Q44,104.5 47.2,108.5 Q48.4,124 46.8,143 Q45.6,154.5 42.4,157 Q39,155 37.8,142 Q36.8,122 39.6,106.5 Z',
+  },
   // Front lower leg (tibialis + visible calf edge)
-  { m: 'calves', mirror: true, d: 'M39.4,167.5 Q42.6,165 45,167.5 Q45.9,176.5 44.5,188 Q43.4,194 41.8,195.4 Q40.1,194 38.9,187.5 Q37.8,176.5 39.4,167.5 Z' },
+  {
+    m: 'calves',
+    mirror: true,
+    d: 'M39.4,167.5 Q42.6,165 45,167.5 Q45.9,176.5 44.5,188 Q43.4,194 41.8,195.4 Q40.1,194 38.9,187.5 Q37.8,176.5 39.4,167.5 Z',
+  },
 ];
 
 const BACK_PLATES: Plate[] = [
   // Traps — the reference's long diamond from neck to mid-back
-  { m: 'back', d: 'M50,27.5 Q43.5,30.5 38,33.6 Q44,38 47.2,46 Q49.2,52 50,60 Q50.8,52 52.8,46 Q56,38 62,33.6 Q56.5,30.5 50,27.5 Z' },
+  {
+    m: 'back',
+    d: 'M50,27.5 Q43.5,30.5 38,33.6 Q44,38 47.2,46 Q49.2,52 50,60 Q50.8,52 52.8,46 Q56,38 62,33.6 Q56.5,30.5 50,27.5 Z',
+  },
   // Rear deltoid
-  { m: 'shoulders', mirror: true, d: 'M36.6,34.8 Q29.6,33.4 26,37 Q23,40.4 23.2,46.5 Q23.6,50 25.4,51.5 Q28.4,48 32,45.6 Q34.8,43.6 36.4,41.4 Q37.2,37.6 36.6,34.8 Z' },
+  {
+    m: 'shoulders',
+    mirror: true,
+    d: 'M36.6,34.8 Q29.6,33.4 26,37 Q23,40.4 23.2,46.5 Q23.6,50 25.4,51.5 Q28.4,48 32,45.6 Q34.8,43.6 36.4,41.4 Q37.2,37.6 36.6,34.8 Z',
+  },
   // Lats — wide V from armpit to the waist
-  { m: 'back', mirror: true, d: 'M48.6,50.5 Q42,48.5 38.2,45.5 Q36.4,54 38.6,64 Q41.2,73.5 46,78.5 Q48.6,74 48.6,66 Z' },
+  {
+    m: 'back',
+    mirror: true,
+    d: 'M48.6,50.5 Q42,48.5 38.2,45.5 Q36.4,54 38.6,64 Q41.2,73.5 46,78.5 Q48.6,74 48.6,66 Z',
+  },
   // Erector column
-  { m: 'back', d: 'M45.6,80.5 Q50,79 54.4,80.5 Q55.2,88 53.8,94.5 Q52,97.5 50,97.5 Q48,97.5 46.2,94.5 Q44.8,88 45.6,80.5 Z' },
+  {
+    m: 'back',
+    d: 'M45.6,80.5 Q50,79 54.4,80.5 Q55.2,88 53.8,94.5 Q52,97.5 50,97.5 Q48,97.5 46.2,94.5 Q44.8,88 45.6,80.5 Z',
+  },
   // Triceps
-  { m: 'triceps', mirror: true, d: 'M24.2,51.5 Q27.6,53.6 30.2,52.4 Q31.6,58 30.4,64.8 Q29.4,70 26.8,71.6 Q23.8,70.4 22.4,64.8 Q21.6,57 24.2,51.5 Z' },
+  {
+    m: 'triceps',
+    mirror: true,
+    d: 'M24.2,51.5 Q27.6,53.6 30.2,52.4 Q31.6,58 30.4,64.8 Q29.4,70 26.8,71.6 Q23.8,70.4 22.4,64.8 Q21.6,57 24.2,51.5 Z',
+  },
   // Forearm
-  { m: 'forearms', mirror: true, d: 'M26.8,74 Q28.8,73.4 29.8,75.6 Q28.8,84 25.6,95.8 Q24.2,100.4 21.8,99.8 Q19.8,98.8 20.4,94 Q22.4,82 26.8,74 Z' },
+  {
+    m: 'forearms',
+    mirror: true,
+    d: 'M26.8,74 Q28.8,73.4 29.8,75.6 Q28.8,84 25.6,95.8 Q24.2,100.4 21.8,99.8 Q19.8,98.8 20.4,94 Q22.4,82 26.8,74 Z',
+  },
   // Glute — round mass
-  { m: 'glutes', mirror: true, d: 'M40.4,99.5 Q46,97.5 49.2,101 Q50,108 48.6,113.5 Q45,117.8 40.8,116 Q37.8,112.5 38.2,106 Q38.8,101.5 40.4,99.5 Z' },
+  {
+    m: 'glutes',
+    mirror: true,
+    d: 'M40.4,99.5 Q46,97.5 49.2,101 Q50,108 48.6,113.5 Q45,117.8 40.8,116 Q37.8,112.5 38.2,106 Q38.8,101.5 40.4,99.5 Z',
+  },
   // Hamstrings
-  { m: 'hamstrings', mirror: true, d: 'M39.2,119.5 Q44,117.5 47.8,120.5 Q48.6,135 46.6,149 Q45.2,157.5 42.2,159.5 Q39.2,157.5 38,147 Q37,131 39.2,119.5 Z' },
+  {
+    m: 'hamstrings',
+    mirror: true,
+    d: 'M39.2,119.5 Q44,117.5 47.8,120.5 Q48.6,135 46.6,149 Q45.2,157.5 42.2,159.5 Q39.2,157.5 38,147 Q37,131 39.2,119.5 Z',
+  },
   // Gastrocnemius diamond
-  { m: 'calves', mirror: true, d: 'M39.2,166 Q42.4,163.2 45.2,166 Q46.2,175 44.7,186.5 Q43.5,193.5 41.9,195 Q40.2,193.5 38.9,186.5 Q37.6,175 39.2,166 Z' },
+  {
+    m: 'calves',
+    mirror: true,
+    d: 'M39.2,166 Q42.4,163.2 45.2,166 Q46.2,175 44.7,186.5 Q43.5,193.5 41.9,195 Q40.2,193.5 38.9,186.5 Q37.6,175 39.2,166 Z',
+  },
 ];
 
 /** Groove lines — the thin dark separations that make the body read as 3D. */
 function FrontGrooves() {
-  const s = { stroke: '#0A0D12', strokeOpacity: 0.3, strokeWidth: 0.7, fill: 'none', strokeLinecap: 'round' as const };
+  const s = {
+    stroke: '#0A0D12',
+    strokeOpacity: 0.3,
+    strokeWidth: 0.7,
+    fill: 'none',
+    strokeLinecap: 'round' as const,
+  };
   return (
     <g {...s}>
       {/* clavicles + sternum */}
@@ -136,7 +207,13 @@ function FrontGrooves() {
 }
 
 function BackGrooves() {
-  const s = { stroke: '#0A0D12', strokeOpacity: 0.3, strokeWidth: 0.7, fill: 'none', strokeLinecap: 'round' as const };
+  const s = {
+    stroke: '#0A0D12',
+    strokeOpacity: 0.3,
+    strokeWidth: 0.7,
+    fill: 'none',
+    strokeLinecap: 'round' as const,
+  };
   return (
     <g {...s}>
       {/* spine */}
@@ -186,8 +263,15 @@ function Figure({
     const heat = heatColor(v);
     return (
       <g key={key} transform={transform}>
-        {heat.glow && <path d={p.d} fill={VOLT} opacity={heat.opacity * 0.85} filter="url(#mm-glow)" />}
-        <path d={p.d} fill={VOLT} opacity={heat.opacity} style={{ transition: 'opacity 400ms ease' }} />
+        {heat.glow && (
+          <path d={p.d} fill={VOLT} opacity={heat.opacity * 0.85} filter="url(#mm-glow)" />
+        )}
+        <path
+          d={p.d}
+          fill={VOLT}
+          opacity={heat.opacity}
+          style={{ transition: 'opacity 400ms ease' }}
+        />
       </g>
     );
   };
@@ -251,14 +335,21 @@ export function MuscleMap({
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: VOLT }} /> Primary
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: VOLT, opacity: 0.32 }} /> Secondary
+            <span
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ background: VOLT, opacity: 0.32 }}
+            />{' '}
+            Secondary
           </span>
         </div>
       )}
       {legend === 'volume' && (
         <div className="flex items-center gap-2 text-[11px] text-content-muted">
           <span>Less</span>
-          <span className="h-2 w-24 rounded-full" style={{ background: `linear-gradient(90deg, ${VOLT}29, ${VOLT})` }} />
+          <span
+            className="h-2 w-24 rounded-full"
+            style={{ background: `linear-gradient(90deg, ${VOLT}29, ${VOLT})` }}
+          />
           <span>More</span>
         </div>
       )}

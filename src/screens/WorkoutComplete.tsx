@@ -17,7 +17,10 @@ export function WorkoutComplete() {
   const session = useStore((s) => s.sessions.find((x) => x.id === id));
   const unit = useStore((s) => s.user.settings.unit);
   const personalRecords = useStore((s) => s.personalRecords);
-  const prs = useMemo(() => personalRecords.filter((p) => p.sessionId === id), [personalRecords, id]);
+  const prs = useMemo(
+    () => personalRecords.filter((p) => p.sessionId === id),
+    [personalRecords, id],
+  );
   const [shareState, setShareState] = useState<'idle' | 'busy' | 'downloaded' | 'failed'>('idle');
 
   const recommendations = useMemo(
@@ -48,7 +51,10 @@ export function WorkoutComplete() {
         <div className="flex flex-col items-center pt-14 text-center">
           <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-accent text-ink shadow-accent-glow">
             <Check size={38} strokeWidth={3} />
-            <span className="absolute inset-0 rounded-full bg-accent animate-ping-once" aria-hidden />
+            <span
+              className="absolute inset-0 rounded-full bg-accent animate-ping-once"
+              aria-hidden
+            />
           </span>
           <p className="label-tiny mt-8">{session.name}</p>
           <h1 className="mt-2 text-display text-content">
@@ -67,7 +73,12 @@ export function WorkoutComplete() {
         <section className="card-hero p-6 text-center">
           <p className="label-tiny">Total volume</p>
           <p className="mt-2 text-[3rem] font-bold leading-none tracking-[-0.03em] text-content">
-            <CountUp value={stats.volume} duration={1300} delay={250} format={(v) => formatVolume(v, unit)} />
+            <CountUp
+              value={stats.volume}
+              duration={1300}
+              delay={250}
+              format={(v) => formatVolume(v, unit)}
+            />
           </p>
           <div className="mt-6 flex divide-x divide-line border-t border-line pt-5">
             <CompleteCell label="Minutes" value={stats.minutes} delay={400} />
@@ -88,7 +99,9 @@ export function WorkoutComplete() {
             <ul className="mt-3 space-y-2">
               {prs.map((pr) => (
                 <li key={pr.id} className="flex items-baseline justify-between gap-3">
-                  <span className="min-w-0 truncate text-sm font-bold text-content">{exerciseName(pr.exerciseId)}</span>
+                  <span className="min-w-0 truncate text-sm font-bold text-content">
+                    {exerciseName(pr.exerciseId)}
+                  </span>
                   <span className="tnum shrink-0 text-sm text-content-muted">
                     {pr.type === 'weight'
                       ? `${formatWeight(pr.value, unit)} × ${pr.reps}`
@@ -114,7 +127,9 @@ export function WorkoutComplete() {
             <div className="flex flex-col gap-2">
               {recommendations.map((rec) => (
                 <div key={rec.exerciseId}>
-                  <p className="mb-1 text-xs font-medium text-content-faint">{exerciseName(rec.exerciseId)}</p>
+                  <p className="mb-1 text-xs font-medium text-content-faint">
+                    {exerciseName(rec.exerciseId)}
+                  </p>
                   <ProgressionRecommendation rec={rec} />
                 </div>
               ))}

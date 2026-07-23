@@ -47,7 +47,10 @@ export default {
       },
       fontSize: {
         // Typography does the heavy lifting: a real display scale.
-        'display-xl': ['3.4rem', { lineHeight: '0.98', letterSpacing: '-0.04em', fontWeight: '750' }],
+        'display-xl': [
+          '3.4rem',
+          { lineHeight: '0.98', letterSpacing: '-0.04em', fontWeight: '750' },
+        ],
         display: ['2.6rem', { lineHeight: '1.0', letterSpacing: '-0.035em', fontWeight: '740' }],
         title: ['1.9rem', { lineHeight: '1.05', letterSpacing: '-0.03em', fontWeight: '720' }],
         heading: ['1.35rem', { lineHeight: '1.15', letterSpacing: '-0.02em', fontWeight: '700' }],
@@ -100,8 +103,12 @@ export default {
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
         'glow-pulse': {
-          '0%, 100%': { boxShadow: '0 0 0 1px rgba(205,251,69,0.45), 0 6px 24px -4px rgba(205,251,69,0.28)' },
-          '50%': { boxShadow: '0 0 0 1px rgba(205,251,69,0.6), 0 10px 36px -4px rgba(205,251,69,0.45)' },
+          '0%, 100%': {
+            boxShadow: '0 0 0 1px rgba(205,251,69,0.45), 0 6px 24px -4px rgba(205,251,69,0.28)',
+          },
+          '50%': {
+            boxShadow: '0 0 0 1px rgba(205,251,69,0.6), 0 10px 36px -4px rgba(205,251,69,0.45)',
+          },
         },
         shimmer: {
           '0%': { transform: 'translateX(-120%)' },

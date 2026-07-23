@@ -49,27 +49,136 @@ function makeWorkoutExercise(spec: ExSpec, order: number): WorkoutExercise {
 }
 
 const PUSH: ExSpec[] = [
-  { exerciseId: 'bench-press', sets: 3, repRange: [6, 10], restSec: 150, startWeightKg: 60, weeklyGain: 2.5 },
-  { exerciseId: 'incline-db-press', sets: 3, repRange: [8, 12], restSec: 120, startWeightKg: 24, weeklyGain: 2, notes: 'Controlled stretch at the bottom.' },
-  { exerciseId: 'overhead-press', sets: 3, repRange: [5, 8], restSec: 150, startWeightKg: 40, weeklyGain: 2.5 },
-  { exerciseId: 'lateral-raise', sets: 3, repRange: [12, 20], restSec: 75, startWeightKg: 9, weeklyGain: 0.5, superset: 'push-arms' },
-  { exerciseId: 'triceps-pushdown', sets: 3, repRange: [10, 15], restSec: 75, startWeightKg: 25, weeklyGain: 2.5, superset: 'push-arms' },
+  {
+    exerciseId: 'bench-press',
+    sets: 3,
+    repRange: [6, 10],
+    restSec: 150,
+    startWeightKg: 60,
+    weeklyGain: 2.5,
+  },
+  {
+    exerciseId: 'incline-db-press',
+    sets: 3,
+    repRange: [8, 12],
+    restSec: 120,
+    startWeightKg: 24,
+    weeklyGain: 2,
+    notes: 'Controlled stretch at the bottom.',
+  },
+  {
+    exerciseId: 'overhead-press',
+    sets: 3,
+    repRange: [5, 8],
+    restSec: 150,
+    startWeightKg: 40,
+    weeklyGain: 2.5,
+  },
+  {
+    exerciseId: 'lateral-raise',
+    sets: 3,
+    repRange: [12, 20],
+    restSec: 75,
+    startWeightKg: 9,
+    weeklyGain: 0.5,
+    superset: 'push-arms',
+  },
+  {
+    exerciseId: 'triceps-pushdown',
+    sets: 3,
+    repRange: [10, 15],
+    restSec: 75,
+    startWeightKg: 25,
+    weeklyGain: 2.5,
+    superset: 'push-arms',
+  },
 ];
 
 const PULL: ExSpec[] = [
-  { exerciseId: 'lat-pulldown', sets: 3, repRange: [8, 12], restSec: 120, startWeightKg: 55, weeklyGain: 5 },
-  { exerciseId: 'barbell-row', sets: 3, repRange: [6, 10], restSec: 150, startWeightKg: 55, weeklyGain: 2.5 },
-  { exerciseId: 'seated-row', sets: 3, repRange: [8, 12], restSec: 120, startWeightKg: 50, weeklyGain: 5 },
-  { exerciseId: 'bicep-curl', sets: 3, repRange: [10, 15], restSec: 75, startWeightKg: 12, weeklyGain: 0.5 },
-  { exerciseId: 'cable-curl', sets: 2, repRange: [10, 15], restSec: 75, startWeightKg: 20, weeklyGain: 2.5 },
+  {
+    exerciseId: 'lat-pulldown',
+    sets: 3,
+    repRange: [8, 12],
+    restSec: 120,
+    startWeightKg: 55,
+    weeklyGain: 5,
+  },
+  {
+    exerciseId: 'barbell-row',
+    sets: 3,
+    repRange: [6, 10],
+    restSec: 150,
+    startWeightKg: 55,
+    weeklyGain: 2.5,
+  },
+  {
+    exerciseId: 'seated-row',
+    sets: 3,
+    repRange: [8, 12],
+    restSec: 120,
+    startWeightKg: 50,
+    weeklyGain: 5,
+  },
+  {
+    exerciseId: 'bicep-curl',
+    sets: 3,
+    repRange: [10, 15],
+    restSec: 75,
+    startWeightKg: 12,
+    weeklyGain: 0.5,
+  },
+  {
+    exerciseId: 'cable-curl',
+    sets: 2,
+    repRange: [10, 15],
+    restSec: 75,
+    startWeightKg: 20,
+    weeklyGain: 2.5,
+  },
 ];
 
 const LEGS: ExSpec[] = [
-  { exerciseId: 'squat', sets: 3, repRange: [5, 8], restSec: 180, startWeightKg: 80, weeklyGain: 5, notes: 'Brace before every rep.' },
-  { exerciseId: 'romanian-deadlift', sets: 3, repRange: [8, 12], restSec: 150, startWeightKg: 70, weeklyGain: 2.5 },
-  { exerciseId: 'leg-press', sets: 3, repRange: [10, 15], restSec: 120, startWeightKg: 140, weeklyGain: 10 },
-  { exerciseId: 'leg-curl', sets: 3, repRange: [10, 15], restSec: 90, startWeightKg: 45, weeklyGain: 5 },
-  { exerciseId: 'calf-raise', sets: 4, repRange: [10, 15], restSec: 60, startWeightKg: 60, weeklyGain: 5 },
+  {
+    exerciseId: 'squat',
+    sets: 3,
+    repRange: [5, 8],
+    restSec: 180,
+    startWeightKg: 80,
+    weeklyGain: 5,
+    notes: 'Brace before every rep.',
+  },
+  {
+    exerciseId: 'romanian-deadlift',
+    sets: 3,
+    repRange: [8, 12],
+    restSec: 150,
+    startWeightKg: 70,
+    weeklyGain: 2.5,
+  },
+  {
+    exerciseId: 'leg-press',
+    sets: 3,
+    repRange: [10, 15],
+    restSec: 120,
+    startWeightKg: 140,
+    weeklyGain: 10,
+  },
+  {
+    exerciseId: 'leg-curl',
+    sets: 3,
+    repRange: [10, 15],
+    restSec: 90,
+    startWeightKg: 45,
+    weeklyGain: 5,
+  },
+  {
+    exerciseId: 'calf-raise',
+    sets: 4,
+    repRange: [10, 15],
+    restSec: 60,
+    startWeightKg: 60,
+    weeklyGain: 5,
+  },
 ];
 
 function makeTemplate(name: string, focus: string, specs: ExSpec[]): WorkoutTemplate {
@@ -218,7 +327,13 @@ function silhouetteDataUrl(pose: string, weekLabel: string, tone: number): strin
 }
 
 function seedPhotos(): ProgressPhoto[] {
-  const specs: { pose: ProgressPhoto['pose']; label: string; days: number; bw: number; tone: number }[] = [
+  const specs: {
+    pose: ProgressPhoto['pose'];
+    label: string;
+    days: number;
+    bw: number;
+    tone: number;
+  }[] = [
     { pose: 'front-relaxed', label: 'Week 1', days: 42, bw: 78.4, tone: 0 },
     { pose: 'side-relaxed', label: 'Week 1', days: 42, bw: 78.4, tone: 2 },
     { pose: 'back-relaxed', label: 'Week 1', days: 42, bw: 78.4, tone: 4 },
@@ -353,10 +468,38 @@ export function createSeedData(): AppData {
     // A lean-bulk trend over the demo history: body weight and size creeping up
     // while the waist holds. Newest first, mirroring addMeasurement().
     measurements: [
-      { id: uid('meas'), takenAt: daysAgoISO(0), bodyWeightKg: 80.1, waistCm: 83, chestCm: 105.5, armCm: 39.5 },
-      { id: uid('meas'), takenAt: daysAgoISO(14), bodyWeightKg: 79.6, waistCm: 82.5, chestCm: 105, armCm: 39.2 },
-      { id: uid('meas'), takenAt: daysAgoISO(28), bodyWeightKg: 79, waistCm: 82.5, chestCm: 104.5, armCm: 38.8 },
-      { id: uid('meas'), takenAt: daysAgoISO(42), bodyWeightKg: 78.5, waistCm: 82, chestCm: 104, armCm: 38.5 },
+      {
+        id: uid('meas'),
+        takenAt: daysAgoISO(0),
+        bodyWeightKg: 80.1,
+        waistCm: 83,
+        chestCm: 105.5,
+        armCm: 39.5,
+      },
+      {
+        id: uid('meas'),
+        takenAt: daysAgoISO(14),
+        bodyWeightKg: 79.6,
+        waistCm: 82.5,
+        chestCm: 105,
+        armCm: 39.2,
+      },
+      {
+        id: uid('meas'),
+        takenAt: daysAgoISO(28),
+        bodyWeightKg: 79,
+        waistCm: 82.5,
+        chestCm: 104.5,
+        armCm: 38.8,
+      },
+      {
+        id: uid('meas'),
+        takenAt: daysAgoISO(42),
+        bodyWeightKg: 78.5,
+        waistCm: 82,
+        chestCm: 104,
+        armCm: 38.5,
+      },
     ],
     weeklyPlan,
     exerciseNotes: {

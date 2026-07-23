@@ -7,8 +7,30 @@ import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Chip } from '@/components/ui/Chip';
 import { ExerciseThumb } from '@/components/exercise/ExerciseThumb';
 
-const MUSCLES: (MuscleGroup | 'all')[] = ['all', 'chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes', 'calves', 'core', 'forearms'];
-const EQUIPMENT: (Equipment | 'all')[] = ['all', 'barbell', 'dumbbell', 'machine', 'cable', 'bodyweight', 'kettlebell', 'band'];
+const MUSCLES: (MuscleGroup | 'all')[] = [
+  'all',
+  'chest',
+  'back',
+  'shoulders',
+  'biceps',
+  'triceps',
+  'quads',
+  'hamstrings',
+  'glutes',
+  'calves',
+  'core',
+  'forearms',
+];
+const EQUIPMENT: (Equipment | 'all')[] = [
+  'all',
+  'barbell',
+  'dumbbell',
+  'machine',
+  'cable',
+  'bodyweight',
+  'kettlebell',
+  'band',
+];
 
 export function ExerciseLibrary() {
   const navigate = useNavigate();
@@ -43,12 +65,16 @@ export function ExerciseLibrary() {
 
       <div className="no-scrollbar bleed flex gap-1.5 overflow-x-auto">
         {MUSCLES.map((m) => (
-          <FilterChip key={m} active={muscle === m} onClick={() => setMuscle(m)}>{m}</FilterChip>
+          <FilterChip key={m} active={muscle === m} onClick={() => setMuscle(m)}>
+            {m}
+          </FilterChip>
         ))}
       </div>
       <div className="no-scrollbar bleed -mt-2 flex gap-1.5 overflow-x-auto">
         {EQUIPMENT.map((eq) => (
-          <FilterChip key={eq} active={equipment === eq} onClick={() => setEquipment(eq)}>{eq}</FilterChip>
+          <FilterChip key={eq} active={equipment === eq} onClick={() => setEquipment(eq)}>
+            {eq}
+          </FilterChip>
         ))}
       </div>
 
@@ -67,18 +93,32 @@ export function ExerciseLibrary() {
             <ExerciseThumb id={ex.id} muscle={ex.primaryMuscle} />
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-content">{ex.name}</p>
-              <p className="text-xs capitalize text-content-muted">{ex.primaryMuscle} · {ex.equipment} · {ex.kind}</p>
+              <p className="text-xs capitalize text-content-muted">
+                {ex.primaryMuscle} · {ex.equipment} · {ex.kind}
+              </p>
             </div>
-            <Chip tone="muted">{ex.defaultRepRange[0]}–{ex.defaultRepRange[1]}</Chip>
+            <Chip tone="muted">
+              {ex.defaultRepRange[0]}–{ex.defaultRepRange[1]}
+            </Chip>
           </button>
         ))}
-        {results.length === 0 && <p className="card p-4 text-sm text-content-faint">No exercises match.</p>}
+        {results.length === 0 && (
+          <p className="card p-4 text-sm text-content-faint">No exercises match.</p>
+        )}
       </div>
     </div>
   );
 }
 
-function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}

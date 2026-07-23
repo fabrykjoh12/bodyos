@@ -27,7 +27,9 @@ export function SessionRecap({ session, unit }: { session: WorkoutSession; unit:
                   key={s.id}
                   className="tnum inline-flex items-center gap-1 rounded-lg bg-surface-2 px-2 py-1 text-xs text-content-muted"
                 >
-                  <span className="font-semibold text-content">{formatWeight(s.weightKg, unit, false)}</span>
+                  <span className="font-semibold text-content">
+                    {formatWeight(s.weightKg, unit, false)}
+                  </span>
                   <span className="text-content-faint">{unit}</span>×{s.reps}
                   {s.rir !== undefined && (
                     <span className="text-content-faint">· {s.rir >= 4 ? '4+' : s.rir} RIR</span>

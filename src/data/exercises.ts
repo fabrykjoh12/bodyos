@@ -173,7 +173,11 @@ export const EXERCISES: Exercise[] = [
     kind: 'compound',
     defaultRepRange: [5, 8],
     defaultIncrementKg: 5,
-    instructions: ['Brace hard before descending.', 'Sit down and back to depth.', 'Drive up through mid-foot.'],
+    instructions: [
+      'Brace hard before descending.',
+      'Sit down and back to depth.',
+      'Drive up through mid-foot.',
+    ],
     tips: [
       'Take a big breath and brace your whole midsection before each rep.',
       'Keep the knees tracking over the toes — don’t let them cave in.',
@@ -216,7 +220,11 @@ export const EXERCISES: Exercise[] = [
     kind: 'compound',
     defaultRepRange: [8, 12],
     defaultIncrementKg: 2.5,
-    instructions: ['Soft knees, push the hips back.', 'Feel the hamstring stretch.', 'Stand tall to finish.'],
+    instructions: [
+      'Soft knees, push the hips back.',
+      'Feel the hamstring stretch.',
+      'Stand tall to finish.',
+    ],
     tips: [
       'Keep the bar dragging close to your legs the whole way.',
       'Stop when your back would round — that’s your range, not the floor.',
@@ -355,7 +363,11 @@ export const EXERCISES: Exercise[] = [
     metric: 'bodyweight-reps',
     defaultRepRange: [6, 12],
     defaultIncrementKg: 2.5,
-    instructions: ['Lean the torso forward.', 'Lower until you feel a chest stretch.', 'Press back to lockout.'],
+    instructions: [
+      'Lean the torso forward.',
+      'Lower until you feel a chest stretch.',
+      'Press back to lockout.',
+    ],
     substitutions: ['bench-press', 'machine-chest-press'],
   },
   {
@@ -410,7 +422,11 @@ export const EXERCISES: Exercise[] = [
     kind: 'compound',
     defaultRepRange: [3, 6],
     defaultIncrementKg: 5,
-    instructions: ['Set the back flat, bar over mid-foot.', 'Drive the floor away.', 'Lock out hips and knees together.'],
+    instructions: [
+      'Set the back flat, bar over mid-foot.',
+      'Drive the floor away.',
+      'Lock out hips and knees together.',
+    ],
     tips: [
       'Take the slack out of the bar before you pull — no jerking.',
       'Keep the bar dragging up your shins and thighs; don’t hyperextend at lockout.',
@@ -536,7 +552,11 @@ export const EXERCISES: Exercise[] = [
     kind: 'compound',
     defaultRepRange: [5, 8],
     defaultIncrementKg: 2.5,
-    instructions: ['Elbows high, bar on the front delts.', 'Sit straight down.', 'Keep the torso tall.'],
+    instructions: [
+      'Elbows high, bar on the front delts.',
+      'Sit straight down.',
+      'Keep the torso tall.',
+    ],
     substitutions: ['squat', 'hack-squat'],
   },
   {
@@ -588,7 +608,11 @@ export const EXERCISES: Exercise[] = [
     kind: 'compound',
     defaultRepRange: [8, 12],
     defaultIncrementKg: 5,
-    instructions: ['Upper back on the bench.', 'Drive the hips to full extension.', 'Squeeze the glutes at the top.'],
+    instructions: [
+      'Upper back on the bench.',
+      'Drive the hips to full extension.',
+      'Squeeze the glutes at the top.',
+    ],
     substitutions: ['romanian-deadlift', 'leg-press'],
   },
   {
@@ -601,7 +625,10 @@ export const EXERCISES: Exercise[] = [
     kind: 'compound',
     defaultRepRange: [8, 12],
     defaultIncrementKg: 2.5,
-    instructions: ['Soft knees, hinge at the hips.', 'Feel the hamstring stretch, then stand tall.'],
+    instructions: [
+      'Soft knees, hinge at the hips.',
+      'Feel the hamstring stretch, then stand tall.',
+    ],
     substitutions: ['romanian-deadlift', 'leg-curl'],
   },
   {
@@ -642,7 +669,10 @@ export const EXERCISES: Exercise[] = [
     kind: 'isolation',
     defaultRepRange: [10, 15],
     defaultIncrementKg: 2.5,
-    instructions: ['Upper arms flat on the pad.', 'Curl through a full range, control the eccentric.'],
+    instructions: [
+      'Upper arms flat on the pad.',
+      'Curl through a full range, control the eccentric.',
+    ],
     substitutions: ['bicep-curl', 'cable-curl'],
   },
   {
@@ -696,7 +726,10 @@ export const EXERCISES: Exercise[] = [
     kind: 'isolation',
     defaultRepRange: [12, 20],
     defaultIncrementKg: 2.5,
-    instructions: ['Kneel and hold the rope by the head.', 'Crunch down with the abs, not the arms.'],
+    instructions: [
+      'Kneel and hold the rope by the head.',
+      'Crunch down with the abs, not the arms.',
+    ],
     substitutions: ['hanging-leg-raise', 'plank'],
   },
   {
@@ -847,10 +880,7 @@ export const EXERCISES: Exercise[] = [
       'Stand tall and walk with controlled, even steps.',
       'Keep the ribs down and shoulders packed.',
     ],
-    tips: [
-      'Count reps as steps or seconds under load.',
-      'Crush the handles — grip is the point.',
-    ],
+    tips: ['Count reps as steps or seconds under load.', 'Crush the handles — grip is the point.'],
     substitutions: ['plank'],
   },
   {
@@ -973,10 +1003,7 @@ export const EXERCISES: Exercise[] = [
       'Step up, driving through the top-leg heel.',
       'Lower under control — don’t bounce off the floor.',
     ],
-    tips: [
-      'Keep the working foot fully on the box.',
-      'Minimise push-off from the trailing leg.',
-    ],
+    tips: ['Keep the working foot fully on the box.', 'Minimise push-off from the trailing leg.'],
     substitutions: ['reverse-lunge', 'bulgarian-split-squat', 'walking-lunge'],
   },
   {
@@ -1024,9 +1051,7 @@ export const EXERCISES: Exercise[] = [
   },
 ];
 
-const EXERCISE_MAP: Record<string, Exercise> = Object.fromEntries(
-  EXERCISES.map((e) => [e.id, e]),
-);
+const EXERCISE_MAP: Record<string, Exercise> = Object.fromEntries(EXERCISES.map((e) => [e.id, e]));
 
 export function getExercise(id: string): Exercise | undefined {
   return EXERCISE_MAP[id];

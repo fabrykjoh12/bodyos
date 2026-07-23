@@ -31,7 +31,11 @@ export function topWeightSeries(exerciseId: string, sessions: WorkoutSession[]):
       if (!ex) return null;
       const working = ex.sets.filter((set) => set.completed && !set.isWarmup);
       if (working.length === 0) return null;
-      return { label: shortDate(s.startedAt), value: Math.max(...working.map((w) => w.weightKg)), date: s.startedAt };
+      return {
+        label: shortDate(s.startedAt),
+        value: Math.max(...working.map((w) => w.weightKg)),
+        date: s.startedAt,
+      };
     })
     .filter((p): p is SeriesPoint => p !== null);
 }
@@ -180,7 +184,11 @@ export function muscleTrainingMap(
 
 function volumeOf(s: WorkoutSession): number {
   return s.exercises.reduce(
-    (t, e) => t + e.sets.filter((x) => x.completed && !x.isWarmup).reduce((v, x) => v + setVolume(x.weightKg, x.reps), 0),
+    (t, e) =>
+      t +
+      e.sets
+        .filter((x) => x.completed && !x.isWarmup)
+        .reduce((v, x) => v + setVolume(x.weightKg, x.reps), 0),
     0,
   );
 }

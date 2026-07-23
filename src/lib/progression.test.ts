@@ -39,9 +39,24 @@ describe('roundToIncrement', () => {
 
 describe('aggregateDifficulty', () => {
   it('is worst-biased and only easy when all easy', () => {
-    expect(aggregateDifficulty([{ weightKg: 1, reps: 1, difficulty: 'easy' }, { weightKg: 1, reps: 1, difficulty: 'hard' }])).toBe('hard');
-    expect(aggregateDifficulty([{ weightKg: 1, reps: 1, difficulty: 'easy' }, { weightKg: 1, reps: 1, difficulty: 'easy' }])).toBe('easy');
-    expect(aggregateDifficulty([{ weightKg: 1, reps: 1, difficulty: 'good' }, { weightKg: 1, reps: 1, difficulty: 'easy' }])).toBe('good');
+    expect(
+      aggregateDifficulty([
+        { weightKg: 1, reps: 1, difficulty: 'easy' },
+        { weightKg: 1, reps: 1, difficulty: 'hard' },
+      ]),
+    ).toBe('hard');
+    expect(
+      aggregateDifficulty([
+        { weightKg: 1, reps: 1, difficulty: 'easy' },
+        { weightKg: 1, reps: 1, difficulty: 'easy' },
+      ]),
+    ).toBe('easy');
+    expect(
+      aggregateDifficulty([
+        { weightKg: 1, reps: 1, difficulty: 'good' },
+        { weightKg: 1, reps: 1, difficulty: 'easy' },
+      ]),
+    ).toBe('good');
     expect(aggregateDifficulty([{ weightKg: 1, reps: 1 }])).toBeUndefined();
   });
 });

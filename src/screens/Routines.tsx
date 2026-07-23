@@ -25,7 +25,11 @@ export function Routines() {
 
   return (
     <div className="flex flex-col gap-6 pb-4">
-      <ScreenHeader title="Starter routines" subtitle="Pick a split — we build & schedule it" back="/workouts" />
+      <ScreenHeader
+        title="Starter routines"
+        subtitle="Pick a split — we build & schedule it"
+        back="/workouts"
+      />
 
       <div className="flex flex-col gap-3">
         {ROUTINES.map((r) => (
@@ -35,12 +39,17 @@ export function Routines() {
                 <h3 className="text-base font-bold text-content">{r.name}</h3>
                 <p className="mt-1 text-sm text-content-muted">{r.description}</p>
               </div>
-              <Chip tone="accent" className="shrink-0">{r.daysPerWeek}×/wk</Chip>
+              <Chip tone="accent" className="shrink-0">
+                {r.daysPerWeek}×/wk
+              </Chip>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-1.5">
               {r.days.map((d) => (
-                <span key={d.name} className="rounded-lg bg-surface-2 px-2 py-1 text-xs font-medium text-content-muted">
+                <span
+                  key={d.name}
+                  className="rounded-lg bg-surface-2 px-2 py-1 text-xs font-medium text-content-muted"
+                >
                   {d.name}
                 </span>
               ))}
@@ -61,14 +70,18 @@ export function Routines() {
                     Adapted to your equipment:{' '}
                     {adapt.substitutions > 0 && (
                       <>
-                        <span className="tnum font-semibold text-content">{adapt.substitutions}</span> exercise
+                        <span className="tnum font-semibold text-content">
+                          {adapt.substitutions}
+                        </span>{' '}
+                        exercise
                         {adapt.substitutions > 1 ? 's' : ''} swapped
                       </>
                     )}
                     {adapt.substitutions > 0 && adapt.dropped > 0 && ' · '}
                     {adapt.dropped > 0 && (
                       <>
-                        <span className="tnum font-semibold text-content">{adapt.dropped}</span> removed
+                        <span className="tnum font-semibold text-content">{adapt.dropped}</span>{' '}
+                        removed
                       </>
                     )}
                   </span>
@@ -83,19 +96,25 @@ export function Routines() {
         ))}
       </div>
 
-      <Sheet open={pending !== null} onClose={() => setPending(null)} title={pending ? `Use ${pending.name}?` : ''}>
+      <Sheet
+        open={pending !== null}
+        onClose={() => setPending(null)}
+        title={pending ? `Use ${pending.name}?` : ''}
+      >
         {pending && (
           <>
             <p className="text-sm text-content-muted">
-              This adds {pending.days.length} workout{pending.days.length > 1 ? 's' : ''} to your library and schedules
-              {' '}{pending.schedule.length} session{pending.schedule.length > 1 ? 's' : ''} across the week. Existing
-              workouts are kept.
+              This adds {pending.days.length} workout{pending.days.length > 1 ? 's' : ''} to your
+              library and schedules {pending.schedule.length} session
+              {pending.schedule.length > 1 ? 's' : ''} across the week. Existing workouts are kept.
             </p>
             <div className="mt-5 flex flex-col gap-2">
               <Button fullWidth onClick={() => apply(pending)}>
                 <Check size={18} /> Add &amp; schedule
               </Button>
-              <Button variant="ghost" fullWidth onClick={() => setPending(null)}>Cancel</Button>
+              <Button variant="ghost" fullWidth onClick={() => setPending(null)}>
+                Cancel
+              </Button>
             </div>
           </>
         )}

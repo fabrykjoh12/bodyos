@@ -41,7 +41,13 @@ describe('duration progression never mentions load', () => {
   };
 
   it('extends the hold when every set reaches the top', () => {
-    const rec = recommendProgression({ ...base, workingSets: [{ weightKg: 0, reps: 60 }, { weightKg: 0, reps: 65 }] });
+    const rec = recommendProgression({
+      ...base,
+      workingSets: [
+        { weightKg: 0, reps: 60 },
+        { weightKg: 0, reps: 65 },
+      ],
+    });
     expect(rec.targetMet).toBe(true);
     expect(rec.reason).toContain('s');
     expect(rec.reason).not.toMatch(/kg/);

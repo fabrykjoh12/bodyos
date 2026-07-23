@@ -55,7 +55,11 @@ describe('buildShareModel', () => {
   });
 
   it('formats an e1rm PR line and flags deloads', () => {
-    const m = buildShareModel(makeSession({ isDeload: true }), [{ ...pr, type: 'e1rm', value: 100 }], 'kg');
+    const m = buildShareModel(
+      makeSession({ isDeload: true }),
+      [{ ...pr, type: 'e1rm', value: 100 }],
+      'kg',
+    );
     expect(m.isDeload).toBe(true);
     expect(m.prLines[0]).toMatch(/est\. 1RM/);
     expect(m.prLines[0]).toContain('100 kg');

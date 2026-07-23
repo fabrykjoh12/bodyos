@@ -1,5 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, ChevronRight, Cloud, Dumbbell, Flame, RefreshCw, Settings as SettingsIcon, Trophy } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronRight,
+  Cloud,
+  Dumbbell,
+  Flame,
+  RefreshCw,
+  Settings as SettingsIcon,
+  Trophy,
+} from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useSyncStore, type SyncStatus } from '@/store/cloudSync';
 import { computeStreak } from '@/lib/date';
@@ -23,7 +32,11 @@ export function Profile() {
       <ScreenHeader
         title="Profile"
         right={
-          <button aria-label="Settings" onClick={() => navigate('/settings')} className="flex h-11 w-11 items-center justify-center rounded-xl text-content-muted hover:bg-surface-2">
+          <button
+            aria-label="Settings"
+            onClick={() => navigate('/settings')}
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-content-muted hover:bg-surface-2"
+          >
             <SettingsIcon size={20} />
           </button>
         }
@@ -48,14 +61,36 @@ export function Profile() {
 
       <div className="grid grid-cols-3 gap-2">
         <Stat label="Workouts" value={completed} icon={<Dumbbell size={13} />} />
-        <Stat label="Records" value={prs.filter((p) => p.type === 'weight').length} icon={<Trophy size={13} />} accent="caution" />
-        <Stat label="Streak" value={streak} icon={<Flame size={13} />} accent={streak > 0 ? 'success' : 'default'} />
+        <Stat
+          label="Records"
+          value={prs.filter((p) => p.type === 'weight').length}
+          icon={<Trophy size={13} />}
+          accent="caution"
+        />
+        <Stat
+          label="Streak"
+          value={streak}
+          icon={<Flame size={13} />}
+          accent={streak > 0 ? 'success' : 'default'}
+        />
       </div>
 
       <div className="card divide-y divide-line">
-        <Row icon={<BookOpen size={18} />} label="Exercise library" onClick={() => navigate('/exercises')} />
-        <Row icon={<SettingsIcon size={18} />} label="Settings" onClick={() => navigate('/settings')} />
-        <Row icon={<RefreshCw size={18} />} label="Redo onboarding" onClick={() => navigate('/onboarding')} />
+        <Row
+          icon={<BookOpen size={18} />}
+          label="Exercise library"
+          onClick={() => navigate('/exercises')}
+        />
+        <Row
+          icon={<SettingsIcon size={18} />}
+          label="Settings"
+          onClick={() => navigate('/settings')}
+        />
+        <Row
+          icon={<RefreshCw size={18} />}
+          label="Redo onboarding"
+          onClick={() => navigate('/onboarding')}
+        />
       </div>
 
       <p className="px-1 text-xs text-content-faint">
@@ -69,7 +104,15 @@ export function Profile() {
 
 /** Sign-in prompt when signed out; account + sync status when signed in.
  *  Both open Settings, where the full Account & Sync controls live. */
-function AccountCard({ email, status, onOpen }: { email: string | null; status: SyncStatus; onOpen: () => void }) {
+function AccountCard({
+  email,
+  status,
+  onOpen,
+}: {
+  email: string | null;
+  status: SyncStatus;
+  onOpen: () => void;
+}) {
   if (email) {
     return (
       <button onClick={onOpen} className="card flex items-center gap-3 p-4 text-left">
@@ -128,7 +171,15 @@ function syncLabel(status: SyncStatus): string {
   }
 }
 
-function Row({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+function Row({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <button onClick={onClick} className="flex w-full items-center gap-3 px-4 py-3.5 text-left">
       <span className="text-content-muted">{icon}</span>

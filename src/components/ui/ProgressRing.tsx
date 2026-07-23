@@ -23,9 +23,19 @@ export function ProgressRing({
   const clamped = Math.max(0, Math.min(1, progress));
   const offset = circumference * (1 - clamped);
   return (
-    <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative inline-flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <svg width={size} height={size} className="-rotate-90" aria-hidden="true">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={trackColor} strokeWidth={stroke} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={trackColor}
+          strokeWidth={stroke}
+        />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -39,7 +49,9 @@ export function ProgressRing({
           style={{ transition: 'stroke-dashoffset 0.5s cubic-bezier(0.22,1,0.36,1)' }}
         />
       </svg>
-      {children && <div className="absolute inset-0 flex flex-col items-center justify-center">{children}</div>}
+      {children && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center">{children}</div>
+      )}
     </div>
   );
 }

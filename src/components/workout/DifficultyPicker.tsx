@@ -1,10 +1,26 @@
 import type { Difficulty } from '@/types';
 
 const OPTIONS: { value: Difficulty; label: string; tone: string }[] = [
-  { value: 'easy', label: 'Easy', tone: 'data-[on=true]:border-success data-[on=true]:bg-success-soft data-[on=true]:text-success' },
-  { value: 'good', label: 'Good', tone: 'data-[on=true]:border-accent data-[on=true]:bg-accent-soft data-[on=true]:text-accent' },
-  { value: 'hard', label: 'Hard', tone: 'data-[on=true]:border-caution data-[on=true]:bg-caution-soft data-[on=true]:text-caution' },
-  { value: 'failed', label: 'Failed', tone: 'data-[on=true]:border-danger data-[on=true]:bg-danger-soft data-[on=true]:text-danger' },
+  {
+    value: 'easy',
+    label: 'Easy',
+    tone: 'data-[on=true]:border-success data-[on=true]:bg-success-soft data-[on=true]:text-success',
+  },
+  {
+    value: 'good',
+    label: 'Good',
+    tone: 'data-[on=true]:border-accent data-[on=true]:bg-accent-soft data-[on=true]:text-accent',
+  },
+  {
+    value: 'hard',
+    label: 'Hard',
+    tone: 'data-[on=true]:border-caution data-[on=true]:bg-caution-soft data-[on=true]:text-caution',
+  },
+  {
+    value: 'failed',
+    label: 'Failed',
+    tone: 'data-[on=true]:border-danger data-[on=true]:bg-danger-soft data-[on=true]:text-danger',
+  },
 ];
 
 interface DifficultyPickerProps {

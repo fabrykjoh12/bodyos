@@ -71,8 +71,14 @@ describe('e1rmSeries', () => {
 describe('strengthTrends', () => {
   it('needs ≥2 points and reports the gain, sorted by delta desc', () => {
     const sessions = [
-      sess(10, [{ exId: 'bicep-curl', sets: [[20, 10]] }, { exId: 'triceps-pushdown', sets: [[30, 10]] }]),
-      sess(1, [{ exId: 'bicep-curl', sets: [[30, 10]] }, { exId: 'triceps-pushdown', sets: [[31, 10]] }]),
+      sess(10, [
+        { exId: 'bicep-curl', sets: [[20, 10]] },
+        { exId: 'triceps-pushdown', sets: [[30, 10]] },
+      ]),
+      sess(1, [
+        { exId: 'bicep-curl', sets: [[30, 10]] },
+        { exId: 'triceps-pushdown', sets: [[31, 10]] },
+      ]),
     ];
     const trends = strengthTrends(sessions);
     // bicep-curl gained ~10kg×(4/3) e1RM, triceps only ~1kg → bicep first.
@@ -117,8 +123,22 @@ describe('muscleBalance', () => {
   it('ranks muscles by set count with a percentage of the top', () => {
     const sessions = [
       sess(1, [
-        { exId: 'bicep-curl', sets: [[20, 10], [20, 10], [20, 10], [20, 10]] }, // biceps ×4
-        { exId: 'triceps-pushdown', sets: [[30, 10], [30, 10]] }, // triceps ×2
+        {
+          exId: 'bicep-curl',
+          sets: [
+            [20, 10],
+            [20, 10],
+            [20, 10],
+            [20, 10],
+          ],
+        }, // biceps ×4
+        {
+          exId: 'triceps-pushdown',
+          sets: [
+            [30, 10],
+            [30, 10],
+          ],
+        }, // triceps ×2
       ]),
     ];
     const bal = muscleBalance(sessions, 7);

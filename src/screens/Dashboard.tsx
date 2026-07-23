@@ -20,7 +20,11 @@ function greeting(): string {
 }
 
 function todayLabel(): string {
-  return new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  return new Date().toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
 }
 
 export function Dashboard() {
@@ -48,7 +52,9 @@ export function Dashboard() {
 
   const completed = sessions.filter((s) => s.status === 'completed');
   const streak = computeStreak(store.streakDates);
-  const monthSessions = completed.filter((s) => diffInDays(new Date().toISOString(), s.startedAt) < 30).length;
+  const monthSessions = completed.filter(
+    (s) => diffInDays(new Date().toISOString(), s.startedAt) < 30,
+  ).length;
   const newPRs = personalRecords.filter(
     (p) => p.type === 'weight' && diffInDays(new Date().toISOString(), p.achievedAt) < 7,
   ).length;
@@ -57,7 +63,10 @@ export function Dashboard() {
     () =>
       range === 'Week'
         ? last7DaysVolume(sessions)
-        : weeklyVolume(sessions, 6).map((v) => ({ day: v.label.replace('This wk', 'Now').replace('-', '').replace('w', ''), volume: v.volume })),
+        : weeklyVolume(sessions, 6).map((v) => ({
+            day: v.label.replace('This wk', 'Now').replace('-', '').replace('w', ''),
+            volume: v.volume,
+          })),
     [range, sessions],
   );
   const barTotal = bars.reduce((t, b) => t + b.volume, 0);
@@ -75,7 +84,11 @@ export function Dashboard() {
   };
 
   const heroEyebrow =
-    todayPlan.kind === 'today' ? 'Today’s session' : todayPlan.kind === 'next' ? 'Next up' : 'Suggested';
+    todayPlan.kind === 'today'
+      ? 'Today’s session'
+      : todayPlan.kind === 'next'
+        ? 'Next up'
+        : 'Suggested';
   const nextDayLabel = todayPlan.kind === 'next' ? weekdayLabel(todayPlan.weekday, weekday) : null;
 
   return (
@@ -85,7 +98,8 @@ export function Dashboard() {
         <div>
           <p className="label-tiny">{todayLabel()}</p>
           <h1 className="mt-1.5 text-display text-content">
-            {greeting()},<br />{user.name}
+            {greeting()},<br />
+            {user.name}
           </h1>
         </div>
         <button
@@ -109,10 +123,15 @@ export function Dashboard() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-content">This is demo training data</p>
               <p className="mt-0.5 text-xs leading-snug text-content-muted">
-                These sessions and records are examples, not your training. Clear them to start your own log —
-                your workouts and weekly plan stay.
+                These sessions and records are examples, not your training. Clear them to start your
+                own log — your workouts and weekly plan stay.
               </p>
-              <Button size="sm" variant="secondary" className="mt-3" onClick={() => store.clearHistory()}>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="mt-3"
+                onClick={() => store.clearHistory()}
+              >
                 Clear demo data
               </Button>
             </div>
@@ -131,8 +150,12 @@ export function Dashboard() {
             <Cloud size={17} />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-sm font-semibold text-content">Sign in to back up &amp; sync</span>
-            <span className="block text-xs text-content-muted">Save your training and use it on any device</span>
+            <span className="block text-sm font-semibold text-content">
+              Sign in to back up &amp; sync
+            </span>
+            <span className="block text-xs text-content-muted">
+              Save your training and use it on any device
+            </span>
           </span>
           <ChevronRight size={18} className="shrink-0 text-content-faint" />
         </button>
@@ -146,7 +169,12 @@ export function Dashboard() {
           </span>
           <h2 className="mt-4 text-title text-content">{activeSession.name}</h2>
           <p className="mt-1.5 text-sm text-content-muted">{activeSession.focus}</p>
-          <Button size="xl" fullWidth className="mt-6" onClick={() => navigate(`/session/${activeSession.id}`)}>
+          <Button
+            size="xl"
+            fullWidth
+            className="mt-6"
+            onClick={() => navigate(`/session/${activeSession.id}`)}
+          >
             <Play size={18} /> Resume session
           </Button>
         </section>
@@ -166,10 +194,22 @@ export function Dashboard() {
           <h2 className="mt-3 text-title text-content">Recovery day</h2>
           <p className="mt-2 text-sm leading-relaxed text-content-muted">
             No session scheduled today — recovery is where the growth happens.
-            {todayPlan.next && <> Next up: <span className="font-semibold text-content">{todayPlan.next.template.name}</span>.</>}
+            {todayPlan.next && (
+              <>
+                {' '}
+                Next up:{' '}
+                <span className="font-semibold text-content">{todayPlan.next.template.name}</span>.
+              </>
+            )}
           </p>
           {todayPlan.next && (
-            <Button size="lg" variant="secondary" fullWidth className="mt-5" onClick={() => startSession(heroTemplate?.id, false)}>
+            <Button
+              size="lg"
+              variant="secondary"
+              fullWidth
+              className="mt-5"
+              onClick={() => startSession(heroTemplate?.id, false)}
+            >
               <Play size={16} /> Train anyway · {todayPlan.next.template.name}
             </Button>
           )}
@@ -180,7 +220,9 @@ export function Dashboard() {
             <span className="rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-ink">
               {heroEyebrow}
             </span>
-            {nextDayLabel && <span className="text-[11px] font-semibold text-content-faint">{nextDayLabel}</span>}
+            {nextDayLabel && (
+              <span className="text-[11px] font-semibold text-content-faint">{nextDayLabel}</span>
+            )}
           </div>
           <h2 className="mt-4 text-title text-content">{heroTemplate?.name}</h2>
           <p className="mt-1.5 text-sm text-content-muted">
@@ -205,7 +247,12 @@ export function Dashboard() {
 
       {/* At a glance — counts that aren't already shown in the charts below */}
       <div className="card flex divide-x divide-line p-0">
-        <StripCell label="Streak" value={streak} suffix="d" icon={streak > 0 ? <Flame size={12} className="text-accent" /> : undefined} />
+        <StripCell
+          label="Streak"
+          value={streak}
+          suffix="d"
+          icon={streak > 0 ? <Flame size={12} className="text-accent" /> : undefined}
+        />
         <StripCell label="Sessions" value={monthSessions} />
         <StripCell label="New PRs" value={newPRs} />
       </div>
@@ -238,8 +285,10 @@ export function Dashboard() {
                   style={{
                     height: `${Math.max(2, (b.volume / barMax) * 100)}%`,
                     animationDelay: `${i * 45}ms`,
-                    background: b.volume === 0 ? '#1E232B' : b.volume === barMax ? '#CDFB45' : '#333B45',
-                    boxShadow: b.volume === barMax ? '0 4px 16px -4px rgba(205,251,69,0.4)' : undefined,
+                    background:
+                      b.volume === 0 ? '#1E232B' : b.volume === barMax ? '#CDFB45' : '#333B45',
+                    boxShadow:
+                      b.volume === barMax ? '0 4px 16px -4px rgba(205,251,69,0.4)' : undefined,
                   }}
                 />
                 <span className="tnum text-[11px] text-content-faint">{b.day}</span>
@@ -255,13 +304,18 @@ export function Dashboard() {
         <section>
           <div className="mb-1 flex items-baseline justify-between">
             <h3 className="label-tiny">Recent sessions</h3>
-            <button onClick={() => navigate('/progress')} className="text-[13px] font-semibold text-accent">
+            <button
+              onClick={() => navigate('/progress')}
+              className="text-[13px] font-semibold text-accent"
+            >
               All progress
             </button>
           </div>
           <div className="row-list">
             {recentSessions.map((s) => {
-              const prCount = personalRecords.filter((p) => p.sessionId === s.id && p.type === 'weight').length;
+              const prCount = personalRecords.filter(
+                (p) => p.sessionId === s.id && p.type === 'weight',
+              ).length;
               return (
                 <button
                   key={s.id}
@@ -270,7 +324,9 @@ export function Dashboard() {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-[14.5px] font-bold text-content">{s.name}</span>
+                      <span className="truncate text-[14.5px] font-bold text-content">
+                        {s.name}
+                      </span>
                       {s.isDeload ? (
                         <span className="shrink-0 rounded-full bg-surface-3 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-content-muted">
                           Deload
@@ -281,11 +337,17 @@ export function Dashboard() {
                         </span>
                       ) : null}
                     </div>
-                    <p className="mt-0.5 text-xs text-content-faint">{relativeDay(s.completedAt ?? s.startedAt)}</p>
+                    <p className="mt-0.5 text-xs text-content-faint">
+                      {relativeDay(s.completedAt ?? s.startedAt)}
+                    </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="tnum text-sm font-semibold text-content">{formatVolume(sessionTotalVolume(s), unit)}</p>
-                    <p className="tnum text-[11.5px] text-content-faint">{sessionSetCount(s)} sets</p>
+                    <p className="tnum text-sm font-semibold text-content">
+                      {formatVolume(sessionTotalVolume(s), unit)}
+                    </p>
+                    <p className="tnum text-[11.5px] text-content-faint">
+                      {sessionSetCount(s)} sets
+                    </p>
                   </div>
                 </button>
               );
@@ -303,7 +365,17 @@ export function Dashboard() {
   );
 }
 
-function StripCell({ label, value, suffix, icon }: { label: string; value: number; suffix?: string; icon?: React.ReactNode }) {
+function StripCell({
+  label,
+  value,
+  suffix,
+  icon,
+}: {
+  label: string;
+  value: number;
+  suffix?: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="flex-1 px-3 py-4 text-center">
       <p className="tnum flex items-center justify-center gap-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-content">
@@ -315,4 +387,3 @@ function StripCell({ label, value, suffix, icon }: { label: string; value: numbe
     </div>
   );
 }
-

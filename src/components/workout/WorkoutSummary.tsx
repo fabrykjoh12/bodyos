@@ -19,7 +19,8 @@ export function summaryStats(session: WorkoutSession) {
     minutes,
     sets: sessionSetCount(session),
     volume: sessionTotalVolume(session),
-    exercises: session.exercises.filter((e) => e.sets.some((s) => s.completed && !s.isWarmup)).length,
+    exercises: session.exercises.filter((e) => e.sets.some((s) => s.completed && !s.isWarmup))
+      .length,
   };
 }
 
@@ -31,7 +32,12 @@ export function WorkoutSummary({ session, prs, unit }: WorkoutSummaryProps) {
       <div className="grid grid-cols-2 gap-2">
         <Stat label="Duration" value={formatMinutes(stats.minutes)} icon={<Clock size={13} />} />
         <Stat label="Sets" value={stats.sets} icon={<Layers size={13} />} />
-        <Stat label="Volume" value={formatVolume(stats.volume, unit)} icon={<Dumbbell size={13} />} accent="accent" />
+        <Stat
+          label="Volume"
+          value={formatVolume(stats.volume, unit)}
+          icon={<Dumbbell size={13} />}
+          accent="accent"
+        />
         <Stat label="Exercises" value={stats.exercises} icon={<Dumbbell size={13} />} />
       </div>
 

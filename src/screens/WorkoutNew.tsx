@@ -12,16 +12,45 @@ import { Button } from '@/components/ui/Button';
 import { Sheet } from '@/components/ui/Sheet';
 import { Chip } from '@/components/ui/Chip';
 
-const MUSCLES: MuscleGroup[] = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes', 'calves', 'core'];
+const MUSCLES: MuscleGroup[] = [
+  'chest',
+  'back',
+  'shoulders',
+  'biceps',
+  'triceps',
+  'quads',
+  'hamstrings',
+  'glutes',
+  'calves',
+  'core',
+];
 
 /** One-tap name presets — the names people actually use for training days. */
-const NAME_PRESETS = ['Push', 'Pull', 'Legs', 'Upper', 'Lower', 'Full Body', 'Arms', 'Chest & Back'];
+const NAME_PRESETS = [
+  'Push',
+  'Pull',
+  'Legs',
+  'Upper',
+  'Lower',
+  'Full Body',
+  'Arms',
+  'Chest & Back',
+];
 
 const FULL_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const MUSCLE_LABELS: Record<string, string> = {
-  chest: 'Chest', back: 'Back', shoulders: 'Shoulders', biceps: 'Biceps', triceps: 'Triceps',
-  quads: 'Quads', hamstrings: 'Hamstrings', glutes: 'Glutes', calves: 'Calves', core: 'Core', forearms: 'Forearms',
+  chest: 'Chest',
+  back: 'Back',
+  shoulders: 'Shoulders',
+  biceps: 'Biceps',
+  triceps: 'Triceps',
+  quads: 'Quads',
+  hamstrings: 'Hamstrings',
+  glutes: 'Glutes',
+  calves: 'Calves',
+  core: 'Core',
+  forearms: 'Forearms',
 };
 
 /** Derive a focus line ("Chest · Shoulders · Triceps") from the chosen movements. */
@@ -47,7 +76,10 @@ function blankExercise(exerciseId: string, order: number): WorkoutExercise {
     repRange: ex.defaultRepRange,
     restSec: ex.kind === 'compound' ? 150 : 90,
     startWeightKg: undefined,
-    sets: Array.from({ length: 3 }, () => ({ type: 'working' as const, targetReps: ex.defaultRepRange[1] })),
+    sets: Array.from({ length: 3 }, () => ({
+      type: 'working' as const,
+      targetReps: ex.defaultRepRange[1],
+    })),
   };
 }
 
@@ -186,7 +218,9 @@ export function WorkoutNew() {
                 type="button"
                 onClick={() => setName(p)}
                 className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  name === p ? 'border-accent bg-accent-soft text-accent' : 'border-line bg-surface-2 text-content-muted hover:text-content'
+                  name === p
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-line bg-surface-2 text-content-muted hover:text-content'
                 }`}
               >
                 {p}
@@ -196,7 +230,12 @@ export function WorkoutNew() {
         </div>
 
         <label className="flex flex-col gap-1">
-          <span className="label-tiny">Focus {!focusDirty && exercises.length > 0 && <span className="normal-case tracking-normal text-content-faint">· auto</span>}</span>
+          <span className="label-tiny">
+            Focus{' '}
+            {!focusDirty && exercises.length > 0 && (
+              <span className="normal-case tracking-normal text-content-faint">· auto</span>
+            )}
+          </span>
           <input
             value={effectiveFocus}
             onChange={(e) => {
@@ -229,23 +268,30 @@ export function WorkoutNew() {
                     })
                   }
                   className={`flex h-11 flex-col items-center justify-center rounded-xl border text-xs font-bold transition-all duration-150 ease-spring active:scale-95 ${
-                    on ? 'border-accent bg-accent text-ink' : 'border-line bg-surface-2 text-content-muted'
+                    on
+                      ? 'border-accent bg-accent text-ink'
+                      : 'border-line bg-surface-2 text-content-muted'
                   }`}
                 >
                   {weekdayName(d).slice(0, 1)}
-                  {takenBy && <span className="text-[9px] leading-none text-content-faint">{takenBy}</span>}
+                  {takenBy && (
+                    <span className="text-[9px] leading-none text-content-faint">{takenBy}</span>
+                  )}
                 </button>
               );
             })}
           </div>
-          <p className="text-[11px] text-content-faint">Picked days go on your weekly plan when you save.</p>
+          <p className="text-[11px] text-content-faint">
+            Picked days go on your weekly plan when you save.
+          </p>
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
         {exercises.map((we, i) => {
           const ex = requireExercise(we.exerciseId);
-          const linkedAbove = i > 0 && !!we.supersetGroup && we.supersetGroup === exercises[i - 1]!.supersetGroup;
+          const linkedAbove =
+            i > 0 && !!we.supersetGroup && we.supersetGroup === exercises[i - 1]!.supersetGroup;
           return (
             <div key={we.id} className={`card p-4 ${linkedAbove ? 'border-accent/30' : ''}`}>
               {i > 0 && (
@@ -253,7 +299,8 @@ export function WorkoutNew() {
                   onClick={() => toggleSuperset(i)}
                   className={`mb-2 flex items-center gap-1.5 text-xs font-medium ${linkedAbove ? 'text-accent' : 'text-content-faint hover:text-content'}`}
                 >
-                  <Link2 size={13} /> {linkedAbove ? 'Supersetted with above' : 'Superset with above'}
+                  <Link2 size={13} />{' '}
+                  {linkedAbove ? 'Supersetted with above' : 'Superset with above'}
                 </button>
               )}
               <div className="flex items-start justify-between gap-2">
@@ -262,13 +309,27 @@ export function WorkoutNew() {
                   <p className="text-xs capitalize text-content-muted">{ex.primaryMuscle}</p>
                 </div>
                 <div className="flex shrink-0 items-center">
-                  <button aria-label="Move up" onClick={() => move(i, -1)} className="flex h-9 w-9 items-center justify-center rounded-lg text-content-faint hover:text-content disabled:opacity-30" disabled={i === 0}>
+                  <button
+                    aria-label="Move up"
+                    onClick={() => move(i, -1)}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-content-faint hover:text-content disabled:opacity-30"
+                    disabled={i === 0}
+                  >
                     <ArrowUp size={16} />
                   </button>
-                  <button aria-label="Move down" onClick={() => move(i, 1)} className="flex h-9 w-9 items-center justify-center rounded-lg text-content-faint hover:text-content disabled:opacity-30" disabled={i === exercises.length - 1}>
+                  <button
+                    aria-label="Move down"
+                    onClick={() => move(i, 1)}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-content-faint hover:text-content disabled:opacity-30"
+                    disabled={i === exercises.length - 1}
+                  >
                     <ArrowDown size={16} />
                   </button>
-                  <button aria-label="Remove" onClick={() => setExercises((l) => l.filter((x) => x.id !== we.id))} className="flex h-9 w-9 items-center justify-center rounded-lg text-danger/70 hover:text-danger">
+                  <button
+                    aria-label="Remove"
+                    onClick={() => setExercises((l) => l.filter((x) => x.id !== we.id))}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-danger/70 hover:text-danger"
+                  >
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -276,23 +337,52 @@ export function WorkoutNew() {
 
               <div className="mt-3 grid grid-cols-3 gap-2">
                 <Field label="Sets">
-                  <Stepper value={we.sets.length} min={1} max={8} onChange={(n) =>
-                    patch(we.id, (w) => ({
-                      ...w,
-                      sets: Array.from({ length: n }, (_, k) => w.sets[k] ?? { type: 'working', targetReps: w.repRange[1] }),
-                    }))
-                  } />
+                  <Stepper
+                    value={we.sets.length}
+                    min={1}
+                    max={8}
+                    onChange={(n) =>
+                      patch(we.id, (w) => ({
+                        ...w,
+                        sets: Array.from(
+                          { length: n },
+                          (_, k) => w.sets[k] ?? { type: 'working', targetReps: w.repRange[1] },
+                        ),
+                      }))
+                    }
+                  />
                 </Field>
                 <Field label="Rep low">
-                  <Stepper value={we.repRange[0]} min={1} max={we.repRange[1]} onChange={(n) => patch(we.id, (w) => ({ ...w, repRange: [n, Math.max(n, w.repRange[1])] }))} />
+                  <Stepper
+                    value={we.repRange[0]}
+                    min={1}
+                    max={we.repRange[1]}
+                    onChange={(n) =>
+                      patch(we.id, (w) => ({ ...w, repRange: [n, Math.max(n, w.repRange[1])] }))
+                    }
+                  />
                 </Field>
                 <Field label="Rep high">
-                  <Stepper value={we.repRange[1]} min={we.repRange[0]} max={30} onChange={(n) => patch(we.id, (w) => ({ ...w, repRange: [Math.min(w.repRange[0], n), n] }))} />
+                  <Stepper
+                    value={we.repRange[1]}
+                    min={we.repRange[0]}
+                    max={30}
+                    onChange={(n) =>
+                      patch(we.id, (w) => ({ ...w, repRange: [Math.min(w.repRange[0], n), n] }))
+                    }
+                  />
                 </Field>
               </div>
               <div className="mt-2 flex items-center justify-between text-xs text-content-faint">
                 <span>Rest</span>
-                <Stepper value={we.restSec} min={30} max={300} step={15} suffix="s" onChange={(n) => patch(we.id, (w) => ({ ...w, restSec: n }))} />
+                <Stepper
+                  value={we.restSec}
+                  min={30}
+                  max={300}
+                  step={15}
+                  suffix="s"
+                  onChange={(n) => patch(we.id, (w) => ({ ...w, restSec: n }))}
+                />
               </div>
             </div>
           );
@@ -329,9 +419,13 @@ export function WorkoutNew() {
           />
         </label>
         <div className="no-scrollbar -mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1">
-          <FilterChip active={muscleFilter === 'all'} onClick={() => setMuscleFilter('all')}>All</FilterChip>
+          <FilterChip active={muscleFilter === 'all'} onClick={() => setMuscleFilter('all')}>
+            All
+          </FilterChip>
           {MUSCLES.map((m) => (
-            <FilterChip key={m} active={muscleFilter === m} onClick={() => setMuscleFilter(m)}>{m}</FilterChip>
+            <FilterChip key={m} active={muscleFilter === m} onClick={() => setMuscleFilter(m)}>
+              {m}
+            </FilterChip>
           ))}
         </div>
         <div className="max-h-[46vh] overflow-y-auto">
@@ -351,7 +445,9 @@ export function WorkoutNew() {
                       })
                     }
                     className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
-                      on ? 'border-accent bg-accent-soft' : 'border-line bg-surface-2 hover:border-line-strong'
+                      on
+                        ? 'border-accent bg-accent-soft'
+                        : 'border-line bg-surface-2 hover:border-line-strong'
                     }`}
                   >
                     <span
@@ -363,7 +459,9 @@ export function WorkoutNew() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-content">{ex.name}</p>
-                      <p className="text-xs capitalize text-content-faint">{ex.primaryMuscle} · {ex.equipment}</p>
+                      <p className="text-xs capitalize text-content-faint">
+                        {ex.primaryMuscle} · {ex.equipment}
+                      </p>
                     </div>
                     <Chip tone="muted">{formatRepRange(ex.defaultRepRange)}</Chip>
                   </button>
@@ -371,13 +469,16 @@ export function WorkoutNew() {
               );
             })}
             {filtered.length === 0 && (
-              <p className="px-1 py-4 text-center text-sm text-content-faint">No exercises match.</p>
+              <p className="px-1 py-4 text-center text-sm text-content-faint">
+                No exercises match.
+              </p>
             )}
           </ul>
         </div>
         <div className="mt-4">
           <Button fullWidth size="lg" disabled={picked.size === 0} onClick={addPicked}>
-            <Plus size={18} /> Add {picked.size > 0 ? `${picked.size} exercise${picked.size > 1 ? 's' : ''}` : 'exercises'}
+            <Plus size={18} /> Add{' '}
+            {picked.size > 0 ? `${picked.size} exercise${picked.size > 1 ? 's' : ''}` : 'exercises'}
           </Button>
         </div>
       </Sheet>
@@ -411,14 +512,37 @@ function Stepper({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <button aria-label="decrease" onClick={() => onChange(Math.max(min, value - step))} className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-3 text-content-muted hover:text-content">−</button>
-      <span className="tnum w-12 text-center text-sm font-semibold text-content">{value}{suffix}</span>
-      <button aria-label="increase" onClick={() => onChange(Math.min(max, value + step))} className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-3 text-content-muted hover:text-content">+</button>
+      <button
+        aria-label="decrease"
+        onClick={() => onChange(Math.max(min, value - step))}
+        className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-3 text-content-muted hover:text-content"
+      >
+        −
+      </button>
+      <span className="tnum w-12 text-center text-sm font-semibold text-content">
+        {value}
+        {suffix}
+      </span>
+      <button
+        aria-label="increase"
+        onClick={() => onChange(Math.min(max, value + step))}
+        className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-3 text-content-muted hover:text-content"
+      >
+        +
+      </button>
     </div>
   );
 }
 
-function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}

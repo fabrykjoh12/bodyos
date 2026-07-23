@@ -33,11 +33,7 @@ const inputClass =
 function stored(value: string, unit: Unit, kind: 'weight' | 'length'): number | undefined {
   const n = parseFloat(value);
   if (!Number.isFinite(n) || n <= 0) return undefined;
-  return kind === 'weight'
-    ? unit === 'kg'
-      ? n
-      : lbToKg(n)
-    : fromDisplayLength(n, unit);
+  return kind === 'weight' ? (unit === 'kg' ? n : lbToKg(n)) : fromDisplayLength(n, unit);
 }
 
 function formatMetric(value: number, key: MetricKey, unit: Unit): string {
@@ -67,7 +63,10 @@ export function Measurements() {
   });
 
   const sorted = useMemo(
-    () => [...measurements].sort((a, b) => new Date(b.takenAt).getTime() - new Date(a.takenAt).getTime()),
+    () =>
+      [...measurements].sort(
+        (a, b) => new Date(b.takenAt).getTime() - new Date(a.takenAt).getTime(),
+      ),
     [measurements],
   );
 
@@ -106,7 +105,7 @@ export function Measurements() {
   const fmtDelta = (delta: number, kind: 'weight' | 'length') => {
     const shown =
       kind === 'weight'
-        ? Math.round((toDisplayWeight(Math.abs(delta), unit)) * 10) / 10
+        ? Math.round(toDisplayWeight(Math.abs(delta), unit) * 10) / 10
         : Math.round(toDisplayLength(Math.abs(delta), unit) * 10) / 10;
     return `${delta >= 0 ? '↑' : '↓'} ${shown} ${deltaUnit(kind)}`;
   };

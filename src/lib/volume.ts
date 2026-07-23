@@ -31,7 +31,5 @@ export function bestE1RM(sets: { weightKg: number; reps: number }[]): number {
 }
 
 export function totalReps(sets: SetEntry[]): number {
-  return sets
-    .filter((s) => s.completed && !s.isWarmup)
-    .reduce((t, s) => t + s.reps, 0);
+  return sets.filter((s) => s.completed && !s.isWarmup).reduce((t, s) => t + s.reps, 0);
 }

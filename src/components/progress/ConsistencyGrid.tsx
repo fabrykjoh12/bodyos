@@ -12,7 +12,13 @@ function toKey(d: Date): string {
  * Contribution-style calendar of training days — columns are weeks (Mon–Sun),
  * cells shaded by that day's working-set count. Shows consistency at a glance.
  */
-export function ConsistencyGrid({ sessions, weeks = 16 }: { sessions: WorkoutSession[]; weeks?: number }) {
+export function ConsistencyGrid({
+  sessions,
+  weeks = 16,
+}: {
+  sessions: WorkoutSession[];
+  weeks?: number;
+}) {
   const { columns, maxSets, trainedDays } = useMemo(() => {
     const byDay = new Map<string, number>();
     for (const s of sessions) {
@@ -70,7 +76,8 @@ export function ConsistencyGrid({ sessions, weeks = 16 }: { sessions: WorkoutSes
       </div>
       <div className="flex items-center justify-between text-[11px] text-content-faint">
         <span className="tnum">
-          <span className="font-semibold text-content-muted">{trainedDays}</span> training days · last {weeks} weeks
+          <span className="font-semibold text-content-muted">{trainedDays}</span> training days ·
+          last {weeks} weeks
         </span>
         <span className="flex items-center gap-1.5">
           Less

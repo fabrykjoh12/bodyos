@@ -16,7 +16,10 @@ const items = [
  */
 export function BottomNav() {
   return (
-    <nav aria-label="Primary" className="pointer-events-none sticky bottom-0 z-30 mt-auto pb-3 safe-bottom">
+    <nav
+      aria-label="Primary"
+      className="pointer-events-none sticky bottom-0 z-30 mt-auto pb-3 safe-bottom"
+    >
       <ul className="glass pointer-events-auto mx-auto flex w-fit items-center gap-0.5 rounded-full p-1.5 shadow-float">
         {items.map(({ to, label, icon: Icon, end }) => (
           <li key={to}>

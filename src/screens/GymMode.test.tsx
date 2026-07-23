@@ -8,7 +8,10 @@ import { requireExercise } from '@/data/exercises';
 
 function renderSession(session: WorkoutSession) {
   render(
-    <MemoryRouter initialEntries={[`/session/${session.id}`]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter
+      initialEntries={[`/session/${session.id}`]}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <Routes>
         <Route path="/session/:id" element={<GymMode />} />
         <Route path="/" element={<div>home</div>} />
@@ -51,14 +54,19 @@ describe('GymMode integration', () => {
 
     // Store advanced: one working set completed, weight carried to set 2.
     expect(ex0().sets.filter((s) => s.completed).length).toBe(1);
-    expect(within(screen.getByLabelText('Active set')).getByText(/Set/)).toHaveTextContent(/Set\s*2\s*of/);
+    expect(within(screen.getByLabelText('Active set')).getByText(/Set/)).toHaveTextContent(
+      /Set\s*2\s*of/,
+    );
   });
 
   it('shows the "no longer active" fallback when the route id does not match', () => {
     const templateId = useStore.getState().templates[0]!.id;
     useStore.getState().startSession(templateId);
     render(
-      <MemoryRouter initialEntries={['/session/does-not-exist']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter
+        initialEntries={['/session/does-not-exist']}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
         <Routes>
           <Route path="/session/:id" element={<GymMode />} />
           <Route path="/" element={<div>home</div>} />

@@ -25,12 +25,28 @@ export const ROUTINES: Routine[] = [
   {
     id: 'full-body-3',
     name: 'Full Body 3×',
-    description: 'Three whole-body sessions a week — the most efficient start for building strength and muscle.',
+    description:
+      'Three whole-body sessions a week — the most efficient start for building strength and muscle.',
     daysPerWeek: 3,
     split: 'full-body',
     days: [
-      { name: 'Full Body A', focus: 'Squat · Press · Pull', exercises: ['squat', 'bench-press', 'barbell-row', 'overhead-press', 'bicep-curl', 'plank'] },
-      { name: 'Full Body B', focus: 'Hinge · Press · Pull', exercises: ['deadlift', 'incline-db-press', 'lat-pulldown', 'leg-press', 'triceps-pushdown', 'calf-raise'] },
+      {
+        name: 'Full Body A',
+        focus: 'Squat · Press · Pull',
+        exercises: ['squat', 'bench-press', 'barbell-row', 'overhead-press', 'bicep-curl', 'plank'],
+      },
+      {
+        name: 'Full Body B',
+        focus: 'Hinge · Press · Pull',
+        exercises: [
+          'deadlift',
+          'incline-db-press',
+          'lat-pulldown',
+          'leg-press',
+          'triceps-pushdown',
+          'calf-raise',
+        ],
+      },
     ],
     schedule: [
       { weekday: 1, day: 0 },
@@ -41,12 +57,28 @@ export const ROUTINES: Routine[] = [
   {
     id: 'upper-lower-4',
     name: 'Upper / Lower 4×',
-    description: 'Four days split into upper- and lower-body sessions — more volume per muscle as you progress.',
+    description:
+      'Four days split into upper- and lower-body sessions — more volume per muscle as you progress.',
     daysPerWeek: 4,
     split: 'upper-lower',
     days: [
-      { name: 'Upper', focus: 'Chest · Back · Shoulders · Arms', exercises: ['bench-press', 'barbell-row', 'overhead-press', 'lat-pulldown', 'bicep-curl', 'triceps-pushdown'] },
-      { name: 'Lower', focus: 'Quads · Hamstrings · Calves', exercises: ['squat', 'romanian-deadlift', 'leg-press', 'leg-curl', 'calf-raise'] },
+      {
+        name: 'Upper',
+        focus: 'Chest · Back · Shoulders · Arms',
+        exercises: [
+          'bench-press',
+          'barbell-row',
+          'overhead-press',
+          'lat-pulldown',
+          'bicep-curl',
+          'triceps-pushdown',
+        ],
+      },
+      {
+        name: 'Lower',
+        focus: 'Quads · Hamstrings · Calves',
+        exercises: ['squat', 'romanian-deadlift', 'leg-press', 'leg-curl', 'calf-raise'],
+      },
     ],
     schedule: [
       { weekday: 1, day: 0 },
@@ -58,13 +90,32 @@ export const ROUTINES: Routine[] = [
   {
     id: 'ppl-6',
     name: 'Push / Pull / Legs 6×',
-    description: 'The classic high-volume split, run twice a week. Best when you can train six days.',
+    description:
+      'The classic high-volume split, run twice a week. Best when you can train six days.',
     daysPerWeek: 6,
     split: 'push-pull-legs',
     days: [
-      { name: 'Push', focus: 'Chest · Shoulders · Triceps', exercises: ['bench-press', 'overhead-press', 'incline-db-press', 'lateral-raise', 'triceps-pushdown'] },
-      { name: 'Pull', focus: 'Back · Biceps', exercises: ['deadlift', 'lat-pulldown', 'barbell-row', 'face-pull', 'bicep-curl'] },
-      { name: 'Legs', focus: 'Quads · Hamstrings · Calves', exercises: ['squat', 'romanian-deadlift', 'leg-press', 'leg-curl', 'calf-raise'] },
+      {
+        name: 'Push',
+        focus: 'Chest · Shoulders · Triceps',
+        exercises: [
+          'bench-press',
+          'overhead-press',
+          'incline-db-press',
+          'lateral-raise',
+          'triceps-pushdown',
+        ],
+      },
+      {
+        name: 'Pull',
+        focus: 'Back · Biceps',
+        exercises: ['deadlift', 'lat-pulldown', 'barbell-row', 'face-pull', 'bicep-curl'],
+      },
+      {
+        name: 'Legs',
+        focus: 'Quads · Hamstrings · Calves',
+        exercises: ['squat', 'romanian-deadlift', 'leg-press', 'leg-curl', 'calf-raise'],
+      },
     ],
     schedule: [
       { weekday: 1, day: 0 },

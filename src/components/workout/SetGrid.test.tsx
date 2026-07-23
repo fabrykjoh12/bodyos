@@ -17,7 +17,10 @@ function set(overrides: Partial<SetEntry>): SetEntry {
   };
 }
 
-function exercise(sets: SetEntry[], prevSets: { weightKg: number; reps: number }[]): ExerciseSession {
+function exercise(
+  sets: SetEntry[],
+  prevSets: { weightKg: number; reps: number }[],
+): ExerciseSession {
   return {
     id: 'es',
     exerciseId: 'ex',
@@ -28,7 +31,11 @@ function exercise(sets: SetEntry[], prevSets: { weightKg: number; reps: number }
     status: 'active',
     sets,
     previous: prevSets.length
-      ? { date: '2026-07-10T00:00:00.000Z', sets: prevSets, topWeightKg: Math.max(...prevSets.map((s) => s.weightKg)) }
+      ? {
+          date: '2026-07-10T00:00:00.000Z',
+          sets: prevSets,
+          topWeightKg: Math.max(...prevSets.map((s) => s.weightKg)),
+        }
       : undefined,
   };
 }
@@ -81,7 +88,10 @@ describe('SetGrid beat markers', () => {
       set({ id: 's1', weightKg: 60, reps: 10 }), // matches prev[0] → no beat
       set({ id: 's2', weightKg: 62.5, reps: 8 }), // beats prev[1] on load
     ];
-    const ex = exercise(sets, [{ weightKg: 60, reps: 10 }, { weightKg: 60, reps: 8 }]);
+    const ex = exercise(sets, [
+      { weightKg: 60, reps: 10 },
+      { weightKg: 60, reps: 8 },
+    ]);
     render(<SetGrid exercise={ex} unit="kg" activeSetIndex={-1} highlightBeats />);
     expect(screen.getAllByLabelText('Beat last time')).toHaveLength(1);
   });

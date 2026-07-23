@@ -72,7 +72,11 @@ export async function putPhotoData(
 export async function getPhotoData(profileUid: string | null, id: string): Promise<string | null> {
   const db = await openDb(profileUid);
   if (!db) return null;
-  const result = await tx<string | undefined>(db, 'readonly', (s) => s.get(id) as IDBRequest<string | undefined>);
+  const result = await tx<string | undefined>(
+    db,
+    'readonly',
+    (s) => s.get(id) as IDBRequest<string | undefined>,
+  );
   db.close();
   return typeof result === 'string' ? result : null;
 }
