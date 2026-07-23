@@ -1,4 +1,6 @@
 import type { SyncEntityKind } from '@/lib/syncDiff';
+import { emptyPullPatch, type PullPatch } from '@/lib/syncPull';
+import type { BodyMeasurement, WorkoutSession, WorkoutTemplate } from '@/types';
 import { loadFirebase } from '@/lib/firebase';
 import {
   getEntityRev,
@@ -170,4 +172,84 @@ export async function drainQueue(uid: string): Promise<DrainSummary> {
     }
   }
   return summary;
+}
+
+// ---------------------------------------------------------------------------
+// Pull: fetch every normalized collection, compare each doc's rev against
+// this device's last-confirmed baseline, and return a patch of only what's
+// NEW to this device (see lib/syncPull.ts for how the patch gets applied).
+// Entities this device has never synced at all are NOT pulled here — they
+// get pushed up on the next local write, since the diff engine treats a
+// fresh (never-synced) local entity as "new" the first time it runs.
+// ---------------------------------------------------------------------------
+
+async function pullCollection<T>(
+  uid: string,
+  entity: SyncEntityKind,
+): Promise<{ upsert: T[]; deleteIds: never[] }> {
+  const fb = await loadFirebase();
+  if (!fb) return { upsert: [], deleteIds: [] };
+  const { collection, getDocs } = await import('firebase/firestore');
+  const snap = await getDocs(collection(fb.db, 'users', uid, collectionFor(entity)));
+  const upsert: T[] = [];
+  for (const d of snap.docs) {
+    const data = d.data();
+    const remoteRev = (data.rev as number) ?? 0;
+    const baseline = await getEntityRev(uid, entity, d.id);
+    if (remoteRev > baseline) {
+      upsert.push(data.payload as T);
+      await setEntityRev(uid, entity, d.id, remoteRev);
+    }
+  }
+  return { upsert, deleteIds: [] };
+}
+
+async function pullSingleton<T>(
+  uid: string,
+  entity: SyncEntityKind,
+  docId: string,
+): Promise<T | undefined> {
+  const fb = await loadFirebase();
+  if (!fb) return undefined;
+  const { doc, getDoc } = await import('firebase/firestore');
+  const snap = await getDoc(doc(fb.db, 'users', uid, collectionFor(entity), docId));
+  if (!snap.exists()) return undefined;
+  const data = snap.data();
+  const remoteRev = (data.rev as number) ?? 0;
+  const baseline = await getEntityRev(uid, entity, docId);
+  if (remoteRev <= baseline) return undefined;
+  await setEntityRev(uid, entity, docId, remoteRev);
+  return data.payload as T;
+}
+
+/** Fetch the whole remote state and return only what's new to this device. */
+export async function pullRemote(uid: string): Promise<PullPatch> {
+  const fb = await loadFirebase();
+  if (!fb) return emptyPullPatch();
+
+  const patch = emptyPullPatch();
+  patch.templates = await pullCollection<WorkoutTemplate>(uid, 'template');
+  patch.sessions = await pullCollection<WorkoutSession>(uid, 'session');
+  patch.measurements = await pullCollection<BodyMeasurement>(uid, 'measurement');
+
+  const meta = await pullSingleton<PullPatch['meta']>(uid, 'meta', 'profile');
+  if (meta) patch.meta = meta;
+
+  const active = await pullSingleton<WorkoutSession>(uid, 'active', 'current');
+  if (active !== undefined) patch.active = active;
+
+  // Tombstones: adopt every deletion this device hasn't already applied.
+  // Doesn't carry a rev — a tombstone can only ever supersede a lower
+  // baseline (the entity was synced, then deleted), so any tombstone this
+  // device hasn't yet acted on is safe to apply.
+  const { collection, getDocs } = await import('firebase/firestore');
+  const tombSnap = await getDocs(collection(fb.db, 'users', uid, 'tombstones'));
+  for (const d of tombSnap.docs) {
+    const data = d.data() as { entity: SyncEntityKind; entityId: string };
+    if (data.entity === 'template') patch.templates.deleteIds.push(data.entityId);
+    else if (data.entity === 'session') patch.sessions.deleteIds.push(data.entityId);
+    else if (data.entity === 'measurement') patch.measurements.deleteIds.push(data.entityId);
+  }
+
+  return patch;
 }
