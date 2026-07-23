@@ -1,5 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference -- required to augment Vite's config type with `test`
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
+import { configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'node:path';
@@ -68,5 +70,8 @@ export default defineConfig(({ command }) => ({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // Emulator-backed tests need a live Firebase emulator suite; they run
+    // separately via `npm run test:emulator`, never as part of `npm run test`.
+    exclude: [...configDefaults.exclude, '**/*.emulator.test.ts'],
   },
 }));

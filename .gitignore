@@ -11,9 +11,18 @@ coverage
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+vitest.emulator.config.js
+vitest.emulator.config.d.ts
 
 # local screenshot output from scripts/shot.mjs
 shots*/
 
 # E2E failure artifacts
 e2e-failure-*.png
+
+# Firebase emulator local artifacts
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+database-debug.log
+.firebase/
