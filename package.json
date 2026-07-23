@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "node scripts/e2e.mjs",
+    "lighthouse": "node scripts/lighthouse.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
@@ -35,6 +36,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "chrome-launcher": "^1.2.1",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -42,6 +44,7 @@
     "fake-indexeddb": "^6.2.5",
     "globals": "^15.15.0",
     "jsdom": "^25.0.1",
+    "lighthouse": "^12.8.2",
     "playwright": "^1.61.1",
     "postcss": "^8.4.49",
     "prettier": "^3.9.6",
