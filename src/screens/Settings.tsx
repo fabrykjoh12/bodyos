@@ -11,6 +11,7 @@ import {
   clearPreRestoreSnapshot,
 } from '@/store/repository';
 import { CloudSync } from '@/components/account/CloudSync';
+import { ConflictShelf } from '@/components/account/ConflictShelf';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Button } from '@/components/ui/Button';
@@ -82,6 +83,7 @@ export function Settings() {
       <ScreenHeader title="Settings" back="/profile" />
 
       <CloudSync />
+      <ConflictShelf />
 
       <Group title="Units">
         <SegmentedControl

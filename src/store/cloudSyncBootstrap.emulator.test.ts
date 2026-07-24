@@ -18,8 +18,11 @@ let current: AppData;
 
 registerSync({
   getLocalData: () => current,
+  // Mirrors the real store's persist() -> notifyLocalWrite(data) chain
+  // (useStore.ts's replaceAll action) rather than just stashing the value.
   applyRemote: (data) => {
     current = data;
+    notifyLocalWrite(data);
   },
   switchProfile: () => {
     // The real store namespaces by profile; this test only ever uses one

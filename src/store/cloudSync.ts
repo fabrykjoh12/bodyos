@@ -3,8 +3,8 @@ import type { AppData } from '@/types';
 import { loadFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { LocalStorageRepository, profileStorageKey } from './repository';
 import { clearPhotoData } from './photoStore';
-import { diffAppData } from '@/lib/syncDiff';
-import { applyPullPatch } from '@/lib/syncPull';
+import { diffAppData, type SyncEntityKind } from '@/lib/syncDiff';
+import { applyPullPatch, emptyPullPatch } from '@/lib/syncPull';
 import { clearQueue, listQueuedMutations } from './syncQueue';
 import { catchUpNeverSynced, drainQueue, pullRemote } from './syncEngine';
 import { migrateFromBlob } from './syncMigration';
@@ -381,6 +381,73 @@ export async function importDeviceData(): Promise<{ error: string | null }> {
   applyRemote(anon); // triggers persist() -> notifyLocalWrite(anon), enqueuing it all
   await drainAndReport(authUserId);
   return { error: null };
+}
+
+// --- conflict shelf ----------------------------------------------------------
+
+/** A losing edit from a rev conflict (store/syncEngine.ts) — shelved instead
+ *  of discarded so the user can see it and choose which version wins. */
+export interface ShelvedConflict {
+  /** Firestore doc id in users/{uid}/conflicts — pass back to resolve it. */
+  id: string;
+  entity: SyncEntityKind;
+  entityId: string;
+  payload: unknown;
+}
+
+export async function listConflicts(): Promise<ShelvedConflict[]> {
+  if (!authUserId) return [];
+  const fb = await loadFirebase();
+  if (!fb) return [];
+  const { collection, getDocs } = await import('firebase/firestore');
+  const snap = await getDocs(collection(fb.db, 'users', authUserId, 'conflicts'));
+  return snap.docs.map((d) => {
+    const data = d.data() as { entity: SyncEntityKind; entityId: string; payload: unknown };
+    return { id: d.id, entity: data.entity, entityId: data.entityId, payload: data.payload };
+  });
+}
+
+/** Keep the current (live) version — the shelved one is discarded for good. */
+export async function dismissConflict(id: string): Promise<{ error: string | null }> {
+  if (!authUserId) return { error: 'Sign in first.' };
+  const fb = await loadFirebase();
+  if (!fb) return { error: 'Cloud sync is not configured.' };
+  try {
+    const { doc, deleteDoc } = await import('firebase/firestore');
+    await deleteDoc(doc(fb.db, 'users', authUserId, 'conflicts', id));
+    return { error: null };
+  } catch (e) {
+    return { error: messageOf(e) };
+  }
+}
+
+/** Restore the shelved version: apply it locally (as a genuinely new local
+ *  edit, so it pushes and becomes the winning value on the next sync), then
+ *  remove it from the shelf. */
+export async function restoreConflict(
+  conflict: ShelvedConflict,
+): Promise<{ error: string | null }> {
+  if (!authUserId || !getLocalData || !applyRemote) return { error: 'Sign in first.' };
+  const patch = emptyPullPatch();
+  switch (conflict.entity) {
+    case 'template':
+      patch.templates.upsert = [conflict.payload as AppData['templates'][number]];
+      break;
+    case 'session':
+      patch.sessions.upsert = [conflict.payload as AppData['sessions'][number]];
+      break;
+    case 'measurement':
+      patch.measurements.upsert = [conflict.payload as AppData['measurements'][number]];
+      break;
+    case 'meta':
+      patch.meta = conflict.payload as NonNullable<typeof patch.meta>;
+      break;
+    case 'active':
+      patch.active = conflict.payload as AppData['activeSession'];
+      break;
+  }
+  applyRemote(applyPullPatch(getLocalData(), patch)); // -> persist() -> notifyLocalWrite, re-pushing it
+  return dismissConflict(conflict.id);
 }
 
 // --- deletion ----------------------------------------------------------------
