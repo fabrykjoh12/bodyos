@@ -3,17 +3,28 @@ import type { AppData } from '@/types';
 import { loadFirebase, isFirebaseConfigured } from '@/lib/firebase';
 import { LocalStorageRepository, profileStorageKey } from './repository';
 import { clearPhotoData } from './photoStore';
+import { diffAppData } from '@/lib/syncDiff';
+import { applyPullPatch } from '@/lib/syncPull';
+import { clearQueue, listQueuedMutations } from './syncQueue';
+import { catchUpNeverSynced, drainQueue, pullRemote } from './syncEngine';
+import { migrateFromBlob } from './syncMigration';
 
 // ---------------------------------------------------------------------------
-// Optional cloud sync (Firebase Auth + Firestore).
+// Optional cloud sync (Firebase Auth + Firestore) — NORMALIZED per-entity
+// sync (audit finding #8's replacement for the old whole-blob LWW design).
 //
 // localStorage stays the synchronous source of truth (the app keeps working
-// fully offline). When signed in, the whole AppData blob is mirrored to a
-// single per-user Firestore document (`bodyos_app_state/{uid}`) — pushed on
-// local writes (debounced) and pulled/reconciled on sign-in. Conflicts are
-// resolved last-write-wins at whole-blob granularity: simple and predictable
-// for a single-user app; no field-level merge. (Known limitation: entity-
-// level sync is the planned replacement — see docs/audit.)
+// fully offline). When signed in, every entity (templates/sessions/
+// measurements/meta/active-session) mirrors to its OWN Firestore doc under
+// `users/{uid}/...`, queued durably in IndexedDB (store/syncQueue.ts) and
+// drained with optimistic-concurrency conflict detection (store/syncEngine.ts)
+// — a losing edit is shelved to `conflicts/`, never silently discarded, and a
+// concurrent delete never forces through a concurrent edit. See
+// docs/superpowers/specs/2026-07-20-normalized-sync-design.md.
+//
+// Existing accounts migrate once from the legacy `bodyos_app_state/{uid}` blob
+// (store/syncMigration.ts) on first sign-in after this shipped; the blob is
+// left in place (untouched, unread again) as a rollback window.
 //
 // ACCOUNT ISOLATION: every account has its own local namespace
 // (`profileStorageKey(uid)`), plus one anonymous local-only profile. Auth
@@ -25,13 +36,12 @@ import { clearPhotoData } from './photoStore';
 // Two fields are deliberately NOT synced and stay device-local:
 //   • photos    — private by design ("never uploaded without explicit action")
 //   • restTimer — ephemeral wall-clock state, meaningless on another device
+// PRs and streaks are also never synced — they're derivations recomputed on
+// every device from `sessions` (lib/recompute.ts).
 // ---------------------------------------------------------------------------
 
-const COLLECTION = 'bodyos_app_state';
-const META_KEY_BASE = 'bodyos.sync.meta.v1';
+const LEGACY_BLOB_COLLECTION = 'bodyos_app_state';
 const PUSH_DEBOUNCE_MS = 1500;
-
-type SyncedData = Omit<AppData, 'photos' | 'restTimer'>;
 
 export type SyncStatus =
   | 'unconfigured' // no Firebase config compiled in
@@ -58,45 +68,6 @@ function setSync(patch: Partial<SyncState>): void {
   useSyncStore.setState(patch);
 }
 
-// --- persisted sync bookkeeping --------------------------------------------
-
-interface SyncMeta {
-  userId: string | null;
-  dirty: boolean;
-  dirtyAt: number | null;
-  /** Server `updated_at` we last observed — lets us tell "unchanged" from
-   *  "another device wrote" without relying on our own clock. */
-  remoteUpdatedAt: string | null;
-}
-
-/** Sync bookkeeping is stored PER ACCOUNT so metadata can never be
- *  associated with the wrong Firebase UID after an account switch. */
-function metaKey(uid: string): string {
-  return `${META_KEY_BASE}.${uid}`;
-}
-
-function loadMeta(uid: string): SyncMeta {
-  try {
-    const raw = localStorage.getItem(metaKey(uid));
-    if (raw) return JSON.parse(raw) as SyncMeta;
-  } catch {
-    /* ignore */
-  }
-  return { userId: uid, dirty: false, dirtyAt: null, remoteUpdatedAt: null };
-}
-
-let meta: SyncMeta = { userId: null, dirty: false, dirtyAt: null, remoteUpdatedAt: null };
-
-function setMeta(patch: Partial<SyncMeta>): void {
-  meta = { ...meta, ...patch };
-  if (!meta.userId) return;
-  try {
-    localStorage.setItem(metaKey(meta.userId), JSON.stringify(meta));
-  } catch {
-    /* ignore */
-  }
-}
-
 // --- wiring to the app store (registered at runtime to avoid an import cycle)
 
 let getLocalData: (() => AppData) | null = null;
@@ -115,48 +86,17 @@ export function registerSync(hooks: {
   switchProfile = hooks.switchProfile;
 }
 
-// --- pure helpers (unit-tested) --------------------------------------------
-
-export function toSynced(d: AppData): SyncedData {
-  const { photos: _photos, restTimer: _restTimer, ...rest } = d;
-  return rest;
-}
-
-/** Adopt every synced field from remote; keep device-local photos + timer. */
-export function mergeRemote(local: AppData, remote: SyncedData): AppData {
-  return { ...local, ...remote, photos: local.photos, restTimer: local.restTimer };
-}
-
-export type PullDecision = { action: 'push' | 'adopt' | 'noop' };
-
-/** Whole-blob last-write-wins reconciliation, extracted for testability. */
-export function decidePull(args: {
-  remoteExists: boolean;
-  remoteUpdatedAt: string | null;
-  lastSyncedRemoteUpdatedAt: string | null;
-  localDirty: boolean;
-  localDirtyAt: number | null;
-}): PullDecision {
-  const { remoteExists, remoteUpdatedAt, lastSyncedRemoteUpdatedAt, localDirty, localDirtyAt } =
-    args;
-
-  if (!remoteExists) return { action: 'push' }; // seed cloud from this device
-  if (remoteUpdatedAt === lastSyncedRemoteUpdatedAt) {
-    return { action: localDirty ? 'push' : 'noop' };
-  }
-  // Remote advanced since we last synced (another device wrote).
-  if (!localDirty) return { action: 'adopt' };
-  const remoteTime = remoteUpdatedAt ? Date.parse(remoteUpdatedAt) : 0;
-  const localTime = localDirtyAt ?? 0;
-  return { action: remoteTime >= localTime ? 'adopt' : 'push' };
-}
-
-// --- engine ----------------------------------------------------------------
+// --- engine ------------------------------------------------------------------
 
 let authUserId: string | null = null;
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let retryAttempt = 0;
+/** The last AppData snapshot we've already diffed+enqueued changes for —
+ *  NOT "last confirmed synced with remote" (that's the per-entity baseline
+ *  in syncQueue.ts). Reset to null on every profile switch so the next write
+ *  re-establishes it; see bootstrapSync. */
+let lastDiffedSnapshot: AppData | null = null;
 
 /** Exponential backoff for failed pushes: 2s, 4s, 8s … capped at 5 min. */
 export function backoffMs(attempt: number): number {
@@ -201,114 +141,94 @@ function messageOf(e: unknown): string {
   return 'Sync failed';
 }
 
-/** Firestore Timestamp → ISO string (the reconcile clock we compare on). */
-function tsToIso(value: unknown): string | null {
-  if (
-    value &&
-    typeof value === 'object' &&
-    'toDate' in value &&
-    typeof (value as { toDate: unknown }).toDate === 'function'
-  ) {
-    return (value as { toDate: () => Date }).toDate().toISOString();
+/** Re-pull whichever entities just lost a conflict, so the local store
+ *  reflects the winning remote value instead of the discarded local edit. */
+async function adoptRemoteWins(uid: string): Promise<void> {
+  if (!getLocalData || !applyRemote) return;
+  const patch = await pullRemote(uid);
+  applyingRemote = true;
+  try {
+    const merged = applyPullPatch(getLocalData(), patch);
+    applyRemote(merged);
+    lastDiffedSnapshot = merged;
+  } finally {
+    applyingRemote = false;
   }
-  return null;
 }
 
-async function pushNow(): Promise<void> {
-  const fb = await loadFirebase();
-  if (!fb || !authUserId || !getLocalData) return;
-  const local = getLocalData();
+async function drainAndReport(uid: string): Promise<void> {
   setSync({ status: 'syncing', error: null });
-  try {
-    const { doc, setDoc, getDoc, serverTimestamp } = await import('firebase/firestore');
-    const ref = doc(fb.db, COLLECTION, authUserId);
-    await setDoc(ref, {
-      data: toSynced(local),
-      appVersion: local.version,
-      updatedAt: serverTimestamp(),
+  const summary = await drainQueue(uid);
+
+  if (summary.failed > 0) {
+    // A failed push must never strand data: the mutation stays queued (so a
+    // restart re-attempts it) and we retry automatically with backoff. The
+    // device copy is always safe — this only delays the cloud mirror.
+    setSync({
+      status: 'error',
+      error: 'Sync delayed (retrying automatically) — your data is safe on this device.',
     });
-    // Read back the resolved server timestamp so both devices compare the same clock.
-    const snap = await getDoc(ref);
-    const remoteUpdatedAt = tsToIso(snap.get('updatedAt')) ?? new Date().toISOString();
-    setMeta({ dirty: false, dirtyAt: null, remoteUpdatedAt, userId: authUserId });
+    if (retryTimer) clearTimeout(retryTimer);
+    const delay = backoffMs(retryAttempt);
+    retryAttempt += 1;
+    retryTimer = setTimeout(() => {
+      retryTimer = null;
+      if (authUserId === uid) void drainAndReport(uid);
+    }, delay);
+  } else {
     retryAttempt = 0;
     if (retryTimer) {
       clearTimeout(retryTimer);
       retryTimer = null;
     }
     setSync({ status: 'synced', lastSyncedAt: Date.now(), error: null });
-  } catch (e) {
-    // A failed push must never strand data: the dirty flag is persisted (so a
-    // restart re-pushes) and we retry automatically with backoff. The device
-    // copy is always safe — this only delays the cloud mirror.
-    setSync({ status: 'error', error: messageOf(e) });
-    if (retryTimer) clearTimeout(retryTimer);
-    const delay = backoffMs(retryAttempt);
-    retryAttempt += 1;
-    retryTimer = setTimeout(() => {
-      retryTimer = null;
-      if (authUserId && meta.dirty) void pushNow();
-    }, delay);
   }
+
+  if (summary.remoteWon.length > 0) await adoptRemoteWins(uid);
 }
 
-function schedulePush(): void {
+function schedulePush(uid: string): void {
   if (pushTimer) clearTimeout(pushTimer);
   pushTimer = setTimeout(() => {
-    void pushNow();
+    void drainAndReport(uid);
   }, PUSH_DEBOUNCE_MS);
 }
 
 /** Called by the store after every local mutation. */
-export function notifyLocalWrite(_data: AppData): void {
+export function notifyLocalWrite(data: AppData): void {
   if (applyingRemote) return; // don't echo a remote-applied write back up
-  if (!isSignedIn()) return; // local-only when signed out
-  setMeta({ dirty: true, dirtyAt: Date.now() });
-  schedulePush();
+  const uid = authUserId;
+  if (!uid) return; // local-only when signed out
+  const mutations = diffAppData(lastDiffedSnapshot, data);
+  lastDiffedSnapshot = data;
+  if (mutations.length === 0) return;
+  void (async () => {
+    await import('./syncQueue').then(({ enqueueMutations }) => enqueueMutations(uid, mutations));
+    schedulePush(uid);
+  })();
 }
 
-function adopt(remoteData: SyncedData, remoteUpdatedAt: string): void {
+/** Migrate (idempotent), pull whatever's new, catch up anything this device
+ *  has never synced at all, then drain the queue. Runs on every sign-in and
+ *  on a manual "Sync now". */
+async function bootstrapSync(uid: string): Promise<void> {
   if (!getLocalData || !applyRemote) return;
-  const local = getLocalData();
-  applyingRemote = true;
-  try {
-    applyRemote(mergeRemote(local, remoteData));
-  } finally {
-    applyingRemote = false;
-  }
-  setMeta({ dirty: false, dirtyAt: null, remoteUpdatedAt, userId: authUserId });
-  setSync({ status: 'synced', lastSyncedAt: Date.now(), error: null });
-}
-
-async function pullAndReconcile(): Promise<void> {
-  const fb = await loadFirebase();
-  if (!fb || !authUserId || !getLocalData || !applyRemote) return;
   setSync({ status: 'syncing', error: null });
   try {
-    const { doc, getDoc } = await import('firebase/firestore');
-    const snap = await getDoc(doc(fb.db, COLLECTION, authUserId));
-    const remoteExists = snap.exists();
-    const remoteUpdatedAt = remoteExists ? tsToIso(snap.get('updatedAt')) : null;
+    await migrateFromBlob(uid);
 
-    const decision = decidePull({
-      remoteExists,
-      remoteUpdatedAt,
-      lastSyncedRemoteUpdatedAt: meta.remoteUpdatedAt,
-      localDirty: meta.dirty,
-      localDirtyAt: meta.dirtyAt,
-    });
-
-    switch (decision.action) {
-      case 'push':
-        await pushNow();
-        break;
-      case 'adopt':
-        adopt(snap.get('data') as SyncedData, remoteUpdatedAt ?? new Date().toISOString());
-        break;
-      case 'noop':
-        setSync({ status: 'synced', lastSyncedAt: Date.now(), error: null });
-        break;
+    const patch = await pullRemote(uid);
+    applyingRemote = true;
+    try {
+      const merged = applyPullPatch(getLocalData(), patch);
+      applyRemote(merged);
+      lastDiffedSnapshot = merged;
+    } finally {
+      applyingRemote = false;
     }
+
+    await catchUpNeverSynced(uid, getLocalData());
+    await drainAndReport(uid);
   } catch (e) {
     setSync({ status: 'error', error: messageOf(e) });
   }
@@ -408,7 +328,7 @@ export async function resendConfirmation(_email: string): Promise<{ error: strin
 export async function signOut(): Promise<void> {
   const fb = await loadFirebase();
   if (!fb) return;
-  // Flush — never drop — a pending debounced write before leaving the account.
+  // Flush — never drop — anything still queued before leaving the account.
   if (pushTimer) {
     clearTimeout(pushTimer);
     pushTimer = null;
@@ -418,16 +338,18 @@ export async function signOut(): Promise<void> {
     retryTimer = null;
   }
   retryAttempt = 0;
-  if (meta.dirty && authUserId) {
-    await pushNow();
+  if (authUserId) {
+    const pending = await listQueuedMutations(authUserId);
+    if (pending.length > 0) await drainQueue(authUserId);
   }
   const { signOut: fbSignOut } = await import('firebase/auth');
   await fbSignOut(fb.auth);
 }
 
-/** Manual "Sync now" for the UI. */
+/** Manual "Sync now" for the UI: pull whatever's new, then drain the queue. */
 export async function syncNow(): Promise<void> {
-  await pullAndReconcile();
+  if (!authUserId) return;
+  await bootstrapSync(authUserId);
 }
 
 // --- explicit device-data import (never automatic) --------------------------
@@ -453,9 +375,11 @@ export async function importDeviceData(): Promise<{ error: string | null }> {
   if (!authUserId || !applyRemote) return { error: 'Sign in first.' };
   const anon = new LocalStorageRepository(profileStorageKey(null)).load();
   if (!anon) return { error: 'No local data found on this device.' };
-  applyRemote(anon);
-  setMeta({ dirty: true, dirtyAt: Date.now() });
-  await pushNow();
+  // Treat everything in `anon` as new to push, regardless of what this
+  // account previously had synced.
+  lastDiffedSnapshot = null;
+  applyRemote(anon); // triggers persist() -> notifyLocalWrite(anon), enqueuing it all
+  await drainAndReport(authUserId);
   return { error: null };
 }
 
@@ -464,22 +388,44 @@ export async function importDeviceData(): Promise<{ error: string | null }> {
 /** Remove every local trace of an account's namespace on this device. */
 export async function localAccountCleanup(uid: string): Promise<void> {
   new LocalStorageRepository(profileStorageKey(uid)).clear();
-  try {
-    localStorage.removeItem(metaKey(uid));
-  } catch {
-    /* ignore */
-  }
+  await clearQueue(uid);
   await clearPhotoData(uid);
 }
 
-/** Delete the account's cloud training data (Firestore doc). Local + auth stay. */
+async function deleteNormalizedCollection(uid: string, collectionName: string): Promise<void> {
+  const fb = await loadFirebase();
+  if (!fb) return;
+  const { collection, getDocs, writeBatch } = await import('firebase/firestore');
+  const snap = await getDocs(collection(fb.db, 'users', uid, collectionName));
+  if (snap.empty) return;
+  const batch = writeBatch(fb.db);
+  snap.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+}
+
+/** Delete the account's cloud training data: the legacy blob (if it still
+ *  exists) AND every normalized collection. Local + auth stay. */
 export async function deleteCloudData(): Promise<{ error: string | null }> {
   const fb = await loadFirebase();
   if (!fb || !authUserId) return { error: 'Sign in first.' };
+  const uid = authUserId;
   try {
     const { doc, deleteDoc } = await import('firebase/firestore');
-    await deleteDoc(doc(fb.db, COLLECTION, authUserId));
-    setMeta({ dirty: false, dirtyAt: null, remoteUpdatedAt: null });
+    await deleteDoc(doc(fb.db, LEGACY_BLOB_COLLECTION, uid));
+    for (const c of [
+      'templates',
+      'sessions',
+      'measurements',
+      'meta',
+      'active',
+      'tombstones',
+      'conflicts',
+      'migration',
+    ]) {
+      await deleteNormalizedCollection(uid, c);
+    }
+    await clearQueue(uid);
+    lastDiffedSnapshot = null;
     return { error: null };
   } catch (e) {
     return { error: messageOf(e) };
@@ -573,10 +519,10 @@ export function initCloudSync(): void {
         // any sync so the previous profile's data (anonymous or another
         // account) can never be read, displayed, merged, or uploaded here.
         switchProfile?.(user.uid);
-        meta = loadMeta(user.uid);
+        lastDiffedSnapshot = null;
         setSync({ status: 'syncing', email: user.email ?? null, error: null });
-        // Firebase fires this on init and on sign-in; reconcile either way.
-        void pullAndReconcile();
+        // Firebase fires this on init and on sign-in; bootstrap either way.
+        void bootstrapSync(user.uid);
       } else {
         authUserId = null;
         if (pushTimer) {
@@ -588,7 +534,7 @@ export function initCloudSync(): void {
           retryTimer = null;
         }
         retryAttempt = 0;
-        meta = { userId: null, dirty: false, dirtyAt: null, remoteUpdatedAt: null };
+        lastDiffedSnapshot = null;
         // Unload the account's data immediately; show the device's own
         // anonymous profile instead.
         switchProfile?.(null);

@@ -1,8 +1,9 @@
-import type { SyncEntityKind } from '@/lib/syncDiff';
+import { toMetaPayload, type EntityMutation, type SyncEntityKind } from '@/lib/syncDiff';
 import { emptyPullPatch, type PullPatch } from '@/lib/syncPull';
-import type { BodyMeasurement, WorkoutSession, WorkoutTemplate } from '@/types';
+import type { AppData, BodyMeasurement, WorkoutSession, WorkoutTemplate } from '@/types';
 import { loadFirebase } from '@/lib/firebase';
 import {
+  enqueueMutations,
   getEntityRev,
   listQueuedMutations,
   markAttempt,
@@ -252,4 +253,52 @@ export async function pullRemote(uid: string): Promise<PullPatch> {
   }
 
   return patch;
+}
+
+// ---------------------------------------------------------------------------
+// Catch-up: on sign-in (after migration + pull are applied), enqueue anything
+// in local AppData that this device has NEVER synced at all — i.e. its rev
+// baseline is still 0. This covers data that accumulated locally before sync
+// was ever established for this account (e.g. an account used fully offline
+// until now), without re-enqueueing entities that are already caught up.
+// Ordinary ongoing edits are instead caught by the diff engine on every
+// subsequent write (see cloudSync.ts's notifyLocalWrite).
+// ---------------------------------------------------------------------------
+
+export async function catchUpNeverSynced(uid: string, data: AppData): Promise<void> {
+  const toEnqueue: EntityMutation[] = [];
+
+  for (const t of data.templates) {
+    if ((await getEntityRev(uid, 'template', t.id)) === 0) {
+      toEnqueue.push({ entity: 'template', entityId: t.id, op: 'upsert', payload: t });
+    }
+  }
+  for (const s of data.sessions) {
+    if ((await getEntityRev(uid, 'session', s.id)) === 0) {
+      toEnqueue.push({ entity: 'session', entityId: s.id, op: 'upsert', payload: s });
+    }
+  }
+  for (const m of data.measurements) {
+    if ((await getEntityRev(uid, 'measurement', m.id)) === 0) {
+      toEnqueue.push({ entity: 'measurement', entityId: m.id, op: 'upsert', payload: m });
+    }
+  }
+  if ((await getEntityRev(uid, 'meta', 'profile')) === 0) {
+    toEnqueue.push({
+      entity: 'meta',
+      entityId: 'profile',
+      op: 'upsert',
+      payload: toMetaPayload(data),
+    });
+  }
+  if (data.activeSession && (await getEntityRev(uid, 'active', 'current')) === 0) {
+    toEnqueue.push({
+      entity: 'active',
+      entityId: 'current',
+      op: 'upsert',
+      payload: data.activeSession,
+    });
+  }
+
+  await enqueueMutations(uid, toEnqueue);
 }
