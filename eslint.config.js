@@ -7,7 +7,19 @@ import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage', 'public'] },
+  {
+    ignores: [
+      'dist',
+      'node_modules',
+      'coverage',
+      'public',
+      // tsc -b build artifacts for hand-authored .ts configs (see .gitignore).
+      'vite.config.js',
+      'vite.config.d.ts',
+      'vitest.emulator.config.js',
+      'vitest.emulator.config.d.ts',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
